@@ -54,7 +54,7 @@ This plugin is very inspired by the very good `PyYapf <https://github.com/jason-
 
 Changelog
 -----------
-0.1.0:
+1.0.0:
 	- first try
 
 _`Black`: https://github.com/ambv/black 
