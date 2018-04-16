@@ -1,17 +1,9 @@
 .PHONY: build
 
-MODULE:=sublack
-
-all: dev style checks requirements.txt build dists doc test-unit test-coverage
+MODULE:=Sublack.py
 
 dev:
-	pipenv install --dev --python 3.5 --skip-lock
-
-install-local:
-	pipenv install --python 3.5
-
-install-system:
-	pipenv install --system
+	pipenv install --dev --python 3.6
 
 style: isort black
 
@@ -19,7 +11,7 @@ isort:
 	pipenv run isort -y
 
 black:
-	pipenv run black --recursive -i $(MODULE)
+	pipenv run black $(MODULE)
 
 checks:
 	pipenv check
@@ -30,23 +22,6 @@ flake8:
 shell:
 	pipenv shell
 
-test-unit:
-	pipenv run pytest --cov $(MODULE) --cov-report term-missing --cov-fail-under=100
-
-test-coverage:
-	pipenv run py.test  --cov $(MODULE) --cov-report term-missing --cov-report html
-
-
-requirements.txt:
-	
-	# generate requirements.txt from Pipfile
-	# needed until PBR supports `Pipfile`
-	pipenv run pipenv_to_requirements
-	
-	
-
-Pipfile.lock:	Pipfile
-	pipenv lock
 
 dists: requirements.txt sdist wheels
 
@@ -66,7 +41,7 @@ publish:
 update:
 	pipenv update -d
 
-githook: checks style requirements.txt
+githook: checks style
 	
 push:
 	git status

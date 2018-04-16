@@ -4,9 +4,8 @@ verify_ssl = true
 
 [dev-packages]
 flake8 = "*"
-black = "*"
 isort = "*"
-
+black = "*"
 pytest = "*"
 pytest-cov = "*"
 tox = "*"
@@ -17,7 +16,7 @@ sphinx = "*"
 sphinx-autobuild = "*"
 pytest-pythonpath = "*"
 pytest-env ="*"
-twine
+twine = "*"
 
 
 [packages]

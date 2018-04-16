@@ -1,0 +1,6 @@
+[
+    {
+        "caption": "sublack: Format file",
+        "command": "black_file"
+    },
+]

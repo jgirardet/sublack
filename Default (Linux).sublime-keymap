@@ -1,0 +1,8 @@
+[
+    {
+        "keys": [
+            "ctrl+alt+f"
+        ],
+        "command": "black_file"
+    }
+]

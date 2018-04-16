@@ -1,0 +1,8 @@
+{
+      // full path and command to run yapf
+      "black_command": "black",
+
+      // run black before saving document
+      "on_save": false,
+
+}

@@ -57,3 +57,5 @@ ChangeLog
 AUTHORS
 # pytest
 .pytest_cache/
+Pipfile.lock
+
