@@ -1,0 +1,17 @@
+[run]
+branch = True
+source = sublack
+omit =
+  */.env/*,
+  *apps.py,
+  *migrations/*,
+  *settings*,
+  *tests/*,
+  *wsgi.py,
+  */manage.py,
+  launch.py,
+  setup.py,
+  */__init__.py,
+
+[report]
+ignore_errors = True

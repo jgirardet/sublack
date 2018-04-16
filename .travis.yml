@@ -1,0 +1,24 @@
+# Config file for automatic testing at travis-ci.org
+# This file will be regenerated if you run travis_pypi_setup.py
+
+language: python
+
+python:
+  - 3.6
+  - 3.5
+
+install:
+  - pip install -U pip pipenv
+  - pip install python-coveralls
+  - make dev
+
+script:
+  - make check
+  - make dist
+  - make doc
+  - make test-coverage
+
+after_success:
+  coveralls
+
+
