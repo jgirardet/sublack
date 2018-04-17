@@ -101,7 +101,7 @@ class EventListener(sublime_plugin.EventListener):
 
     def on_pre_save(self, view):  # pylint: disable=no-self-use
         if get_setting(view, "on_save"):
-            view.run_command("black_document")
+            view.run_command("black_file")
 
 
 def get_setting(view, key, default_value=None):
