@@ -5,4 +5,8 @@
       // run black before saving document
       "on_save": false,
 
+      // line length
+      // uses black default, if not modified
+      "line-length": null
+
 }

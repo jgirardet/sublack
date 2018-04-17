@@ -43,9 +43,9 @@ class Black:
 
         self.popen_args = [cmd]
 
-        # use directory of current file
-        self.fname = self.view.file_name()
-        self.popen_cwd = os.path.dirname(self.fname) if self.fname else None
+        # get filename and use directory of current file
+        fname = self.view.file_name()
+        self.popen_cwd = os.path.dirname(fname) if fname else None
 
         # win32: hide console window
         if sys.platform in ("win32", "cygwin"):
@@ -55,9 +55,14 @@ class Black:
         else:
             self.popen_startupinfo = None
 
-        self.errors = []
+        self.popen_args += [fname]
 
-        self.popen_args += [self.fname]
+        # Line length option
+
+        line_length = get_setting(self.view, "line_length")
+        if line_length is not None:
+            self.popen_args += ["-l {0}".format(line_length)]
+            print("line : ", self.popen_args)
 
         try:
             subprocess.Popen(

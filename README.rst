@@ -14,12 +14,18 @@ sublack
 Usage
 --------
 
-By default, press `Ctrl-Alt-F` to format the entire document.
-You can also `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `sublack: Format file`.
+* Default:
+	Press `Ctrl-Alt-F` to format the entire file.
+	You can also `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `sublack: Format file`.
 
-To automatically run Black on the current document before saving, use the `on_save` setting.
+* On Save:
+	To automatically run Black on the current file before saving, use the `"on_save"` setting.
 
-.. note:: Be aware that the current file is automatically saved after reformatting
+* Line Length:
+	You can specify `"line_length"` used by `Black`_ in settings.
+
+* SublimeText limitation:
+	Actually Python 3.6 is not supported by SublimeText, so the Black API can't be used for now. This implies that we have to use the **black** command instead (which is good also) and then apply the changes to a  **saved file** only. So every time you run **sublack**, the file is automatically saved.
 
 
 
@@ -31,15 +37,18 @@ Installation
    
 	   pip install black # Requires python 3.6
 
-.. #.  Install Sublime Package Control by following the instructions [here](https://packagecontrol.io/installation) (if you haven't already).
-
-.. # `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and choose "Package Control: Install Package".
-
-.. #.  Find "PyYapf Python Formatter" in the list (type in a few characters and you should see it).
-
 #. Waiting for PackageControl Entry, install manually by navigating to Sublime's `Packages` folder and cloning this repository::
 
       git clone https://github.com/jgirardet/sublack.git
+
+#. Add **Black** commad to settings::
+   
+	
+	{
+	"black_command": "/my/path/to/bin/black",
+	}
+.. #.  In PackageControlFind "sublack", and that's it !
+
 
 Issues
 ---------
@@ -54,7 +63,11 @@ This plugin is very inspired by the very good `PyYapf <https://github.com/jason-
 
 Changelog
 -----------
+
+1.1.0:
+	- add line_length option
 1.0.0:
-	- first try
+	- make plugin
+	- add on_save option
 
 _`Black`: https://github.com/ambv/black 
