@@ -93,13 +93,14 @@ class BlackFileCommand(sublime_plugin.TextCommand):
         return is_python(self.view)
 
     def run(self, edit):
+        if not get_setting(self.view, "on_save"):
+            self.view.run_command("save")
         Black(self.view)(edit)
-        self.view.run_command("save")
 
 
 class EventListener(sublime_plugin.EventListener):
 
-    def on_pre_save(self, view):  # pylint: disable=no-self-use
+    def on_post_save(self, view):
         if get_setting(view, "on_save"):
             view.run_command("black_file")
 
