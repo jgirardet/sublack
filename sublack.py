@@ -73,7 +73,7 @@ class Black:
                 startupinfo=self.popen_startupinfo,
             )
             p.wait()
-            if p.returncode == 1 or p.returncode == 123:
+            if p.returncode != 0:
                 msg = "Black did not run succesfully: please check the console for details."
                 sublime.error_message(msg)
                 print(p.stdout.readlines(), p.stderr.readlines())
