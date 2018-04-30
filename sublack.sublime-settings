@@ -7,6 +7,11 @@
 
       // line length
       // uses black default, if not modified
-      "line-length": null
+      "line_length": null,
+
+      //debug mode
+      // show black log in console
+      // errors are always shown
+      "debug": false,
 
 }

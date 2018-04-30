@@ -24,11 +24,6 @@ Usage
 * Line Length:
 	You can specify `"line_length"` used by `Black`_ in settings.
 
-* SublimeText limitation:
-	Actually Python 3.6 is not supported by SublimeText, so the Black API can't be used for now. This implies that we have to use the **black** command instead (which is good also) and then apply the changes to a  **saved file** only. So every time you run **sublack**, the file is automatically saved.
-
-
-
 
 Installation
 -------------
@@ -64,10 +59,17 @@ This plugin is very inspired by the very good `PyYapf <https://github.com/jason-
 Changelog
 -----------
 
+1.3.0:
+	- use '-' argument to format inline document wihout saving it
+	- consequently post-save became pre-save
+	- line_length typo in settings
+	- add log
+1.2.0:
+	- add error handling (thanks to `nicokist <https://github.com/nicokist>`_)
 1.1.0:
 	- add line_length option
 1.0.0:
 	- make plugin
 	- add on_save option
 
-_`Black`: https://github.com/ambv/black 
+.. _Black : https://github.com/ambv/black 

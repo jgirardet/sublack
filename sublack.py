@@ -39,13 +39,16 @@ class Black:
             raise Exception(msg)
 
         cmd = os.path.expanduser(cmd)
+
         cmd = sublime.expand_variables(cmd, sublime.active_window().extract_variables())
 
-        self.popen_args = [cmd]
+        # set  black in input/ouput mode with -
+        self.cmd = [cmd, "-"]
 
-        # get filename and use directory of current file
-        fname = self.view.file_name()
-        self.popen_cwd = os.path.dirname(fname) if fname else None
+        # Line length option
+        line_length = get_setting(self.view, "line_length")
+        if line_length is not None:
+            self.cmd += ["-l", str(line_length)]
 
         # win32: hide console window
         if sys.platform in ("win32", "cygwin"):
@@ -55,33 +58,37 @@ class Black:
         else:
             self.popen_startupinfo = None
 
-        self.popen_args += [fname]
+        # get encoding of current file
+        encoding = self.view.encoding()
 
-        # Line length option
-
-        line_length = get_setting(self.view, "line_length")
-        if line_length is not None:
-            self.popen_args += ["-l {0}".format(line_length)]
-            print("line : ", self.popen_args)
+        # select the whole file en encode it
+        # encoding in popen starts with python 3.6
+        all_file = sublime.Region(0, self.view.size())
+        content = self.view.substr(all_file)
+        content = content.encode(encoding)
 
         try:
             p = subprocess.Popen(
-                self.popen_args,
+                self.cmd,
+                stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                cwd=self.popen_cwd,
                 startupinfo=self.popen_startupinfo,
             )
-            p.wait()
-            if p.returncode != 0:
-                msg = "Black did not run succesfully: please check the console for details."
-                sublime.error_message(msg)
-                print(p.stdout.readlines(), p.stderr.readlines())
+            out, err = p.communicate(input=content)
 
         except OSError as err:
-            # always show error in popup
             msg = "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
             sublime.error_message("OSError: %s\n\n%s" % (err, msg))
+            return
+
+        if p.returncode == 0:
+            self.view.replace(edit, all_file, out.decode(encoding))
+            if get_setting(self.view, "debug"):
+                print("[SUBLACK] : %s" % err.decode(encoding))
+
+        else:
+            print("[SUBLACK] Black did not run succesfully: %s" % err.decode(encoding))
             return
 
 
@@ -98,14 +105,12 @@ class BlackFileCommand(sublime_plugin.TextCommand):
         return is_python(self.view)
 
     def run(self, edit):
-        if not get_setting(self.view, "on_save"):
-            self.view.run_command("save")
         Black(self.view)(edit)
 
 
 class EventListener(sublime_plugin.EventListener):
 
-    def on_post_save(self, view):
+    def on_pre_save(self, view):
         if get_setting(view, "on_save"):
             view.run_command("black_file")
 
