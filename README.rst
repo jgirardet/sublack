@@ -18,17 +18,12 @@ Usage
 	Press `Ctrl-Alt-F` to format the entire file.
 	You can also `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `sublack: Format file`.
 
-* On Save:
-	To automatically run Black on the current file before saving, use the `"on_save"` setting.
-
-* Line Length:
-	You can specify `"line_length"` used by `Black`_ in settings.
 
 
 Installation
 -------------
 
-#. Install Black (if you haven't already)::
+#. Install `Black`_ (if you haven't already)::
    
 	   pip install black # Requires python 3.6
 
@@ -36,13 +31,22 @@ Installation
 
       git clone https://github.com/jgirardet/sublack.git
 
-#. Add **Black** commad to settings::
-   
-	
-	{
-	"black_command": "/my/path/to/bin/black",
-	}
 .. #.  In PackageControlFind "sublack", and that's it !
+
+Settings
+---------
+
+* black_command:
+	Set custom location. Default = "black".
+
+* on_save:
+	Black is always run before saving file. Default = false.
+
+* line_length:
+	Set custom line length option used by `Black`_. Default = null which lets black default.
+
+* debug:
+	Show non error messages in console. Default = false. Error messages are always shown in console.
 
 
 Issues
@@ -59,6 +63,8 @@ This plugin is very inspired by the very good `PyYapf <https://github.com/jason-
 Changelog
 -----------
 
+1.3.1:
+	- update README
 1.3.0:
 	- use '-' argument to format inline document wihout saving it
 	- consequently post-save became pre-save
