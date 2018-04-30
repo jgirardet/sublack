@@ -65,13 +65,18 @@ class Black:
             print("line : ", self.popen_args)
 
         try:
-            subprocess.Popen(
+            p = subprocess.Popen(
                 self.popen_args,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 cwd=self.popen_cwd,
                 startupinfo=self.popen_startupinfo,
             )
+            p.wait()
+            if p.returncode != 0:
+                msg = "Black did not run succesfully: please check the console for details."
+                sublime.error_message(msg)
+                print(p.stdout.readlines(), p.stderr.readlines())
 
         except OSError as err:
             # always show error in popup
