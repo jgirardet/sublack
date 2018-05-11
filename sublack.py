@@ -3,7 +3,7 @@
 Sublime Text 3 Plugin to invoke Black on a Python file.
 """
 
-
+import locale
 import os
 import subprocess
 import sys
@@ -69,8 +69,9 @@ class Black:
 
         # modifying the locale is necessary to keep the click library happy on some systems.
         env = os.environ.copy()
+
         if "LC_ALL" not in env.keys():
-            env["LC_ALL"] = "en_US.UTF-8"
+            env["LC_ALL"] = ".".join(locale.getdefaultlocale())
 
         try:
             p = subprocess.Popen(
