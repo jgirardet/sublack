@@ -67,9 +67,15 @@ class Black:
         content = self.view.substr(all_file)
         content = content.encode(encoding)
 
+        # modifying the locale is necessary to keep the click library happy on some systems.
+        env = os.environ.copy()
+        if "LC_ALL" not in env.keys():
+            env["LC_ALL"] = "en_US.UTF-8"
+
         try:
             p = subprocess.Popen(
                 self.cmd,
+                env=env,
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
