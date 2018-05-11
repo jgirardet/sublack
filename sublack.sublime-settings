@@ -14,4 +14,11 @@
       // errors are always shown
       "debug": false,
 
+      //define system local needed on some system (OSX)
+      //due to click library
+      //It will be ignore en most system where  locale.getdefaultlocale() do not return (None,None)
+      //Most users should not change this
+      //Defaut is set to "en_US.UTF-8"
+      "locale": null,
+
 }
