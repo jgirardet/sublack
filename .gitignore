@@ -58,4 +58,6 @@ AUTHORS
 # pytest
 .pytest_cache/
 Pipfile.lock
+*.sublime-project
+*.sublime-workspace
 
