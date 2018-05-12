@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Sublime Text 3 Plugin to invoke Black on a Python file.
 """
