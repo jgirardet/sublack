@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Sublime Text 3 Plugin to invoke Black on a Python file.
 """
@@ -61,6 +60,8 @@ class Black:
 
         # get encoding of current file
         encoding = self.view.encoding()
+        if encoding == "Undefined":
+            encoding = "UTF-8"
 
         # select the whole file en encode it
         # encoding in popen starts with python 3.6
