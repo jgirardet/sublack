@@ -7,6 +7,7 @@ import locale
 import os
 import subprocess
 import sys
+import platform
 
 
 import sublime
@@ -69,9 +70,9 @@ class Black:
 
         # modifying the locale is necessary to keep the click library happy on OSX
         env = os.environ.copy()
-        lc = get_setting(self.view, "locale")
         if locale.getdefaultlocale() == (None, None):
-            env["LC_ALL"] = lc or "en_US.UTF-8"
+            if platform.system() == "Darwin":
+                env["LC_CTYPE"] = "UTF-8"
 
         try:
             p = subprocess.Popen(
