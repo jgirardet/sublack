@@ -63,6 +63,8 @@ This plugin is very inspired by the very good `PyYapf <https://github.com/jason-
 Changelog
 -----------
 
+1.3.3:
+	- Fix encoding if not given by SublimeText.
 1.3.2:
 	- BugFix : Click library Bug with locale under OSX
 1.3.1:
