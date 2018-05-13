@@ -8,7 +8,7 @@ import os
 import subprocess
 import sys
 import platform
-
+import re
 
 import sublime
 import sublime_plugin
@@ -19,6 +19,33 @@ KEY = "sublack"
 
 PLUGIN_SETTINGS_FILE = "sublack.sublime-settings"
 SUBLIME_SETTINGS_KEY = "sublack"
+
+ENCODING_PATTERN = r"^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)"
+
+
+def get_encoding_from_region(region, view):
+    """
+    ENCODING_PATTERN is given by PEP 263
+    """
+
+    ligne = view.substr(region)
+    encoding = re.findall(ENCODING_PATTERN, ligne)
+
+    return encoding[0] if encoding else None
+
+
+def get_encoding_from_file(view):
+    """
+    get from 2nd line only If failed from 1st line.
+    """
+    region = view.line(sublime.Region(0))
+    encoding = get_encoding_from_region(region, view)
+    if encoding:
+        return encoding
+    else:
+        encoding = get_encoding_from_region(view.line(region.end() + 1), view)
+        return encoding
+    return None
 
 
 class Black:
@@ -61,6 +88,10 @@ class Black:
 
         # get encoding of current file
         encoding = self.view.encoding()
+        if encoding == "Undefined":
+            encoding = get_encoding_from_file(self.view)
+        if not encoding:
+            encoding = get_setting(self.view, "default_encoding", "utf-8")
 
         # select the whole file en encode it
         # encoding in popen starts with python 3.6
