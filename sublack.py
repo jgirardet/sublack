@@ -81,7 +81,9 @@ class Black:
         # win32: hide console window
         if sys.platform in ("win32", "cygwin"):
             self.popen_startupinfo = subprocess.STARTUPINFO()
-            self.popen_startupinfo.dwFlags = subprocess.CREATE_NEW_CONSOLE | subprocess.STARTF_USESHOWWINDOW
+            self.popen_startupinfo.dwFlags = (
+                subprocess.CREATE_NEW_CONSOLE | subprocess.STARTF_USESHOWWINDOW
+            )
             self.popen_startupinfo.wShowWindow = subprocess.SW_HIDE
         else:
             self.popen_startupinfo = None
@@ -117,7 +119,9 @@ class Black:
             out, err = p.communicate(input=content)
 
         except OSError as err:
-            msg = "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
+            msg = (
+                "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
+            )
             sublime.error_message("OSError: %s\n\n%s" % (err, msg))
             return
 
@@ -148,7 +152,6 @@ class BlackFileCommand(sublime_plugin.TextCommand):
 
 
 class EventListener(sublime_plugin.EventListener):
-
     def on_pre_save(self, view):
         if get_setting(view, "on_save"):
             view.run_command("black_file")
