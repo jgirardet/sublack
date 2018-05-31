@@ -22,6 +22,15 @@ SUBLIME_SETTINGS_KEY = "sublack"
 
 ENCODING_PATTERN = r"^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)"
 
+CONFIG_OPTIONS = [
+    "black_command",
+    "on_save",
+    "line_length",
+    "fast",
+    "debug_on",
+    "encoding",
+]
+
 
 def get_encoding_from_region(region, view):
     """
@@ -48,6 +57,10 @@ def get_encoding_from_file(view):
     return None
 
 
+def get_config(view):
+    return {i: get_setting(view, i) for i in CONFIG_OPTIONS}
+
+
 class Black:
     """
     This class wraps Back invocation
@@ -55,10 +68,11 @@ class Black:
 
     def __init__(self, view):
         self.view = view
+        self.config = get_config(view)
 
     def get_command_line(self, edit, extra=[]):
         # prepare popen arguments
-        cmd = get_setting(self.view, "black_command")
+        cmd = self.config["black_command"]
         if not cmd:
             # always show error in popup
             msg = "Black command not configured. Problem with settings?"
@@ -73,16 +87,15 @@ class Black:
         cmd = [cmd, "-"]
 
         # Line length option
-        line_length = get_setting(self.view, "line_length")
-        if line_length is not None:
-            cmd.extend(["-l", str(line_length)])
+        if self.config["line_length"] is not None:
+            cmd.extend(["-l", str(self.config["line_length"])])
 
         # extra args
         if extra:
             cmd.extend(extra)
 
         # fast
-        if get_setting(self.view, "fast"):
+        if self.config["fast"]:
             cmd.append("--fast")
 
         # win32: hide console window
@@ -95,7 +108,6 @@ class Black:
         else:
             self.popen_startupinfo = None
 
-        print(cmd)
         return cmd
 
     def get_env(self):
@@ -175,7 +187,7 @@ class Black:
             self.view.replace(edit, all_file, out.decode(encoding))
 
         # logging
-        if get_setting(self.view, "debug"):
+        if get_setting(self.view, "debug_on"):
             print("[SUBLACK] : %s" % err.decode(encoding))
 
 
@@ -192,7 +204,8 @@ class BlackFileCommand(sublime_plugin.TextCommand):
         return is_python(self.view)
 
     def run(self, edit):
-        print("[SUBLACK] : run black_file")
+        if get_setting(self.view, "debug_on"):
+            print("[SUBLACK] : run black_file")
         Black(self.view)(edit)
 
 
@@ -205,7 +218,11 @@ class BlackDiffCommand(sublime_plugin.TextCommand):
         return is_python(self.view)
 
     def run(self, edit):
-        print("[SUBLACK] : run black_diff")
+        for i in ["black_command", "on_save", "line_length", "fast", "debug_on"]:
+            print(get_setting(self.view, i))
+
+        if get_setting(self.view, "debug"):
+            print("[SUBLACK] : run black_diff")
         Black(self.view)(edit, extra=["--diff"])
 
 

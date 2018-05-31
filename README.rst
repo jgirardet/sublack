@@ -14,9 +14,14 @@ sublack
 Usage
 --------
 
-* Default:
+* Run Black on current file:
 	Press `Ctrl-Alt-F` to format the entire file.
-	You can also `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `sublack: Format file`.
+	You can also `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Format file`.
+
+
+* Run Black with --diff:
+	Press `Ctrl-Alt-Shift-F` will show diff in a new tab.
+	You can also `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Diff file`.
 
 
 
@@ -45,6 +50,9 @@ Settings
 * line_length:
 	Set custom line length option used by `Black`_. Default = null which lets black default.
 
+* fast:
+	Black fast mode. default is false.
+
 * debug:
 	Show non error messages in console. Default = false. Error messages are always shown in console.
 
@@ -63,6 +71,13 @@ This plugin is very inspired by the very good `PyYapf <https://github.com/jason-
 Changelog
 -----------
 
+1.4.0:
+	- add black_diff command
+	- add black_diff keymap
+	- add fast setting
+	- refactor code
+1.3.4:
+	- Format sublack with Black (#8, thanks to `mschneiderwind <https://github.com/mschneiderwind>`_)
 1.3.3:
 	- Fix encoding if not given by SublimeText.
 1.3.2:
