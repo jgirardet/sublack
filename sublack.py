@@ -141,7 +141,7 @@ def is_python(view):
 
 class BlackFileCommand(sublime_plugin.TextCommand):
     """
-    The "yapf_document" command formats the current document.
+    The "black_file" command formats the current document.
     """
 
     def is_enabled(self):
@@ -151,10 +151,22 @@ class BlackFileCommand(sublime_plugin.TextCommand):
         Black(self.view)(edit)
 
 
-class EventListener(sublime_plugin.EventListener):
-    def on_pre_save(self, view):
-        if get_setting(view, "on_save"):
-            view.run_command("black_file")
+# class BlackDiffCommand(sublime_plugin.TextCommand):
+#     """
+#     The "black_document" command formats the current document.
+#     """
+
+#     def is_enabled(self):
+#         return is_python(self.view)
+
+#     def run(self, edit):
+#         Black(self.view)(edit)
+
+
+# class EventListener(sublime_plugin.EventListener):
+#     def on_pre_save(self, view):
+#         if get_setting(view, "on_save"):
+#             view.run_command("black_file")
 
 
 def get_setting(view, key, default_value=None):
