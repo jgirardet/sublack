@@ -76,6 +76,7 @@ Changelog
 	- add black_diff keymap
 	- add fast setting
 	- refactor code
+	- do nothing if already formated and show "already formated" in statusbar
 1.3.4:
 	- Format sublack with Black (#8, thanks to `mschneiderwind <https://github.com/mschneiderwind>`_)
 1.3.3:

@@ -57,10 +57,6 @@ def get_encoding_from_file(view):
     return None
 
 
-def get_config(view):
-    return {i: get_setting(view, i) for i in CONFIG_OPTIONS}
-
-
 class Black:
     """
     This class wraps Back invocation
@@ -68,7 +64,7 @@ class Black:
 
     def __init__(self, view):
         self.view = view
-        self.config = get_config(view)
+        self.config = {i: get_setting(view, i) for i in CONFIG_OPTIONS}
 
     def get_command_line(self, edit, extra=[]):
         # prepare popen arguments
@@ -124,7 +120,7 @@ class Black:
         if encoding == "Undefined":
             encoding = get_encoding_from_file(self.view)
         if not encoding:
-            encoding = get_setting(self.view, "default_encoding", "utf-8")
+            encoding = self.config["default_encoding"]
 
         # select the whole file en encode it
         # encoding in popen starts with python 3.6
@@ -169,26 +165,27 @@ class Black:
         content, all_file, encoding = self.get_content()
         returncode, out, err = self.run_black(cmd, env, content)
 
+        error_message = err.decode(encoding)
+
+        # logging
+        if get_setting(self.view, "debug_on"):
+            print("[SUBLACK] : %s" % error_message)
+
         # failure
         if returncode != 0:
-            print("[SUBLACK] Black did not run succesfully: %s" % err.decode(encoding))
             return
 
-        # diff mode
-        if "--diff" in extra:
-            if out:
-                self.do_diff(edit, out, encoding)
+        # already formated, nothing changes
+        elif "already well formatted, good job" in error_message:
+            sublime.status_message("Sublack: %s" % error_message)
 
-            else:
-                sublime.status_message("Sublack: %s" % err.decode(encoding))
+        # diff mode
+        elif "--diff" in extra:
+            self.do_diff(edit, out, encoding)
 
         # standard mode
         else:
             self.view.replace(edit, all_file, out.decode(encoding))
-
-        # logging
-        if get_setting(self.view, "debug_on"):
-            print("[SUBLACK] : %s" % err.decode(encoding))
 
 
 def is_python(view):
@@ -218,10 +215,7 @@ class BlackDiffCommand(sublime_plugin.TextCommand):
         return is_python(self.view)
 
     def run(self, edit):
-        for i in ["black_command", "on_save", "line_length", "fast", "debug_on"]:
-            print(get_setting(self.view, i))
-
-        if get_setting(self.view, "debug"):
+        if get_setting(self.view, "debug_on"):
             print("[SUBLACK] : run black_diff")
         Black(self.view)(edit, extra=["--diff"])
 

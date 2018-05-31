@@ -18,7 +18,7 @@
       "debug_on": false,
 
       // default encoding for never saved file, if not specified un  first 2 lines (pep 263):
-      // default is "utf-8". uncomment and change this only if you want override default behaviour.
-      // "default_encoding": "utf-8",
+      // default is "utf-8". Change this only if you want override default behaviour.
+      "default_encoding": "utf-8",
 
 }
