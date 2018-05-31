@@ -77,9 +77,13 @@ class Black:
         if line_length is not None:
             cmd.extend(["-l", str(line_length)])
 
-        # addionnal args
+        # extra args
         if extra:
             cmd.extend(extra)
+
+        # fast
+        if get_setting(self.view, "fast"):
+            cmd.append("--fast")
 
         # win32: hide console window
         if sys.platform in ("win32", "cygwin"):
@@ -91,6 +95,7 @@ class Black:
         else:
             self.popen_startupinfo = None
 
+        print(cmd)
         return cmd
 
     def get_env(self):
@@ -193,7 +198,7 @@ class BlackFileCommand(sublime_plugin.TextCommand):
 
 class BlackDiffCommand(sublime_plugin.TextCommand):
     """
-    The "black_document" command formats the current document.
+    The "black_diff" command show a diff of the current document.
     """
 
     def is_enabled(self):
