@@ -4,5 +4,11 @@
             "ctrl+alt+f"
         ],
         "command": "black_file"
+    },    
+    {
+        "keys": [
+            "ctrl+alt+shift+f"
+        ],
+        "command": "black_diff"
     },
 ]

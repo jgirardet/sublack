@@ -56,8 +56,7 @@ class Black:
     def __init__(self, view):
         self.view = view
 
-    def __call__(self, edit):
-
+    def get_command_line(self, edit, extra=[]):
         # prepare popen arguments
         cmd = get_setting(self.view, "black_command")
         if not cmd:
@@ -71,12 +70,16 @@ class Black:
         cmd = sublime.expand_variables(cmd, sublime.active_window().extract_variables())
 
         # set  black in input/ouput mode with -
-        self.cmd = [cmd, "-"]
+        cmd = [cmd, "-"]
 
         # Line length option
         line_length = get_setting(self.view, "line_length")
         if line_length is not None:
-            self.cmd += ["-l", str(line_length)]
+            cmd.extend(["-l", str(line_length)])
+
+        # addionnal args
+        if extra:
+            cmd.extend(extra)
 
         # win32: hide console window
         if sys.platform in ("win32", "cygwin"):
@@ -88,6 +91,17 @@ class Black:
         else:
             self.popen_startupinfo = None
 
+        return cmd
+
+    def get_env(self):
+        # modifying the locale is necessary to keep the click library happy on OSX
+        env = os.environ.copy()
+        if locale.getdefaultlocale() == (None, None):
+            if platform.system() == "Darwin":
+                env["LC_CTYPE"] = "UTF-8"
+        return env
+
+    def get_content(self):
         # get encoding of current file
         encoding = self.view.encoding()
         if encoding == "Undefined":
@@ -101,15 +115,13 @@ class Black:
         content = self.view.substr(all_file)
         content = content.encode(encoding)
 
-        # modifying the locale is necessary to keep the click library happy on OSX
-        env = os.environ.copy()
-        if locale.getdefaultlocale() == (None, None):
-            if platform.system() == "Darwin":
-                env["LC_CTYPE"] = "UTF-8"
+        return content, all_file, encoding
+
+    def run_black(self, cmd, env, content):
 
         try:
             p = subprocess.Popen(
-                self.cmd,
+                cmd,
                 env=env,
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
@@ -123,16 +135,43 @@ class Black:
                 "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
             )
             sublime.error_message("OSError: %s\n\n%s" % (err, msg))
-            return
 
-        if p.returncode == 0:
-            self.view.replace(edit, all_file, out.decode(encoding))
-            if get_setting(self.view, "debug"):
-                print("[SUBLACK] : %s" % err.decode(encoding))
+        return p.returncode, out, err
 
-        else:
+    def do_diff(self, edit, out, encoding):
+        window = sublime.active_window()
+        f = window.new_file()
+        f.set_scratch(True)
+        f.set_name("sublack diff %s" % self.view.file_name().split("/")[-1])
+        f.insert(edit, 0, out.decode(encoding))
+
+    def __call__(self, edit, extra=[]):
+
+        cmd = self.get_command_line(edit, extra)
+        env = self.get_env()
+        content, all_file, encoding = self.get_content()
+        returncode, out, err = self.run_black(cmd, env, content)
+
+        # failure
+        if returncode != 0:
             print("[SUBLACK] Black did not run succesfully: %s" % err.decode(encoding))
             return
+
+        # diff mode
+        if "--diff" in extra:
+            if out:
+                self.do_diff(edit, out, encoding)
+
+            else:
+                sublime.status_message("Sublack: %s" % err.decode(encoding))
+
+        # standard mode
+        else:
+            self.view.replace(edit, all_file, out.decode(encoding))
+
+        # logging
+        if get_setting(self.view, "debug"):
+            print("[SUBLACK] : %s" % err.decode(encoding))
 
 
 def is_python(view):
@@ -148,25 +187,27 @@ class BlackFileCommand(sublime_plugin.TextCommand):
         return is_python(self.view)
 
     def run(self, edit):
+        print("[SUBLACK] : run black_file")
         Black(self.view)(edit)
 
 
-# class BlackDiffCommand(sublime_plugin.TextCommand):
-#     """
-#     The "black_document" command formats the current document.
-#     """
+class BlackDiffCommand(sublime_plugin.TextCommand):
+    """
+    The "black_document" command formats the current document.
+    """
 
-#     def is_enabled(self):
-#         return is_python(self.view)
+    def is_enabled(self):
+        return is_python(self.view)
 
-#     def run(self, edit):
-#         Black(self.view)(edit)
+    def run(self, edit):
+        print("[SUBLACK] : run black_diff")
+        Black(self.view)(edit, extra=["--diff"])
 
 
-# class EventListener(sublime_plugin.EventListener):
-#     def on_pre_save(self, view):
-#         if get_setting(view, "on_save"):
-#             view.run_command("black_file")
+class EventListener(sublime_plugin.EventListener):
+    def on_pre_save(self, view):
+        if get_setting(view, "on_save"):
+            view.run_command("black_file")
 
 
 def get_setting(view, key, default_value=None):

@@ -1,6 +1,10 @@
 [
     {
-        "caption": "sublack: Format file",
+        "caption": "Sublack: Format file",
         "command": "black_file"
+    },    
+    {
+        "caption": "Sublack: Diff file",
+        "command": "black_diff"
     },
 ]
