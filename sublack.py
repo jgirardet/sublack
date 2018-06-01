@@ -145,11 +145,23 @@ class Black:
             )
             out, err = p.communicate(input=content)
 
-        except OSError as err:
+        except UnboundLocalError as err:  # unboud pour p si popen echoue
             msg = (
                 "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
             )
             sublime.error_message("OSError: %s\n\n%s" % (err, msg))
+            raise OSError(
+                "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
+            )
+
+        except OSError as err:  # unboud pour p si popen echoue
+            msg = (
+                "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
+            )
+            sublime.error_message("OSError: %s\n\n%s" % (err, msg))
+            raise OSError(
+                "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
+            )
 
         return p.returncode, out, err
 
@@ -157,7 +169,7 @@ class Black:
         window = sublime.active_window()
         f = window.new_file()
         f.set_scratch(True)
-        f.set_name("sublack diff %s" % self.view.file_name().split("/")[-1])
+        f.set_name("sublack diff %s" % self.view.name())
         f.insert(edit, 0, out.decode(encoding))
 
     def __call__(self, edit, extra=[]):
@@ -170,7 +182,7 @@ class Black:
         error_message = err.decode(encoding)
 
         # logging
-        if get_setting(self.view, "debug_on"):
+        if self.config["debug_on"]:
             print("[SUBLACK] : %s" % error_message)
 
         # failure

@@ -41,6 +41,29 @@ def get_encoding_from_file( view):
 """.strip()
 )
 
+diff = (
+    """
+--- <stdin>  (original)
++++ <stdin>  (formatted)
+@@ -1,11 +1,12 @@
+-def get_encoding_from_file( view):
++def get_encoding_from_file(view):
+ 
+-    region = view.line( sublime.Region(0))
++    region = view.line(sublime.Region(0))
+ 
+-    encoding = get_encoding_from_region( region, view)
++    encoding = get_encoding_from_region(region, view)
+     if encoding:
+         return encoding
+     else:
+         encoding = get_encoding_from_region(view.line(region.end() + 1), view)
+         return encoding
+     return None
++
+""".strip()
+)
+
 
 @patch.object(sublack, "is_python", return_value=True)
 class TestHBlack(TestCase):
@@ -80,6 +103,18 @@ class TestHBlack(TestCase):
         self.view.run_command("black_file")
         self.assertTrue(self.view.is_dirty())
         self.assertEqual(blacked, self.all())
+
+    def test_do_diff(self, s):
+        self.setText(unblacked)
+        self.view.set_name("base")
+        backup = self.view
+        self.view.run_command("black_diff")
+        w = sublime.active_window()
+        self.view = w.active_view()
+        res = self.all()
+        self.assertEqual(res, diff)
+        self.view.close()
+        self.view = backup
 
 
 class TestBlackMethod(TestCase):
@@ -139,6 +174,28 @@ class TestBlackMethod(TestCase):
         s.view.substr.return_value = "héllo"
         c, e = gc(s)
         self.assertEqual(c.decode("utf-8"), "héllo")
+
+    def test_run_black(self):
+        rb = sublack.Black.run_black
+        s = MagicMock()
+        s.windows_popen_prepare.return_value = None
+        a = rb(s, ["black", "-"], os.environ.copy(), "hello".encode())
+        self.assertEqual(a[0], 0)
+        self.assertEqual(a[1], b"hello\n")
+        self.assertEqual(a[2], b"reformatted -\n")
+
+        with patch.object(sublack, "sublime") as m:
+            s.windows_popen_prepare.side_effect = OSError
+            try:
+                a = rb(s, ["black", "-"], os.environ.copy(), "hello".encode())
+            except OSError as e:
+                self.assertEqual(
+                    str(e),
+                    "You may need to install Black and/or configure 'black_command' in Sublack's Settings.",
+                )
+
+    def test_call(self):
+        pass
 
 
 class TestFunctions(TestCase):
