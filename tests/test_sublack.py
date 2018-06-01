@@ -2,20 +2,47 @@ import sublime
 import sys
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
+import os
 
 version = sublime.version()
 
 sublack = sys.modules["sublack.sublack"]
 
-fixture = """
-class BlackFileCommand(sublime_plugin.TextCommand):
-    a = bla
 
-    def get_content(self):
-        encoding = self.view.encoding()
-"""
+blacked = (
+    """
+def get_encoding_from_file(view):
+
+    region = view.line(sublime.Region(0))
+
+    encoding = get_encoding_from_region(region, view)
+    if encoding:
+        return encoding
+    else:
+        encoding = get_encoding_from_region(view.line(region.end() + 1), view)
+        return encoding
+    return None
+""".strip()
+)
+
+unblacked = (
+    """
+def get_encoding_from_file( view):
+
+    region = view.line( sublime.Region(0))
+
+    encoding = get_encoding_from_region( region, view)
+    if encoding:
+        return encoding
+    else:
+        encoding = get_encoding_from_region(view.line(region.end() + 1), view)
+        return encoding
+    return None
+""".strip()
+)
 
 
+@patch.object(sublack, "is_python", return_value=True)
 class TestHBlack(TestCase):
     def setUp(self):
         self.view = sublime.active_window().new_file()
@@ -30,34 +57,88 @@ class TestHBlack(TestCase):
             self.view.window().focus_view(self.view)
             self.view.window().run_command("close_file")
 
-    def setText(self, string):
-        self.view.run_command("insert", {"characters": string})
-
-
-#     def getRow(self, row):
-#         return self.view.substr(self.view.line(self.view.text_point(row, 0)))
-
-#     # since ST3 uses python 2 and python 2 doesn't support @unittest.skip,
-#     # we have to do primitive skipping
-#     if version >= '3000':
-
-    def test_put(self):
-        a = "dazdazdazdazd"
-        self.setText(fixture)
+    def all(self):
         all_file = sublime.Region(0, self.view.size())
-        content = self.view.substr(all_file)
-        self.assertEqual(fixture, content.rstrip(' '))
+        return self.view.substr(all_file).strip()
 
-    # def test_hello_world_st3(self):
-    #     self.view.run_command("hello_world")
-    #     first_row = self.getRow(0)
-    #     self.assertEqual(first_row, "hello world")
+    def setText(self, string):
+        self.view.run_command("append", {"characters": string})
 
-#     def test_hello_world(self):
-#         self.setText("new ")
-#         self.view.run_command("hello_world")
-#         first_row = self.getRow(0)
-#         self.assertEqual(first_row, "new hello world")
+    def test_blacked(self, s):
+        self.setText(unblacked)
+        self.view.run_command("black_file")
+        self.assertEqual(blacked, self.all())
+
+    def test_nothing_todo(self, s):
+        self.setText(blacked)
+        self.view.run_command("black_file")
+        self.assertEqual(blacked, self.all())
+
+    def test_dirty_stay_dirty(self, s):
+        self.setText(blacked)
+        self.assertTrue(self.view.is_dirty())
+        self.view.run_command("black_file")
+        self.assertTrue(self.view.is_dirty())
+        self.assertEqual(blacked, self.all())
+
+
+class TestBlackMethod(TestCase):
+    def test_get_command_line(self):
+        gcl = sublack.Black.get_command_line
+        v = MagicMock()
+        s = MagicMock()
+        s.config = {"black_command": "black", "line_length": None, "fast": False}
+        a = gcl(s, v)
+        self.assertEqual(a, ["black", "-"])
+        s.config = {"black_command": "black", "line_length": 90, "fast": True}
+        a = gcl(s, v)
+        self.assertEqual(a, ["black", "-", "-l", "90", "--fast"])
+        a = gcl(s, v, extra=["--diff"])
+        self.assertEqual(a, ["black", "-", "-l", "90", "--fast", "--diff"])
+
+    def test_windows_prepare(self):
+        with patch.object(sublack, "sys") as m:
+            m.platform = "Linux"
+            wop = sublack.Black.windows_popen_prepare
+            self.assertFalse(wop("r"))
+
+    def test_get_env(self):
+        ge = sublack.Black.get_env
+        env = os.environ.copy()
+        with patch.object(sublack, "platform") as m:
+            m.system = "Linux"
+            self.assertEqual(env, ge(True))
+        with patch.object(sublack.platform, "system", return_value="Darwin") as m:
+            with patch.object(
+                sublack.locale, "getdefaultlocale", return_value=(None, None)
+            ):
+                env["LC_CTYPE"] = "UTF-8"
+                self.assertEqual(env, ge(True))
+
+    def test_get_content_encoding(self):
+        gc = sublack.Black.get_content
+        s = MagicMock()
+        s.view.encoding.return_value = "utf-32"
+        c, e = gc(s)
+        self.assertEqual(e, "utf-32")
+
+        s.view.encoding.return_value = "Undefined"
+        with patch.object(sublack, "get_encoding_from_file", return_value="utf-16"):
+            c, e = gc(s)
+            self.assertEqual(e, "utf-16")
+
+        s.config = {"default_encoding": "latin-1"}
+        s.view.encoding.return_value = None
+        c, e = gc(s)
+        self.assertEqual(e, "latin-1")
+
+    def test_get_content_content(self):
+        gc = sublack.Black.get_content
+        s = MagicMock()
+        s.view.encoding.return_value = "utf-8"
+        s.view.substr.return_value = "héllo"
+        c, e = gc(s)
+        self.assertEqual(c.decode("utf-8"), "héllo")
 
 
 class TestFunctions(TestCase):
@@ -77,3 +158,11 @@ class TestFunctions(TestCase):
         m.side_effect = [None, "deuxieme ligne"]
         e = sublack.get_encoding_from_file(MagicMock())
         self.assertEqual(e, "deuxieme ligne")
+
+
+"""
+Todo
+------
+
+- windows prepare on windows test_env
+"""

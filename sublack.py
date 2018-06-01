@@ -65,6 +65,7 @@ class Black:
     def __init__(self, view):
         self.view = view
         self.config = {i: get_setting(view, i) for i in CONFIG_OPTIONS}
+        self.all = sublime.Region(0, self.view.size())
 
     def get_command_line(self, edit, extra=[]):
         # prepare popen arguments
@@ -86,25 +87,27 @@ class Black:
         if self.config["line_length"] is not None:
             cmd.extend(["-l", str(self.config["line_length"])])
 
-        # extra args
-        if extra:
-            cmd.extend(extra)
-
         # fast
         if self.config["fast"]:
             cmd.append("--fast")
 
-        # win32: hide console window
-        if sys.platform in ("win32", "cygwin"):
-            self.popen_startupinfo = subprocess.STARTUPINFO()
-            self.popen_startupinfo.dwFlags = (
-                subprocess.CREATE_NEW_CONSOLE | subprocess.STARTF_USESHOWWINDOW
-            )
-            self.popen_startupinfo.wShowWindow = subprocess.SW_HIDE
-        else:
-            self.popen_startupinfo = None
+        # extra args
+        if extra:
+            cmd.extend(extra)
 
         return cmd
+
+    def windows_popen_prepare(self):
+        # win32: hide console window
+        if sys.platform in ("win32", "cygwin"):
+            startup_info = subprocess.STARTUPINFO()
+            startup_info.dwFlags = (
+                subprocess.CREATE_NEW_CONSOLE | subprocess.STARTF_USESHOWWINDOW
+            )
+            startup_info.wShowWindow = subprocess.SW_HIDE
+        else:
+            startup_info = None
+        return startup_info
 
     def get_env(self):
         # modifying the locale is necessary to keep the click library happy on OSX
@@ -124,11 +127,10 @@ class Black:
 
         # select the whole file en encode it
         # encoding in popen starts with python 3.6
-        all_file = sublime.Region(0, self.view.size())
-        content = self.view.substr(all_file)
+        content = self.view.substr(self.all)
         content = content.encode(encoding)
 
-        return content, all_file, encoding
+        return content, encoding
 
     def run_black(self, cmd, env, content):
 
@@ -139,7 +141,7 @@ class Black:
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                startupinfo=self.popen_startupinfo,
+                startupinfo=self.windows_popen_prepare(),
             )
             out, err = p.communicate(input=content)
 
@@ -162,7 +164,7 @@ class Black:
 
         cmd = self.get_command_line(edit, extra)
         env = self.get_env()
-        content, all_file, encoding = self.get_content()
+        content, encoding = self.get_content()
         returncode, out, err = self.run_black(cmd, env, content)
 
         error_message = err.decode(encoding)
@@ -173,7 +175,7 @@ class Black:
 
         # failure
         if returncode != 0:
-            return
+            return returncode
 
         # already formated, nothing changes
         elif "already well formatted, good job" in error_message:
@@ -185,7 +187,7 @@ class Black:
 
         # standard mode
         else:
-            self.view.replace(edit, all_file, out.decode(encoding))
+            self.view.replace(edit, self.all, out.decode(encoding))
 
 
 def is_python(view):
