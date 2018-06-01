@@ -28,7 +28,7 @@ CONFIG_OPTIONS = [
     "line_length",
     "fast",
     "debug_on",
-    "encoding",
+    "default_encoding",
 ]
 
 
