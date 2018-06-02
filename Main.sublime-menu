@@ -13,21 +13,18 @@
                         "caption": "sublack",
                         "children": [
                             {
-                                "caption": "Settings – Default",
+                                "caption": "Settings",
+                                "command": "edit_settings",
                                 "args": {
-                                    "file": "${packages}/sublack/sublack.sublime-settings"
+                                    "base_file": "${packages}/sublack/sublack.sublime-settings"
                                 },
-                                "command": "open_file"
                             },
                             {
-                                "caption": "Settings – User",
+                                "caption": "Key Bindings",
+                                "command": "edit_settings",
                                 "args": {
-                                    "file": "${packages}/User/sublack.sublime-settings"
+                                    "base_file": "${packages}/sublack/Default ($platform).sublime-keymap"
                                 },
-                                "command": "open_file"
-                            },
-                            {
-                                "caption": "-"
                             }
                         ]
                     }
