@@ -195,7 +195,30 @@ class TestBlackMethod(TestCase):
                 )
 
     def test_call(self):
-        pass
+        c = sublack.Black.__call__
+        s = MagicMock()
+        s.get_content.return_value = (1, "utf-8")
+
+        # standard
+        s.run_black.return_value = (0, b"hello\n", b"reformatted")
+        c(s, "edit")
+        s.view.replace.assert_called_with("edit", s.all, "hello\n")
+
+        # failure
+        s.reset_mock()
+        s.run_black.return_value = (1, b"hello\n", b"reformatted")
+        a = c(s, "edit")
+        self.assertEqual(a, 1)
+
+        # alreadyformatted
+        s.reset_mock()
+        s.run_black.return_value = (0, b"hello\n", b"already well formatted, good job")
+        with patch.object(sublack, "sublime") as m:
+            c(s, "edit")
+            # self.assertFalse(m.mock_calls)
+            m.status_message.assert_called_with(
+                "Sublack: already well formatted, good job"
+            )
 
 
 class TestFunctions(TestCase):
