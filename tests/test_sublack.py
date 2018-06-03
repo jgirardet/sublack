@@ -77,31 +77,50 @@ class TestBlackMethod(TestCase):
         gcl = sublack.Black.get_command_line
         v = MagicMock()
         s = MagicMock()
-        s.config = {"black_command": "black", "line_length": None, "fast": False}
+        s.config = {
+            "black_command": "black",
+            "black_line_length": None,
+            "black_fast": False,
+        }
         a = gcl(s, v)
         self.assertEqual(a, ["black", "-"])
-        s.config = {"black_command": "black", "line_length": 90, "fast": True}
+        s.config = {
+            "black_command": "black",
+            "black_line_length": 90,
+            "black_fast": True,
+        }
         a = gcl(s, v)
         self.assertEqual(a, ["black", "-", "-l", "90", "--fast"])
         a = gcl(s, v, extra=["--diff"])
         self.assertEqual(a, ["black", "-", "-l", "90", "--fast", "--diff"])
 
     def test_windows_prepare(self):
-        with patch.object(sublack, "sys") as m:
-            m.platform = "Linux"
+        with patch.object(sublack, "sublime") as m:
+            m.platform.return_value = "linux"
             wop = sublack.Black.windows_popen_prepare
             self.assertFalse(wop("r"))
+        with patch.object(sublack, "sublime") as m:
+            with patch.object(sublack, "subprocess"):
+                m.platform.return_value = "windows"
+                wop = sublack.Black.windows_popen_prepare
+                self.assertTrue(wop("r"))
 
     def test_get_env(self):
         ge = sublack.Black.get_env
         env = os.environ.copy()
-        with patch.object(sublack, "platform") as m:
-            m.system = "Linux"
+
+        with patch.object(sublack.locale, "getdefaultlocale", return_value=1):
             self.assertEqual(env, ge(True))
-        with patch.object(sublack.platform, "system", return_value="Darwin") as m:
-            with patch.object(
-                sublack.locale, "getdefaultlocale", return_value=(None, None)
-            ):
+
+        with patch.object(
+            sublack.locale, "getdefaultlocale", return_value=(None, None)
+        ):
+            with patch.object(sublack, "sublime") as m:
+                m.platform.return_value = "linux"
+                self.assertDictEqual(env, ge(True))
+
+            with patch.object(sublack, "sublime") as m:
+                m.platform.return_value = "osx"
                 env["LC_CTYPE"] = "UTF-8"
                 self.assertEqual(env, ge(True))
 
@@ -117,7 +136,7 @@ class TestBlackMethod(TestCase):
             c, e = gc(s)
             self.assertEqual(e, "utf-16")
 
-        s.config = {"default_encoding": "latin-1"}
+        s.config = {"black_default_encoding": "latin-1"}
         s.view.encoding.return_value = None
         c, e = gc(s)
         self.assertEqual(e, "latin-1")
@@ -139,7 +158,7 @@ class TestBlackMethod(TestCase):
         self.assertEqual(a[1], b"hello\n")
         self.assertEqual(a[2], b"reformatted -\n")
 
-        with patch.object(sublack, "sublime") as m:
+        with patch.object(sublack, "sublime"):
             s.windows_popen_prepare.side_effect = OSError
             try:
                 a = rb(s, ["black", "-"], os.environ.copy(), "hello".encode())
@@ -193,8 +212,6 @@ class TestFunctions(TestCase):
     def test_get_settings(self):
         # setup
         gs = sublack.get_setting
-        w = sublime.active_window()
-        project = w.project_data()
         v = sublime.active_window().active_view()
 
         s = sublime.load_settings(sublack.PLUGIN_SETTINGS_FILE)

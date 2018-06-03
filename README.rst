@@ -76,6 +76,9 @@ This plugin is very inspired by the very good `PyYapf <https://github.com/jason-
 Changelog
 -----------
 
+1.5.0:
+	- 
+	- various fix, on_save(`#9 <https://github.com/wbond/package_control_channel/pull/7061>`_, thanks to `Thom1729  <https://github.com/Thom1729 >`_)
 1.4.1:
 	- add tests
 	- Improve Settings menu entry and add Key Bindings menu entry(`#9 <https://github.com/jgirardet/sublack/pull/9>`_, thanks to `catch22 <https://github.com/catch22>`_)

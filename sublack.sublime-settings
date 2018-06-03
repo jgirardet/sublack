@@ -3,22 +3,22 @@
       "black_command": "black",
 
       // run black before saving document
-      "on_save": false,
+      "black_on_save": false,
 
       // line length
       // uses black default, if not modified
-      "line_length": null,
+      "black_line_length": null,
 
       // If --fast given, skip temporary sanity checks.
-      "fast": false,
+      "black_fast": false,
       
       //debug mode
       // show black log in console
       // errors are always shown
-      "debug_on": false,
+      "black_debug_on": false,
 
       // default encoding for never saved file, if not specified un  first 2 lines (pep 263):
       // default is "utf-8". Change this only if you want override default behaviour.
-      "default_encoding": "utf-8",
+      "black_default_encoding": "utf-8",
 
 }

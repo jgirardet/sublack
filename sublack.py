@@ -6,16 +6,11 @@ Sublime Text 3 Plugin to invoke Black on a Python file.
 import locale
 import os
 import subprocess
-import sys
-import platform
 import re
 
 import sublime
 import sublime_plugin
 
-
-SUBLIME_3 = sys.version_info >= (3, 0)
-KEY = "sublack"
 
 PLUGIN_SETTINGS_FILE = "sublack.sublime-settings"
 SUBLIME_SETTINGS_KEY = "sublack"
@@ -24,17 +19,17 @@ ENCODING_PATTERN = r"^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)"
 
 CONFIG_OPTIONS = [
     "black_command",
-    "on_save",
-    "line_length",
-    "fast",
-    "debug_on",
-    "default_encoding",
+    "black_on_save",
+    "black_line_length",
+    "black_fast",
+    "black_debug_on",
+    "black_default_encoding",
 ]
 
 
 def get_setting(view, key, default_value=None):
     # 1. check sublime settings (this includes project settings)
-    settings = sublime.active_window().active_view().settings()
+    settings = view.settings()
     config = settings.get(SUBLIME_SETTINGS_KEY)
     if config is not None and key in config:
         return config[key]
@@ -90,17 +85,17 @@ class Black:
 
         cmd = os.path.expanduser(cmd)
 
-        cmd = sublime.expand_variables(cmd, sublime.active_window().extract_variables())
+        cmd = sublime.expand_variables(cmd, self.view.window().extract_variables())
 
         # set  black in input/ouput mode with -
         cmd = [cmd, "-"]
 
         # Line length option
-        if self.config["line_length"] is not None:
-            cmd.extend(["-l", str(self.config["line_length"])])
+        if self.config["black_line_length"] is not None:
+            cmd.extend(["-l", str(self.config["black_line_length"])])
 
         # fast
-        if self.config["fast"]:
+        if self.config["black_fast"]:
             cmd.append("--fast")
 
         # extra args
@@ -111,7 +106,7 @@ class Black:
 
     def windows_popen_prepare(self):
         # win32: hide console window
-        if sys.platform in ("win32", "cygwin"):
+        if sublime.platform() == "windows":
             startup_info = subprocess.STARTUPINFO()
             startup_info.dwFlags = (
                 subprocess.CREATE_NEW_CONSOLE | subprocess.STARTF_USESHOWWINDOW
@@ -125,7 +120,7 @@ class Black:
         # modifying the locale is necessary to keep the click library happy on OSX
         env = os.environ.copy()
         if locale.getdefaultlocale() == (None, None):
-            if platform.system() == "Darwin":
+            if sublime.platform() == "osx":
                 env["LC_CTYPE"] = "UTF-8"
         return env
 
@@ -135,7 +130,7 @@ class Black:
         if encoding == "Undefined":
             encoding = get_encoding_from_file(self.view)
         if not encoding:
-            encoding = self.config["default_encoding"]
+            encoding = self.config["black_default_encoding"]
 
         # select the whole file en encode it
         # encoding in popen starts with python 3.6
@@ -178,7 +173,7 @@ class Black:
         return p.returncode, out, err
 
     def do_diff(self, edit, out, encoding):
-        window = sublime.active_window()
+        window = self.view.window()
         f = window.new_file()
         f.set_scratch(True)
         f.set_name("sublack diff %s" % self.view.name())
@@ -194,7 +189,7 @@ class Black:
         error_message = err.decode(encoding)
 
         # logging
-        if self.config["debug_on"]:
+        if self.config["black_debug_on"]:
             print("[SUBLACK] : %s" % error_message)
 
         # failure
@@ -227,7 +222,7 @@ class BlackFileCommand(sublime_plugin.TextCommand):
         return is_python(self.view)
 
     def run(self, edit):
-        if get_setting(self.view, "debug_on"):
+        if get_setting(self.view, "black_debug_on"):
             print("[SUBLACK] : run black_file")
         Black(self.view)(edit)
 
@@ -241,12 +236,12 @@ class BlackDiffCommand(sublime_plugin.TextCommand):
         return is_python(self.view)
 
     def run(self, edit):
-        if get_setting(self.view, "debug_on"):
+        if get_setting(self.view, "black_debug_on"):
             print("[SUBLACK] : run black_diff")
         Black(self.view)(edit, extra=["--diff"])
 
 
 class EventListener(sublime_plugin.EventListener):
-    def on_pre_save(self, view):
-        if get_setting(view, "on_save"):
+    def on_pre_save_async(self, view):
+        if get_setting(view, "black_on_save"):
             view.run_command("black_file")
