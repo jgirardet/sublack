@@ -4,6 +4,8 @@ environment:
     SUBLIME_TEXT_VERSION : "3"
 
 install:
+    - "SET PYTHON=C:\\Python36"
+    - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
     - pip install black
     - ps: appveyor DownloadFile "https://raw.githubusercontent.com/SublimeText/UnitTesting/master/sbin/appveyor.ps1"
     - ps: .\appveyor.ps1 "bootstrap" -verbose
@@ -18,7 +20,5 @@ test_script:
     - ps: .\appveyor.ps1 "run_tests" -coverage -verbose
 
 after_test:
-    - "SET PYTHON=C:\\Python33"
-    - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
     - pip install codecov
     - codecov
