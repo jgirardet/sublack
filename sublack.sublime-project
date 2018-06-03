@@ -1,4 +1,3 @@
-// Required to keep for testing purpose
 {
 	"build_systems":
 	[
@@ -6,6 +5,12 @@
 			"name": "Test Current file",
 			"target": "unit_testing_current_file"
 		},
+		{
+			"file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
+			"name": "Anaconda Python Builder",
+			"selector": "source.python",
+			"shell_cmd": "\"python\" -u \"$file\""
+		}
 	],
 	"folders":
 	[
@@ -18,7 +23,7 @@
 		"sublack":
 		{
 			"debug_on": true,
-			"on_save": true,
+			"on_save": true
 		}
 	}
 }

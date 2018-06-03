@@ -71,6 +71,9 @@ This plugin is very inspired by the very good `PyYapf <https://github.com/jason-
 Changelog
 -----------
 
+1.4.1:
+	- add tests
+	- Improve Settings menu entry and add Key Bindings menu entry(`#9 <https://github.com/jgirardet/sublack/pull/9>`_, thanks to `catch22 <https://github.com/catch22>`_)
 1.4.0:
 	- add black_diff command
 	- add black_diff keymap
@@ -78,7 +81,7 @@ Changelog
 	- refactor code
 	- do nothing if already formated and show "already formated" in statusbar
 1.3.4:
-	- Format sublack with Black (#8, thanks to `mschneiderwind <https://github.com/mschneiderwind>`_)
+	- Format sublack with Black (`#8 <https://github.com/jgirardet/sublack/pull/8>`_, thanks to `mschneiderwind <https://github.com/mschneiderwind>`_)
 1.3.3:
 	- Fix encoding if not given by SublimeText.
 1.3.2:
