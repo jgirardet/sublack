@@ -10,8 +10,7 @@ env:
 matrix:
     include:
         - os: linux
-          language: python
-          python: 3.6
+          language: python: 3.6
         - os: osx
           language: generic
 
