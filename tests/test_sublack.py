@@ -200,11 +200,11 @@ class TestFunctions(TestCase):
         s = sublime.load_settings(sublack.PLUGIN_SETTINGS_FILE)
 
         # defaul sublack Settings
-        self.assertEqual(gs(v, "black_command"), s.get("black_command"))
+        self.assertEqual(gs(v, "default_encoding"), s.get("default_encoding"))
 
         # project
-        self.assertEqual(gs(v, "debug_on"), project["settings"]["sublack"]["debug_on"])
-        project["settings"]["sublack"]["rien"] = "aaa"
+        # self.assertEqual(gs(v, "debug_on"), project["settings"]["sublack"]["debug_on"])
+        # project["settings"]["sublack"]["rien"] = "aaa"
 
         # non key, default proveded
         self.assertEqual(gs(v, "azazeazeaze", "bka"), "bka")

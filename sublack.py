@@ -215,7 +215,7 @@ class Black:
 
 
 def is_python(view):
-    return view.match_selector("source.python")
+    return view.match_selector(0, "source.python")
 
 
 class BlackFileCommand(sublime_plugin.TextCommand):
