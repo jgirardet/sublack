@@ -1,0 +1,24 @@
+// Required to keep for testing purpose
+{
+	"build_systems":
+	[
+		{
+			"name": "Test Current file",
+			"target": "unit_testing_current_file"
+		},
+	],
+	"folders":
+	[
+		{
+			"path": "."
+		}
+	],
+	"settings":
+	{
+		"sublack":
+		{
+			"debug_on": true,
+			"on_save": true,
+		}
+	}
+}

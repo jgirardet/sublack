@@ -65,59 +65,14 @@ diff = (
 )
 
 
-@patch.object(sublack, "is_python", return_value=True)
-class TestHBlack(TestCase):
-    def setUp(self):
-        self.view = sublime.active_window().new_file()
-        # make sure we have a window to work with
-        s = sublime.load_settings("Preferences.sublime-settings")
-        s.set("close_windows_when_empty", False)
-        self.maxDiff = None
-
-    def tearDown(self):
-        if self.view:
-            self.view.set_scratch(True)
-            self.view.window().focus_view(self.view)
-            self.view.window().run_command("close_file")
-
-    def all(self):
-        all_file = sublime.Region(0, self.view.size())
-        return self.view.substr(all_file).strip()
-
-    def setText(self, string):
-        self.view.run_command("append", {"characters": string})
-
-    def test_blacked(self, s):
-        self.setText(unblacked)
-        self.view.run_command("black_file")
-        self.assertEqual(blacked, self.all())
-
-    def test_nothing_todo(self, s):
-        self.setText(blacked)
-        self.view.run_command("black_file")
-        self.assertEqual(blacked, self.all())
-
-    def test_dirty_stay_dirty(self, s):
-        self.setText(blacked)
-        self.assertTrue(self.view.is_dirty())
-        self.view.run_command("black_file")
-        self.assertTrue(self.view.is_dirty())
-        self.assertEqual(blacked, self.all())
-
-    def test_do_diff(self, s):
-        self.setText(unblacked)
-        self.view.set_name("base")
-        backup = self.view
-        self.view.run_command("black_diff")
-        w = sublime.active_window()
-        self.view = w.active_view()
-        res = self.all()
-        self.assertEqual(res, diff)
-        self.view.close()
-        self.view = backup
-
-
 class TestBlackMethod(TestCase):
+    def test_init(self):
+        with patch.object(sublack, "get_setting") as m:
+            # m.side_effect = ["bbbll", "True", "100"]
+            m.return_value = "hello"
+            a = sublack.Black(MagicMock())
+            self.assertEqual(list(a.config.values()), ["hello"] * 6)
+
     def test_get_command_line(self):
         gcl = sublack.Black.get_command_line
         v = MagicMock()
@@ -215,13 +170,45 @@ class TestBlackMethod(TestCase):
         s.run_black.return_value = (0, b"hello\n", b"already well formatted, good job")
         with patch.object(sublack, "sublime") as m:
             c(s, "edit")
-            # self.assertFalse(m.mock_calls)
             m.status_message.assert_called_with(
                 "Sublack: already well formatted, good job"
             )
 
+        # diff alreadyformatted
+        s.reset_mock()
+        s.run_black.return_value = (0, b"hello\n", b"already well formatted, good job")
+        with patch.object(sublack, "sublime") as m:
+            c(s, "edit", ["--diff"])
+            m.status_message.assert_called_with(
+                "Sublack: already well formatted, good job"
+            )
+        # diff
+        s.reset_mock()
+        s.run_black.return_value = (0, b"hello\n", b"reformatted")
+        c(s, "edit", ["--diff"])
+        s.do_diff.assert_called_with("edit", b"hello\n", "utf-8")
+
 
 class TestFunctions(TestCase):
+    def test_get_settings(self):
+        # setup
+        gs = sublack.get_setting
+        w = sublime.active_window()
+        project = w.project_data()
+        v = sublime.active_window().active_view()
+
+        s = sublime.load_settings(sublack.PLUGIN_SETTINGS_FILE)
+
+        # defaul sublack Settings
+        self.assertEqual(gs(v, "black_command"), s.get("black_command"))
+
+        # project
+        self.assertEqual(gs(v, "debug_on"), project["settings"]["sublack"]["debug_on"])
+        project["settings"]["sublack"]["rien"] = "aaa"
+
+        # non key, default proveded
+        self.assertEqual(gs(v, "azazeazeaze", "bka"), "bka")
+
     def test_get_encoding_from_region(self):
         v = MagicMock()
         v.substr.return_value = "mkplpùlùplùplù"
@@ -238,6 +225,58 @@ class TestFunctions(TestCase):
         m.side_effect = [None, "deuxieme ligne"]
         e = sublack.get_encoding_from_file(MagicMock())
         self.assertEqual(e, "deuxieme ligne")
+
+
+@patch.object(sublack, "is_python", return_value=True)
+class TestHBlack(TestCase):
+    def setUp(self):
+        self.view = sublime.active_window().new_file()
+        # make sure we have a window to work with
+        s = sublime.load_settings("Preferences.sublime-settings")
+        s.set("close_windows_when_empty", False)
+        self.maxDiff = None
+
+    def tearDown(self):
+        if self.view:
+            self.view.set_scratch(True)
+            self.view.window().focus_view(self.view)
+            self.view.window().run_command("close_file")
+
+    def all(self):
+        all_file = sublime.Region(0, self.view.size())
+        return self.view.substr(all_file).strip()
+
+    def setText(self, string):
+        self.view.run_command("append", {"characters": string})
+
+    def test_blacked(self, s):
+        self.setText(unblacked)
+        self.view.run_command("black_file")
+        self.assertEqual(blacked, self.all())
+
+    def test_nothing_todo(self, s):
+        self.setText(blacked)
+        self.view.run_command("black_file")
+        self.assertEqual(blacked, self.all())
+
+    def test_dirty_stay_dirty(self, s):
+        self.setText(blacked)
+        self.assertTrue(self.view.is_dirty())
+        self.view.run_command("black_file")
+        self.assertTrue(self.view.is_dirty())
+        self.assertEqual(blacked, self.all())
+
+    def test_do_diff(self, s):
+        self.setText(unblacked)
+        self.view.set_name("base")
+        backup = self.view
+        self.view.run_command("black_diff")
+        w = sublime.active_window()
+        self.view = w.active_view()
+        res = self.all()
+        self.assertEqual(res, diff)
+        self.view.close()
+        self.view = backup
 
 
 """

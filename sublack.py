@@ -32,6 +32,18 @@ CONFIG_OPTIONS = [
 ]
 
 
+def get_setting(view, key, default_value=None):
+    # 1. check sublime settings (this includes project settings)
+    settings = sublime.active_window().active_view().settings()
+    config = settings.get(SUBLIME_SETTINGS_KEY)
+    if config is not None and key in config:
+        return config[key]
+
+    # 2. check plugin settings
+    settings = sublime.load_settings(PLUGIN_SETTINGS_FILE)
+    return settings.get(key, default_value)
+
+
 def get_encoding_from_region(region, view):
     """
     ENCODING_PATTERN is given by PEP 263
@@ -203,7 +215,7 @@ class Black:
 
 
 def is_python(view):
-    return view.score_selector(0, "source.python") > 0
+    return view.match_selector("source.python")
 
 
 class BlackFileCommand(sublime_plugin.TextCommand):
@@ -238,15 +250,3 @@ class EventListener(sublime_plugin.EventListener):
     def on_pre_save(self, view):
         if get_setting(view, "on_save"):
             view.run_command("black_file")
-
-
-def get_setting(view, key, default_value=None):
-    # 1. check sublime settings (this includes project settings)
-    settings = sublime.active_window().active_view().settings()
-    config = settings.get(SUBLIME_SETTINGS_KEY)
-    if config is not None and key in config:
-        return config[key]
-
-    # 2. check plugin settings
-    settings = sublime.load_settings(PLUGIN_SETTINGS_FILE)
-    return settings.get(key, default_value)
