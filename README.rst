@@ -46,20 +46,23 @@ Installation
 Settings
 ---------
 
-* black_command:
+* black_black_command:
 	Set custom location. Default = "black".
 
-* on_save:
+* black_on_save:
 	Black is always run before saving file. Default = false.
 
-* line_length:
+* black_line_length:
 	Set custom line length option used by `Black`_. Default = null which lets black default.
 
-* fast:
+* black_fast:
 	Black fast mode. default is false.
 
-* debug:
+* black_debug_on:
 	Show non error messages in console. Default = false. Error messages are always shown in console.
+
+* black_default_encoding:
+	Should not be changed. Only needed on some OSX platforms.
 
 
 Issues
@@ -77,8 +80,9 @@ Changelog
 -----------
 
 1.5.0:
-	- 
-	- various fix, on_save(`#9 <https://github.com/wbond/package_control_channel/pull/7061>`_, thanks to `Thom1729  <https://github.com/Thom1729 >`_)
+	- All settings are now prefixed with `black_`
+	- use on_pre_save_async
+	- and various fix (`#7061 <https://github.com/wbond/package_control_channel/pull/7061>`_, thanks to `Thom1729  <https://github.com/Thom1729 >`_)
 1.4.1:
 	- add tests
 	- Improve Settings menu entry and add Key Bindings menu entry(`#9 <https://github.com/jgirardet/sublack/pull/9>`_, thanks to `catch22 <https://github.com/catch22>`_)
