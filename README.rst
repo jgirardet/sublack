@@ -19,12 +19,12 @@ Usage
 --------
 
 * Run Black on current file:
-	Press `Ctrl-Alt-F` to format the entire file.
+	Press `Ctrl-Alt-B` to format the entire file.
 	You can also `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Format file`.
 
 
 * Run Black with --diff:
-	Press `Ctrl-Alt-Shift-F` will show diff in a new tab.
+	Press `Ctrl-Alt-Shift-B` will show diff in a new tab.
 	You can also `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Diff file`.
 
 
@@ -37,11 +37,12 @@ Installation
    
 	   pip install black # Requires python 3.6
 
-#. Waiting for PackageControl Entry, install manually by navigating to Sublime's `Packages` folder and cloning this repository::
+#. In PackageControl jsut find `sublack`, and that's it !
 
+or
+
+#. Without PackageControl  install manually by navigating to Sublime's `Packages` folder and cloning this repository::
       git clone https://github.com/jgirardet/sublack.git
-
-.. #.  In PackageControlFind "sublack", and that's it !
 
 Settings
 ---------
@@ -79,6 +80,9 @@ This plugin is very inspired by the very good `PyYapf <https://github.com/jason-
 Changelog
 -----------
 
+1.6.0:
+	- Change keymaps from `f` to `b` (like black oO) due to conflict with Anaconda.
+	- Change installation instruction to use Packagecontrol.
 1.5.0:
 	- All settings are now prefixed with `black_`
 	- use on_pre_save_async
