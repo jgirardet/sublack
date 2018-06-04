@@ -37,11 +37,12 @@ Installation
    
 	   pip install black # Requires python 3.6
 
-#. In PackageControl jsut find `sublack`, and that's it !
+#. In PackageControl just find ``sublack``, and that's it !
 
 or
 
-#. Without PackageControl  install manually by navigating to Sublime's `Packages` folder and cloning this repository::
+Without PackageControl  install manually by navigating to Sublime's `Packages` folder and cloning this repository::
+
       git clone https://github.com/jgirardet/sublack.git
 
 Settings
