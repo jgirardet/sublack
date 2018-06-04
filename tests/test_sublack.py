@@ -25,6 +25,7 @@ def get_encoding_from_file(view):
 """.strip()
 )
 
+
 unblacked = (
     """
 def get_encoding_from_file( view):
