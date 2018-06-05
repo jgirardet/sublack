@@ -170,7 +170,7 @@ class Black:
 
         return p.returncode, out, err
 
-    def do_diff( self, edit, out, encoding):
+    def do_diff(self, edit, out, encoding):
         window = self.view.window()
         f = window.new_file()
         f.set_scratch(True)
@@ -192,6 +192,7 @@ class Black:
 
         # failure
         if returncode != 0:
+            sublime.status_message(error_message)
             return returncode
 
         # already formated, nothing changes
