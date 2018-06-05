@@ -17,6 +17,8 @@ SUBLIME_SETTINGS_KEY = "sublack"
 
 ENCODING_PATTERN = r"^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)"
 
+ALREADY_FORMATED_MESSAGE = "Sublack: already well formated !"
+
 CONFIG_OPTIONS = [
     "black_command",
     "black_on_save",
@@ -153,18 +155,14 @@ class Black:
             out, err = p.communicate(input=content)
 
         except UnboundLocalError as err:  # unboud pour p si popen echoue
-            msg = (
-                "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
-            )
+            msg = "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
             sublime.error_message("OSError: %s\n\n%s" % (err, msg))
             raise OSError(
                 "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
             )
 
         except OSError as err:  # unboud pour p si popen echoue
-            msg = (
-                "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
-            )
+            msg = "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
             sublime.error_message("OSError: %s\n\n%s" % (err, msg))
             raise OSError(
                 "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
@@ -172,7 +170,7 @@ class Black:
 
         return p.returncode, out, err
 
-    def do_diff(self, edit, out, encoding):
+    def do_diff( self, edit, out, encoding):
         window = self.view.window()
         f = window.new_file()
         f.set_scratch(True)
@@ -197,8 +195,8 @@ class Black:
             return returncode
 
         # already formated, nothing changes
-        elif "already well formatted, good job" in error_message:
-            sublime.status_message("Sublack: %s" % error_message)
+        elif "unchanged" in error_message:
+            sublime.status_message(ALREADY_FORMATED_MESSAGE)
 
         # diff mode
         elif "--diff" in extra:

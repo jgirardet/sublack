@@ -9,8 +9,7 @@ version = sublime.version()
 sublack = sys.modules["sublack.sublack"]
 
 
-blacked = (
-    """
+blacked = """
 def get_encoding_from_file(view):
 
     region = view.line(sublime.Region(0))
@@ -23,11 +22,9 @@ def get_encoding_from_file(view):
         return encoding
     return None
 """.strip()
-)
 
 
-unblacked = (
-    """
+unblacked = """
 def get_encoding_from_file( view):
 
     region = view.line( sublime.Region(0))
@@ -40,12 +37,8 @@ def get_encoding_from_file( view):
         return encoding
     return None
 """.strip()
-)
 
-diff = (
-    """
---- <stdin>  (original)
-+++ <stdin>  (formatted)
+diff = """
 @@ -1,11 +1,12 @@
 -def get_encoding_from_file( view):
 +def get_encoding_from_file(view):
@@ -63,7 +56,6 @@ diff = (
      return None
 +
 """.strip()
-)
 
 
 class TestBlackMethod(TestCase):
@@ -157,7 +149,7 @@ class TestBlackMethod(TestCase):
         a = rb(s, ["black", "-"], os.environ.copy(), "hello".encode())
         self.assertEqual(a[0], 0)
         self.assertEqual(a[1], b"hello\n")
-        self.assertEqual(a[2], b"reformatted -\n")
+        self.assertIn(b"reformatted", a[2])
 
         with patch.object(sublack, "sublime"):
             s.windows_popen_prepare.side_effect = OSError
@@ -187,21 +179,17 @@ class TestBlackMethod(TestCase):
 
         # alreadyformatted
         s.reset_mock()
-        s.run_black.return_value = (0, b"hello\n", b"already well formatted, good job")
+        s.run_black.return_value = (0, b"hello\n", b"unchanged")
         with patch.object(sublack, "sublime") as m:
             c(s, "edit")
-            m.status_message.assert_called_with(
-                "Sublack: already well formatted, good job"
-            )
+            m.status_message.assert_called_with(sublack.ALREADY_FORMATED_MESSAGE)
 
         # diff alreadyformatted
         s.reset_mock()
-        s.run_black.return_value = (0, b"hello\n", b"already well formatted, good job")
+        s.run_black.return_value = (0, b"hello\n", b"unchanged")
         with patch.object(sublack, "sublime") as m:
             c(s, "edit", ["--diff"])
-            m.status_message.assert_called_with(
-                "Sublack: already well formatted, good job"
-            )
+            m.status_message.assert_called_with(sublack.ALREADY_FORMATED_MESSAGE)
         # diff
         s.reset_mock()
         s.run_black.return_value = (0, b"hello\n", b"reformatted")
@@ -285,16 +273,23 @@ class TestHBlack(TestCase):
         self.assertEqual(blacked, self.all())
 
     def test_do_diff(self, s):
+        # setup in case of fail
+        # self.addCleanup(self.view.close)
+        # self.addCleanup(self.view.set_scratch, True)
+
         self.setText(unblacked)
         self.view.set_name("base")
         backup = self.view
         self.view.run_command("black_diff")
         w = sublime.active_window()
-        self.view = w.active_view()
-        res = self.all()
+        v = w.active_view()
+        res = sublime.Region(0, v.size())
+        res = sublime.Region(v.lines(res)[2].begin(), v.size())
+        res = v.substr(res).strip()
         self.assertEqual(res, diff)
-        self.view.close()
         self.view = backup
+        v.set_scratch(True)
+        v.close()
 
 
 """
