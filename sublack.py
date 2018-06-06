@@ -241,7 +241,6 @@ class BlackDiffCommand(sublime_plugin.TextCommand):
 
 
 class EventListener(sublime_plugin.EventListener):
-    def on_pre_save_async(self, view):
+    def on_pre_save(self, view):
         if get_setting(view, "black_on_save"):
             view.run_command("black_file")
-            view.run_command("save")
