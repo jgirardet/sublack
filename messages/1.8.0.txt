@@ -20,20 +20,14 @@
 
 
 
-VERSION : 1.7.0
+
 
 CHANGELOG :
 ---------
 
-
-	# Black API Incompatibily Changes
-
-		Install Black. Minimal version : 18.6.b1
-
-	# show black error messages in statusbar
-	# Fix black api changes
-	   
-
+1.8.0:
+  - fix on_presave (`#14 <https://github.com/jgirardet/sublack/pull/14>`_, thanks to `Jacobi Petrucciani  <https://github.com/jpetrucciani >`_)
+  - add --skip-string-normalization
 
 
 Issues

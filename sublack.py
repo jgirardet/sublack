@@ -26,6 +26,7 @@ CONFIG_OPTIONS = [
     "black_fast",
     "black_debug_on",
     "black_default_encoding",
+    "black_skip_string_normalization"
 ]
 
 
@@ -99,6 +100,10 @@ class Black:
         # fast
         if self.config["black_fast"]:
             cmd.append("--fast")
+
+        # black_skip_string_normalization
+        if self.config["black_skip_string_normalization"]:
+            cmd.append("--black-skip-string-normalization")
 
         # extra args
         if extra:

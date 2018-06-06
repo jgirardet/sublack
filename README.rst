@@ -81,6 +81,13 @@ This plugin is very inspired by the very good `PyYapf <https://github.com/jason-
 Changelog
 -----------
 
+1.8.0:
+	- fix on_presave (`#14 <https://github.com/jgirardet/sublack/pull/14>`_, thanks to `Jacobi Petrucciani  <https://github.com/jpetrucciani >`_)
+	- add --skip-string-normalization
+1.7.0:
+	- black minimal version : 18.6.b1
+	- show black error in statusbar
+	- fix new_line char on windows
 1.6.0:
 	- Change keymaps from `f` to `b` (like black oO) due to conflict with Anaconda.
 	- Change installation instruction to use Packagecontrol.

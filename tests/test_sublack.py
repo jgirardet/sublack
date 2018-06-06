@@ -60,11 +60,12 @@ diff = """
 
 class TestBlackMethod(TestCase):
     def test_init(self):
+        # test valid number of config options
         with patch.object(sublack, "get_setting") as m:
             # m.side_effect = ["bbbll", "True", "100"]
             m.return_value = "hello"
             a = sublack.Black(MagicMock())
-            self.assertEqual(list(a.config.values()), ["hello"] * 6)
+            self.assertEqual(list(a.config.values()), ["hello"] * 7)
 
     def test_get_command_line(self):
         gcl = sublack.Black.get_command_line
@@ -77,6 +78,7 @@ class TestBlackMethod(TestCase):
         }
         a = gcl(s, v)
         self.assertEqual(a, ["black", "-"])
+
         s.config = {
             "black_command": "black",
             "black_line_length": 90,
@@ -84,8 +86,13 @@ class TestBlackMethod(TestCase):
         }
         a = gcl(s, v)
         self.assertEqual(a, ["black", "-", "-l", "90", "--fast"])
+
         a = gcl(s, v, extra=["--diff"])
         self.assertEqual(a, ["black", "-", "-l", "90", "--fast", "--diff"])
+
+        s.config = {"black_command": "black", "black_skip_string_normalization": True}
+        a = gcl(s, v)
+        self.assertEqual(a, ["black", "-", "--skip-string-normalization"])
 
     def test_windows_prepare(self):
         with patch.object(sublack, "sublime") as m:

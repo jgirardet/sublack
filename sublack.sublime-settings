@@ -21,4 +21,8 @@
       // default is "utf-8". Change this only if you want override default behaviour.
       "black_default_encoding": "utf-8",
 
+      // prevent black from changing single quote to double quotes
+      // default is false
+      // add --black_skip_string_normalization
+      "black_skip_string_normalization": false,
 }
