@@ -26,7 +26,7 @@ CONFIG_OPTIONS = [
     "black_fast",
     "black_debug_on",
     "black_default_encoding",
-    "black_skip_string_normalization"
+    "black_skip_string_normalization",
 ]
 
 
@@ -94,16 +94,16 @@ class Black:
         cmd = [cmd, "-"]
 
         # Line length option
-        if self.config["black_line_length"] is not None:
+        if self.config.get("black_line_length"):
             cmd.extend(["-l", str(self.config["black_line_length"])])
 
         # fast
-        if self.config["black_fast"]:
+        if self.config.get("black_fast", None):
             cmd.append("--fast")
 
         # black_skip_string_normalization
-        if self.config["black_skip_string_normalization"]:
-            cmd.append("--black-skip-string-normalization")
+        if self.config.get("black_skip_string_normalization"):
+            cmd.append("--skip-string-normalization")
 
         # extra args
         if extra:

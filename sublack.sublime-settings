@@ -17,10 +17,12 @@
       // errors are always shown
       "black_debug_on": false,
 
+
       // default encoding for never saved file, if not specified un  first 2 lines (pep 263):
       // default is "utf-8". Change this only if you want override default behaviour.
       "black_default_encoding": "utf-8",
-
+      
+      
       // prevent black from changing single quote to double quotes
       // default is false
       // add --black_skip_string_normalization
