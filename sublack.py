@@ -184,7 +184,7 @@ class Black:
         content, encoding = self.get_content()
         returncode, out, err = self.run_black(cmd, env, content)
 
-        error_message = err.decode(encoding)
+        error_message = err.decode(encoding).replace("\r\n", "\n").replace("\r", "\n")
 
         # logging
         if self.config["black_debug_on"]:
