@@ -29,6 +29,6 @@ Install Black. Minimal version : 18.6.b1
 
 Issues
 -------
-If there is something wrong with this plugin, add an issue https://github.com/kgirardet/sublack/issues on GitHub and I'll try to address it.
+If there is something wrong with this plugin, add an issue https://github.com/jgirardet/sublack/issues on GitHub and I'll try to address it.
 
 

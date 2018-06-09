@@ -25,12 +25,12 @@
 CHANGELOG :
 ---------
 
-1.8.0:
+1.8.1:
   - fix on_presave (`#14 <https://github.com/jgirardet/sublack/pull/14>`_, thanks to `Jacobi Petrucciani  <https://github.com/jpetrucciani >`_)
   - add --skip-string-normalization
-
+  - fix messages
 
 Issues
 -------
-If there is something wrong with this plugin, add an issue https://github.com/kgirardet/sublack/issues on GitHub and I'll try to address it.
+If there is something wrong with this plugin, add an issue https://github.com/jgirardet/sublack/issues on GitHub and I'll try to address it.
 
