@@ -48,7 +48,7 @@ Without PackageControl  install manually by navigating to Sublime's `Packages` f
 Settings
 ---------
 
-* black_black_command:
+* black_command:
 	Set custom location. Default = "black".
 
 * black_on_save:
