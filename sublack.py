@@ -180,6 +180,7 @@ class Black:
         f = window.new_file()
         f.set_scratch(True)
         f.set_name("sublack diff %s" % self.view.name())
+        f.set_syntax_file("Packages/Diff/Diff.sublime-syntax")
         f.insert(edit, 0, out.decode(encoding))
 
     def __call__(self, edit, extra=[]):

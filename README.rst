@@ -81,48 +81,6 @@ This plugin is very inspired by the very good `PyYapf <https://github.com/jason-
 Changelog
 -----------
 
-1.8.0:
-	- fix on_presave (`#14 <https://github.com/jgirardet/sublack/pull/14>`_, thanks to `Jacobi Petrucciani  <https://github.com/jpetrucciani >`_)
-	- add --skip-string-normalization
-1.7.0:
-	- black minimal version : 18.6.b1
-	- show black error in statusbar
-	- fix new_line char on windows
-1.6.0:
-	- Change keymaps from `f` to `b` (like black oO) due to conflict with Anaconda.
-	- Change installation instruction to use Packagecontrol.
-1.5.0:
-	- All settings are now prefixed with `black_`
-	- use on_pre_save_async
-	- and various fix (`#7061 <https://github.com/wbond/package_control_channel/pull/7061>`_, thanks to `Thom1729  <https://github.com/Thom1729 >`_)
-1.4.1:
-	- add tests
-	- Improve Settings menu entry and add Key Bindings menu entry(`#9 <https://github.com/jgirardet/sublack/pull/9>`_, thanks to `catch22 <https://github.com/catch22>`_)
-1.4.0:
-	- add black_diff command
-	- add black_diff keymap
-	- add fast setting
-	- refactor code
-	- do nothing if already formated and show "already formated" in statusbar
-1.3.4:
-	- Format sublack with Black (`#8 <https://github.com/jgirardet/sublack/pull/8>`_, thanks to `mschneiderwind <https://github.com/mschneiderwind>`_)
-1.3.3:
-	- Fix encoding if not given by SublimeText.
-1.3.2:
-	- BugFix : Click library Bug with locale under OSX
-1.3.1:
-	- update README
-1.3.0:
-	- use '-' argument to format inline document wihout saving it
-	- consequently post-save became pre-save
-	- line_length typo in settings
-	- add log
-1.2.0:
-	- add error handling (thanks to `nicokist <https://github.com/nicokist>`_)
-1.1.0:
-	- add line_length option
-1.0.0:
-	- make plugin
-	- add on_save option
+see messages/install.txt
 
 .. _Black : https://github.com/ambv/black 

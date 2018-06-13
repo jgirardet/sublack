@@ -294,6 +294,7 @@ class TestHBlack(TestCase):
         res = sublime.Region(v.lines(res)[2].begin(), v.size())
         res = v.substr(res).strip()
         self.assertEqual(res, diff)
+        self.assertEqual(v.settings().get('syntax'), 'Packages/Diff/Diff.sublime-syntax')
         self.view = backup
         v.set_scratch(True)
         v.close()
