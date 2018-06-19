@@ -212,18 +212,14 @@ class TestFunctions(TestCase):
         gs = sublack.get_settings
         v = sublime.active_window().active_view()
 
+        # turn all settings to dict and ajust on_save because chaged un project
         glob = sublime.load_settings(sublack.PLUGIN_SETTINGS_FILE)
         s = {k: glob.get(k) for k in sublack.CONFIG_OPTIONS}
+        s["black_on_save"] = True  # in project file flat settings
+        s["black_debug_on"] = True  # in project file nested settings
 
-        # defaul sublack Settings
+        # settings are all from setting file except on_save
         self.assertDictEqual(s, gs(v))
-
-        # project
-        # self.assertEqual(gs(v, "debug_on"), project["settings"]["sublack"]["debug_on"])
-        # project["settings"]["sublack"]["rien"] = "aaa"
-
-        # non key, default proveded
-        # self.assertEqual(gs(v, "azazeazeaze", "bka"), "bka")
 
     def test_get_encoding_from_region(self):
         v = MagicMock()
