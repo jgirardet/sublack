@@ -198,12 +198,12 @@ class Black:
 
         # failure
         if returncode != 0:
-            sublime.status_message(error_message)
+            self.view.window().status_message(error_message)
             return returncode
 
         # already formated, nothing changes
         elif "unchanged" in error_message:
-            sublime.status_message(ALREADY_FORMATED_MESSAGE)
+            self.view.window().status_message(ALREADY_FORMATED_MESSAGE)
 
         # diff mode
         elif "--diff" in extra:
