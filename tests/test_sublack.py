@@ -213,7 +213,7 @@ class TestFunctions(TestCase):
         v = sublime.active_window().active_view()
 
         # turn all settings to dict and ajust on_save because chaged un project
-        glob = sublime.load_settings(sublack.PLUGIN_SETTINGS_FILE)
+        glob = sublime.load_settings(sublack.SETTINGS_FILE_NAME)
         s = {k: glob.get(k) for k in sublack.CONFIG_OPTIONS}
         s["black_on_save"] = True  # in project file flat settings
         s["black_debug_on"] = True  # in project file nested settings
