@@ -207,19 +207,39 @@ class TestBlackMethod(TestCase):
 
 
 class TestFunctions(TestCase):
-    def test_get_settings(self):
-        # setup
-        gs = sublack.get_settings
-        v = sublime.active_window().active_view()
+    maxDiff = None
 
-        # turn all settings to dict and ajust on_save because chaged un project
-        glob = sublime.load_settings(sublack.SETTINGS_FILE_NAME)
-        s = {k: glob.get(k) for k in sublack.CONFIG_OPTIONS}
-        s["black_on_save"] = True  # in project file flat settings
-        s["black_debug_on"] = True  # in project file nested settings
+    # @patch.object(sublack, "sublime", return_value="premiere ligne")
+    # def test_get_settings(self, subl):
+    #     # setup
+    #     gs = sublack.get_settings
 
-        # settings are all from setting file except on_save
-        self.assertDictEqual(s, gs(v))
+    #     sublime.load_settings.return_value = {
+    #         "black_fast": False,
+    #         "black_debug_on": False,
+    #         "black_line_length": None,
+    #         "black_command": "black",
+    #         "black_default_encoding": "utf-8",
+    #         "black_skip_string_normalization": False,
+    #         "black_on_save": False,
+    #     }
+
+    #     v = MagicMock()
+    #     v.settings.return_value = {"sublack.black_on_save": True}
+    #     v.settings.get("sublack").return_value = ({"black_debug_on": True},)
+
+    #     res = {
+    #         "black_fast": False,
+    #         "black_debug_on": True,
+    #         "black_line_length": None,
+    #         "black_command": "black",
+    #         "black_default_encoding": "utf-8",
+    #         "black_skip_string_normalization": False,
+    #         "black_on_save": True,
+    #     }
+
+    #     # settings are all from setting file except on_save
+    #     self.assertDictEqual(res, gs(v))
 
     def test_get_encoding_from_region(self):
         v = MagicMock()
