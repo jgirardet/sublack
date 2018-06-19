@@ -1,0 +1,25 @@
+{
+	"build_systems":
+[
+  {
+    "name": "Test Current Package",
+    "target": "unit_testing_current_package",
+  }
+],
+	"folders":
+	[
+		{
+			"path": "."
+		}
+	],
+	"settings":
+	// do not remove settings. they are used for testing purpose
+	{
+
+		"sublack.black_on_save": true,
+		"sublack":
+			{
+				"black_debug_on": true
+			}
+	}
+}

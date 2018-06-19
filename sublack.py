@@ -11,9 +11,10 @@ import re
 import sublime
 import sublime_plugin
 
-
-PLUGIN_SETTINGS_FILE = "sublack.sublime-settings"
-SUBLIME_SETTINGS_KEY = "sublack"
+PACKAGE_NAME = "sublack"
+SETTINGS_FILE_NAME = "{}.sublime-settings".format(PACKAGE_NAME)
+SETTINGS_NS_PREFIX = "{}.".format(PACKAGE_NAME)
+KEY_ERROR_MARKER = "__KEY_NOT_PRESENT_MARKER__"
 
 ENCODING_PATTERN = r"^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)"
 
@@ -31,17 +32,26 @@ CONFIG_OPTIONS = [
 
 
 def get_settings(view):
-    view_settings = view.settings()
-    global_settings = sublime.load_settings(PLUGIN_SETTINGS_FILE)
+    flat_settings = view.settings()
+    nested_settings = flat_settings.get(PACKAGE_NAME, {})
+    global_settings = sublime.load_settings(SETTINGS_FILE_NAME)
     settings = {}
 
     for k in CONFIG_OPTIONS:
-        # 1. check sublime settings (this includes project settings)
-        # 2. check plugin settings
-        value = view_settings.get(k)
+        # 1. check sublime "flat settings"
+        value = flat_settings.get(SETTINGS_NS_PREFIX + k, KEY_ERROR_MARKER)
+        if value != KEY_ERROR_MARKER:
+            settings[k] = value
+            continue
 
-        settings[k] = value if value else global_settings.get(k, None)
+        # 2. check sublieme "nested settings" for compatibility reason
+        value = nested_settings.get(k, KEY_ERROR_MARKER)
+        if value != KEY_ERROR_MARKER:
+            settings[k] = value
+            continue
 
+        # 3. check plugin/user settings
+        settings[k] = global_settings.get(k)
     return settings
 
 
@@ -230,7 +240,7 @@ class BlackFileCommand(sublime_plugin.TextCommand):
         return is_python(self.view)
 
     def run(self, edit):
-        if get_setting(self.view, "black_debug_on"):
+        if get_settings(self.view)["black_debug_on"]:
             print("[SUBLACK] : run black_file")
         Black(self.view)(edit)
 
@@ -244,12 +254,12 @@ class BlackDiffCommand(sublime_plugin.TextCommand):
         return is_python(self.view)
 
     def run(self, edit):
-        if get_setting(self.view, "black_debug_on"):
+        if get_settings(self.view)["black_debug_on"]:
             print("[SUBLACK] : run black_diff")
         Black(self.view)(edit, extra=["--diff"])
 
 
 class EventListener(sublime_plugin.EventListener):
     def on_pre_save(self, view):
-        if get_setting(view, "black_on_save"):
+        if get_settings(view)["black_on_save"]:
             view.run_command("black_file")
