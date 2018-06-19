@@ -30,16 +30,19 @@ CONFIG_OPTIONS = [
 ]
 
 
-def get_setting(view, key, default_value=None):
-    # 1. check sublime settings (this includes project settings)
-    settings = view.settings()
-    config = settings.get(SUBLIME_SETTINGS_KEY)
-    if config is not None and key in config:
-        return config[key]
+def get_settings(view):
+    view_settings = view.settings()
+    global_settings = sublime.load_settings(PLUGIN_SETTINGS_FILE)
+    settings = {}
 
-    # 2. check plugin settings
-    settings = sublime.load_settings(PLUGIN_SETTINGS_FILE)
-    return settings.get(key, default_value)
+    for k in CONFIG_OPTIONS:
+        # 1. check sublime settings (this includes project settings)
+        # 2. check plugin settings
+        value = view_settings.get(k)
+
+        settings[k] = value if value else global_settings.get(k, None)
+
+    return settings
 
 
 def get_encoding_from_region(region, view):
@@ -74,7 +77,7 @@ class Black:
 
     def __init__(self, view):
         self.view = view
-        self.config = {i: get_setting(view, i) for i in CONFIG_OPTIONS}
+        self.config = get_settings(view)
         self.all = sublime.Region(0, self.view.size())
 
     def get_command_line(self, edit, extra=[]):

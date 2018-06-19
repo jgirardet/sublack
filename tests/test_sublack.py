@@ -61,11 +61,10 @@ diff = """
 class TestBlackMethod(TestCase):
     def test_init(self):
         # test valid number of config options
-        with patch.object(sublack, "get_setting") as m:
-            # m.side_effect = ["bbbll", "True", "100"]
-            m.return_value = "hello"
+        with patch.object(sublack, "get_settings") as m:
+            m.return_value = ["hello"] * 7
             a = sublack.Black(MagicMock())
-            self.assertEqual(list(a.config.values()), ["hello"] * 7)
+            self.assertEqual(a.config, ["hello"] * 7)
 
     def test_get_command_line(self):
         gcl = sublack.Black.get_command_line
@@ -187,16 +186,19 @@ class TestBlackMethod(TestCase):
         # alreadyformatted
         s.reset_mock()
         s.run_black.return_value = (0, b"hello\n", b"unchanged")
-        with patch.object(sublack, "sublime") as m:
-            c(s, "edit")
-            m.status_message.assert_called_with(sublack.ALREADY_FORMATED_MESSAGE)
+        c(s, "edit")
+        s.view.window.return_value.status_message.assert_called_with(
+            sublack.ALREADY_FORMATED_MESSAGE
+        )
 
         # diff alreadyformatted
         s.reset_mock()
         s.run_black.return_value = (0, b"hello\n", b"unchanged")
-        with patch.object(sublack, "sublime") as m:
-            c(s, "edit", ["--diff"])
-            m.status_message.assert_called_with(sublack.ALREADY_FORMATED_MESSAGE)
+        c(s, "edit", ["--diff"])
+        s.view.window.return_value.status_message.assert_called_with(
+            sublack.ALREADY_FORMATED_MESSAGE
+        )
+
         # diff
         s.reset_mock()
         s.run_black.return_value = (0, b"hello\n", b"reformatted")
@@ -207,20 +209,21 @@ class TestBlackMethod(TestCase):
 class TestFunctions(TestCase):
     def test_get_settings(self):
         # setup
-        gs = sublack.get_setting
+        gs = sublack.get_settings
         v = sublime.active_window().active_view()
 
-        s = sublime.load_settings(sublack.PLUGIN_SETTINGS_FILE)
+        glob = sublime.load_settings(sublack.PLUGIN_SETTINGS_FILE)
+        s = {k: glob.get(k) for k in sublack.CONFIG_OPTIONS}
 
         # defaul sublack Settings
-        self.assertEqual(gs(v, "default_encoding"), s.get("default_encoding"))
+        self.assertDictEqual(s, gs(v))
 
         # project
         # self.assertEqual(gs(v, "debug_on"), project["settings"]["sublack"]["debug_on"])
         # project["settings"]["sublack"]["rien"] = "aaa"
 
         # non key, default proveded
-        self.assertEqual(gs(v, "azazeazeaze", "bka"), "bka")
+        # self.assertEqual(gs(v, "azazeazeaze", "bka"), "bka")
 
     def test_get_encoding_from_region(self):
         v = MagicMock()
@@ -294,7 +297,9 @@ class TestHBlack(TestCase):
         res = sublime.Region(v.lines(res)[2].begin(), v.size())
         res = v.substr(res).strip()
         self.assertEqual(res, diff)
-        self.assertEqual(v.settings().get('syntax'), 'Packages/Diff/Diff.sublime-syntax')
+        self.assertEqual(
+            v.settings().get("syntax"), "Packages/Diff/Diff.sublime-syntax"
+        )
         self.view = backup
         v.set_scratch(True)
         v.close()
