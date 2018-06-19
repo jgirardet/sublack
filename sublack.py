@@ -52,6 +52,7 @@ def get_settings(view):
 
         # 3. check plugin/user settings
         settings[k] = global_settings.get(k)
+    print(settings)
     return settings
 
 
