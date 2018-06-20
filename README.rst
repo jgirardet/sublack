@@ -48,6 +48,10 @@ Without PackageControl  install manually by navigating to Sublime's `Packages` f
 Settings
 ---------
 
+Global settings
+*****************
+Preferences -> Package Settings -> sublack -> settings : 
+
 * black_command:
 	Set custom location. Default = "black".
 
@@ -67,6 +71,31 @@ Settings
 	Should not be changed. Only needed on some OSX platforms.
 
 
+Project settings
+*******************
+
+Just add sublack as prefix (recommanded):
+
+.. code-block:: json
+
+    {
+    "settings":{
+    	"sublack.black_on_save": true
+    	}
+    }
+
+A sublack subsettings is still possible:
+
+.. code-block:: json
+
+    {
+    "settings":{
+    	"sublack":{
+    		"black_on_save": true
+    		}
+    	}
+    }
+
 Issues
 ---------
 
@@ -81,6 +110,24 @@ This plugin is very inspired by the very good `PyYapf <https://github.com/jason-
 Changelog
 -----------
 
-see messages/install.txt
+see `install.txt <messages/install.txt>`_ 
+
+
+Authors
+---------
+
+Laboriously coded by Jimmy Girardet
+
+contributions by:
+
+* `nicokist <https://github.com/nicokist>`_
+* `mschneiderwind <https://github.com/mschneiderwind>`_
+* `catch22 <https://github.com/catch22>`_
+* `Thom1729  <https://github.com/Thom1729 >`_
+* `Jacobi Petrucciani  <https://github.com/jpetrucciani >`_
+* `Herr Kaste <https://github.com/kaste>`_ 
+
+
+
 
 .. _Black : https://github.com/ambv/black 
