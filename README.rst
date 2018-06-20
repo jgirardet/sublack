@@ -74,7 +74,7 @@ Preferences -> Package Settings -> sublack -> settings :
 Project settings
 *******************
 
-Just add sublack as prefix (recommanded):
+Just add sublack as prefix (recommended):
 
 .. code-block:: json
 
@@ -112,6 +112,14 @@ Changelog
 
 see `install.txt <messages/install.txt>`_ 
 
+Contributing
+--------------
+
+* remove sublack via Package Control.
+* clone sublack to your Packages folder.
+* install UnitTesting in Package Control
+* adding a test for new features or bugfix is really nice	 if you can.
+* add your name to Authors in readme.
 
 Authors
 ---------
@@ -123,8 +131,8 @@ contributions by:
 * `nicokist <https://github.com/nicokist>`_
 * `mschneiderwind <https://github.com/mschneiderwind>`_
 * `catch22 <https://github.com/catch22>`_
-* `Thom1729  <https://github.com/Thom1729 >`_
-* `Jacobi Petrucciani  <https://github.com/jpetrucciani >`_
+* `Thom1729  <https://github.com/Thom1729>`_
+* `Jacobi Petrucciani  <https://github.com/jpetrucciani>`_
 * `Herr Kaste <https://github.com/kaste>`_ 
 
 

@@ -8,8 +8,6 @@
                                                 
                                                                         
 
-Version: 1.8.2
-
 
 Installation
 -------------
@@ -24,6 +22,7 @@ Changelog
 1.9.0:
 	- Settings rewrite
 	- add authors section in readme
+	- add contributing section in readme
 1.8.2:
 	- set syntax diff for black_diff
 	- fix messages
