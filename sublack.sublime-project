@@ -5,6 +5,12 @@
 			"name": "Test Current Package",
 			"target": "unit_testing_current_package"
 		},
+		{
+			"file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
+			"name": "Anaconda Python Builder",
+			"selector": "source.python",
+			"shell_cmd": "\"python\" -u \"$file\""
+		}
 	],
 	"folders":
 	[

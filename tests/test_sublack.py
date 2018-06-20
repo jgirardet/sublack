@@ -214,28 +214,30 @@ class TestFunctions(TestCase):
     #     # setup
     #     gs = sublack.get_settings
 
-    #     sublime.load_settings.return_value = {
+    #     subl.load_settings.return_value = {
+    #         "black_command": "black",
+    #         "black_on_save": False,
+    #         "black_line_length": None,
     #         "black_fast": False,
     #         "black_debug_on": False,
-    #         "black_line_length": None,
-    #         "black_command": "black",
     #         "black_default_encoding": "utf-8",
     #         "black_skip_string_normalization": False,
-    #         "black_on_save": False,
     #     }
-
     #     v = MagicMock()
     #     v.settings.return_value = {"sublack.black_on_save": True}
-    #     v.settings.get("sublack").return_value = ({"black_debug_on": True},)
+    #     # v.settings.get("sublack").return_value = ({"black_debug_on": True},)
+    #     c = MagicMock()
+    #     c.get.side_effect = [None, None, None, None, None, True, None, None, None]
+    #     v.settings.return_value = c
 
     #     res = {
+    #         "black_command": "black",
+    #         "black_on_save": True,
+    #         "black_line_length": None,
     #         "black_fast": False,
     #         "black_debug_on": True,
-    #         "black_line_length": None,
-    #         "black_command": "black",
     #         "black_default_encoding": "utf-8",
     #         "black_skip_string_normalization": False,
-    #         "black_on_save": True,
     #     }
 
     #     # settings are all from setting file except on_save
