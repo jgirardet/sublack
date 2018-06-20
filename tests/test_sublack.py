@@ -209,39 +209,46 @@ class TestBlackMethod(TestCase):
 class TestFunctions(TestCase):
     maxDiff = None
 
-    # @patch.object(sublack, "sublime", return_value="premiere ligne")
-    # def test_get_settings(self, subl):
-    #     # setup
-    #     gs = sublack.get_settings
+    @patch.object(sublack, "sublime", return_value="premiere ligne")
+    def test_get_settings(self, subl):
+        def fake_get(param, default=None):
+            flat = {"sublack.black_on_save": True}
+            nested = {"black_debug_on": True}
+            if param == "sublack":
+                return nested
+            elif param.split(".")[0] == "sublack":
+                return flat.get(param, sublack.KEY_ERROR_MARKER)
+            else:
+                raise ValueError("settings must be nested or flat sublack")
 
-    #     subl.load_settings.return_value = {
-    #         "black_command": "black",
-    #         "black_on_save": False,
-    #         "black_line_length": None,
-    #         "black_fast": False,
-    #         "black_debug_on": False,
-    #         "black_default_encoding": "utf-8",
-    #         "black_skip_string_normalization": False,
-    #     }
-    #     v = MagicMock()
-    #     v.settings.return_value = {"sublack.black_on_save": True}
-    #     # v.settings.get("sublack").return_value = ({"black_debug_on": True},)
-    #     c = MagicMock()
-    #     c.get.side_effect = [None, None, None, None, None, True, None, None, None]
-    #     v.settings.return_value = c
+        gs = sublack.get_settings
 
-    #     res = {
-    #         "black_command": "black",
-    #         "black_on_save": True,
-    #         "black_line_length": None,
-    #         "black_fast": False,
-    #         "black_debug_on": True,
-    #         "black_default_encoding": "utf-8",
-    #         "black_skip_string_normalization": False,
-    #     }
+        subl.load_settings.return_value = {
+            "black_command": "black",
+            "black_on_save": False,
+            "black_line_length": None,
+            "black_fast": False,
+            "black_debug_on": False,
+            "black_default_encoding": "utf-8",
+            "black_skip_string_normalization": False,
+        }
+        v = MagicMock()
+        c = MagicMock()
+        v.settings.return_value = c
+        c.get = fake_get
 
-    #     # settings are all from setting file except on_save
-    #     self.assertDictEqual(res, gs(v))
+        res = {
+            "black_command": "black",
+            "black_on_save": True,
+            "black_line_length": None,
+            "black_fast": False,
+            "black_debug_on": True,
+            "black_default_encoding": "utf-8",
+            "black_skip_string_normalization": False,
+        }
+
+        # settings are all from setting file except on_save
+        self.assertDictEqual(res, gs(v))
 
     def test_get_encoding_from_region(self):
         v = MagicMock()
