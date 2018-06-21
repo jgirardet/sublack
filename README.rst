@@ -116,7 +116,8 @@ Contributing
 --------------
 
 * remove sublack via Package Control.
-* clone sublack to your Packages folder.
+* fork sublack
+* clone your sublack fork  to your Packages folder (Preferences -->  Browse Packages...).
 * install UnitTesting in Package Control
 * adding a test for new features or bugfix is really nice	 if you can.
 * add your name to Authors in readme.
