@@ -70,6 +70,9 @@ Preferences -> Package Settings -> sublack -> settings :
 * black_default_encoding:
 	Should not be changed. Only needed on some OSX platforms.
 
+* black_skip_string_normalization:
+	Don't normalize string quotes or prefixes. Default = false.
+
 
 Project settings
 *******************
