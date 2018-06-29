@@ -119,6 +119,10 @@ class Black:
         if self.config.get("black_skip_string_normalization"):
             cmd.append("--skip-string-normalization")
 
+        filename = self.view.file_name()
+        if filename and filename.endswith(".pyi"):
+            cmd.append("--pyi")
+
         # extra args
         if extra:
             cmd.extend(extra)
