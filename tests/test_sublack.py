@@ -98,9 +98,6 @@ class TestBlackMethod(TestCase):
         s.view.file_name.return_value = "blabla.pyi"
         a = gcl(s, v)
         self.assertEqual(a, ["black", "-", "--pyi"])
-           
-        
-        
 
     def test_windows_prepare(self):
         with patch.object(sublack, "sublime") as m:
