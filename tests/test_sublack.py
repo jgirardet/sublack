@@ -75,6 +75,7 @@ class TestBlackMethod(TestCase):
             "black_line_length": None,
             "black_fast": False,
         }
+        s.view.file_name.return_value = "blabla.py"
         a = gcl(s, v)
         self.assertEqual(a, ["black", "-"])
 
@@ -92,6 +93,14 @@ class TestBlackMethod(TestCase):
         s.config = {"black_command": "black", "black_skip_string_normalization": True}
         a = gcl(s, v)
         self.assertEqual(a, ["black", "-", "--skip-string-normalization"])
+
+        s.config = {"black_command": "black"}
+        s.view.file_name.return_value = "blabla.pyi"
+        a = gcl(s, v)
+        self.assertEqual(a, ["black", "-", "--pyi"])
+           
+        
+        
 
     def test_windows_prepare(self):
         with patch.object(sublack, "sublime") as m:
