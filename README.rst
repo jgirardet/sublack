@@ -1,6 +1,8 @@
 .. image:: https://travis-ci.org/jgirardet/sublack.svg?branch=master
     :target: https://travis-ci.org/jgirardet/sublack
 
+.. image:: https://ci.appveyor.com/api/projects/status/ffd44ndqx713yuhd/branch/master?svg=true
+    :target: https://ci.appveyor.com/project/jgirardet/sublack
 
 ===============================
 sublack
