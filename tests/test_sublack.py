@@ -184,7 +184,8 @@ class TestBlackMethod(TestCase):
 
     def test_run_black(self):
         rb = sublack.Black.run_black
-        s = MagicMock(**{"get_cwd.return_value": None})
+        s = MagicMock()
+        s.get_cwd.return_value = None
         s.windows_popen_prepare.return_value = None
         a = rb(s, ["black", "-"], os.environ.copy(), "hello".encode())
         self.assertEqual(a[0], 0)
@@ -323,6 +324,7 @@ class TestFunctions(TestCase):
         self.assertEqual(e, "deuxieme ligne")
 
 
+# @skip("demonstrating skipping")
 @patch.object(sublack, "is_python", return_value=True)
 class TestHBlack(TestCase):
     def setUp(self):
@@ -386,31 +388,29 @@ class TestHBlack(TestCase):
 
     def test_pyproject_toml(self, s):
 
-        self.view.window().run_command("close_file")
-
         pj = os.path.join
 
         with tempfile.TemporaryDirectory() as p:
 
-            file = pj(p, "module", "rien.py")
+            file = pj(p, "rien.py")
 
-            os.makedirs(pj(p, "module"))
             with open(file, "w") as o:
-                o.write('a = ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]')
+                o.write('a = ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]\n')
 
             with open(pj(p, "pyproject.toml"), "w") as o:
                 o.write("[tool.black]\nline-length = 5")
 
-            with open(pj(p, ".git"), "w") as o:
-                o.write("a git file")
-
+            self.view.window().run_command("new_window")
             view = sublime.active_window().open_file(file)
             view.window().focus_view(view)
+
             view.run_command("black_file")
+
             r = sublime.Region(0, view.size())
             res = view.substr(r).strip()
-            self.view = view  # for teardown
 
+            view.set_scratch(True)
+            view.window().run_command("close_window")
             self.assertEqual(
                 res,
                 """a = [

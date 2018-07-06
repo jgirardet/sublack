@@ -98,14 +98,22 @@ class Black:
         find pyproject in project root
         if present, find a black config line then return True
         """
-        pyproject_path = os.path.join(self.variables["folder"], "pyproject.toml")
+
+        try:
+            current_folder = os.path.join(self.variables["folder"])
+        except KeyError:
+            current_folder = os.path.dirname(self.view.file_name())
+
+        pyproject_path = os.path.join(current_folder, "pyproject.toml")
         try:
             with open(pyproject_path, "r") as f:
                 lines = f.read()
             if "[tool.black]" in lines:
                 return True
-        except IOError:  # no pyproject
+        except IOError as e:  # no pyproject
             return False
+
+        return False
 
     def get_command_line(self, edit, extra=[]):
         # prepare popen arguments
@@ -189,11 +197,11 @@ class Black:
 
     def get_cwd(self):
         file = self.view.file_name()
+        cwd = None
         cwd = os.path.dirname(self.view.file_name()) if file else None
         return cwd
 
     def run_black(self, cmd, env, content):
-
         try:
             p = subprocess.Popen(
                 cmd,
@@ -219,7 +227,6 @@ class Black:
             raise OSError(
                 "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
             )
-
         return p.returncode, out, err
 
     def do_diff(self, edit, out, encoding):
