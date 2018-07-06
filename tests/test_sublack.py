@@ -154,6 +154,12 @@ class TestBlackMethod(TestCase):
         c, e = gc(s)
         self.assertEqual(c.decode("utf-8"), "héllo")
 
+    def test_get_cwd(self):
+        gc = sublack.Black.get_cwd
+        s = MagicMock()
+        s.view.file_name.return_value = "/blabla/blabla/file.py"
+        self.assertEqual(gc(s), "/blabla/blabla")
+
     def test_run_black(self):
         rb = sublack.Black.run_black
         s = MagicMock()
@@ -278,6 +284,7 @@ class TestFunctions(TestCase):
 class TestHBlack(TestCase):
     def setUp(self):
         self.view = sublime.active_window().new_file()
+        print(self.view.file_name())
         # make sure we have a window to work with
         s = sublime.load_settings("Preferences.sublime-settings")
         s.set("close_windows_when_empty", False)
@@ -334,6 +341,21 @@ class TestHBlack(TestCase):
         self.view = backup
         v.set_scratch(True)
         v.close()
+
+
+    def test_pyproject_toml(self,s):
+        import tempfile
+        import os
+
+        with tempfile.TemporaryDirectory() as p:
+
+            print(type(p))
+            # p(".git").touch()
+            # p('pyproject.toml').write_text("[tool.black]\nline-length = 5")
+            # p('directory').mkdir()
+            # p('directory/rien.py').write_text('a = ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]')
+
+            # view = sublime.active_window().open_file()
 
 
 """

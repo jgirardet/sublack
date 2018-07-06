@@ -2,7 +2,7 @@
 """
 Sublime Text 3 Plugin to invoke Black on a Python file.
 """
-
+import os.path
 import locale
 import os
 import subprocess
@@ -119,6 +119,7 @@ class Black:
         if self.config.get("black_skip_string_normalization"):
             cmd.append("--skip-string-normalization")
 
+        # handle pyi
         filename = self.view.file_name()
         if filename and filename.endswith(".pyi"):
             cmd.append("--pyi")
@@ -163,6 +164,11 @@ class Black:
         content = content.encode(encoding)
 
         return content, encoding
+
+    def get_cwd(self):
+        cwd = os.path.dirname(self.view.file_name())
+        print("dans func", cwd)
+        return cwd
 
     def run_black(self, cmd, env, content):
 
