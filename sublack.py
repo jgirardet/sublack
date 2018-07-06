@@ -213,6 +213,7 @@ class Black:
                 startupinfo=self.windows_popen_prepare(),
             )
             out, err = p.communicate(input=content)
+            print(out,err)
 
         except UnboundLocalError as err:  # unboud pour p si popen echoue
             msg = "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
