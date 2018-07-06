@@ -3,6 +3,7 @@ import sys
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 import os
+import tempfile
 
 version = sublime.version()
 
@@ -70,10 +71,12 @@ class TestBlackMethod(TestCase):
         gcl = sublack.Black.get_command_line
         v = MagicMock()
         s = MagicMock()
+        s.use_pyproject.return_value = False
         s.config = {
             "black_command": "black",
             "black_line_length": None,
             "black_fast": False,
+            "black_autouse_pyproject": True,
         }
         s.view.file_name.return_value = "blabla.py"
         a = gcl(s, v)
@@ -83,21 +86,40 @@ class TestBlackMethod(TestCase):
             "black_command": "black",
             "black_line_length": 90,
             "black_fast": True,
+            "black_autouse_pyproject": True,
         }
         a = gcl(s, v)
         self.assertEqual(a, ["black", "-", "-l", "90", "--fast"])
 
+        # test diff
         a = gcl(s, v, extra=["--diff"])
-        self.assertEqual(a, ["black", "-", "-l", "90", "--fast", "--diff"])
+        self.assertEqual(a, ["black", "-", "--diff", "-l", "90", "--fast"])
 
-        s.config = {"black_command": "black", "black_skip_string_normalization": True}
+        # test skipstring
+        s.config = {
+            "black_command": "black",
+            "black_skip_string_normalization": True,
+            "black_autouse_pyproject": True,
+        }
         a = gcl(s, v)
         self.assertEqual(a, ["black", "-", "--skip-string-normalization"])
 
-        s.config = {"black_command": "black"}
+        # test pyi
+        s.config = {"black_command": "black", "black_autouse_pyproject": True}
         s.view.file_name.return_value = "blabla.pyi"
         a = gcl(s, v)
         self.assertEqual(a, ["black", "-", "--pyi"])
+
+        # autouse_pyproject
+        s.use_pyproject.return_value = True  # tearup
+        s.config = {
+            "black_command": "black",
+            "black_skip_string_normalization": True,
+            "black_autouse_pyproject": True,
+        }
+        a = gcl(s, v)
+        self.assertEqual(a, ["black", "-"])
+        s.use_pyproject.return_value = False  # Teardown
 
     def test_windows_prepare(self):
         with patch.object(sublack, "sublime") as m:
@@ -162,7 +184,7 @@ class TestBlackMethod(TestCase):
 
     def test_run_black(self):
         rb = sublack.Black.run_black
-        s = MagicMock()
+        s = MagicMock(**{"get_cwd.return_value": None})
         s.windows_popen_prepare.return_value = None
         a = rb(s, ["black", "-"], os.environ.copy(), "hello".encode())
         self.assertEqual(a[0], 0)
@@ -178,6 +200,25 @@ class TestBlackMethod(TestCase):
                     str(e),
                     "You may need to install Black and/or configure 'black_command' in Sublack's Settings.",
                 )
+
+    def test_use_pyproject(self):
+
+        up = sublack.Black.use_pyproject
+        with tempfile.TemporaryDirectory() as p:
+
+            # no pyproject
+            s = MagicMock(**{"variables": {"folder": p}})
+            self.assertFalse(up(s))
+
+            # no  black in pyproejct
+            with open(os.path.join(p, "pyproject.toml"), "w") as o:
+                o.write("bla\nbla\nbla\nbla\nbla\nbla\n")
+            self.assertFalse(up(s))
+
+            # black in pyproject
+            with open(os.path.join(p, "pyproject.toml"), "w") as o:
+                o.write("bla\nbla\nbla\nbla\nbla\nbla\n[tool.black]")
+            self.assertTrue(up(s))
 
     def test_call(self):
         c = sublack.Black.__call__
@@ -243,6 +284,7 @@ class TestFunctions(TestCase):
             "black_debug_on": False,
             "black_default_encoding": "utf-8",
             "black_skip_string_normalization": False,
+            "black_autouse_pyproject": True,
         }
         v = MagicMock()
         c = MagicMock()
@@ -257,6 +299,7 @@ class TestFunctions(TestCase):
             "black_debug_on": True,
             "black_default_encoding": "utf-8",
             "black_skip_string_normalization": False,
+            "black_autouse_pyproject": True,
         }
 
         # settings are all from setting file except on_save
@@ -284,7 +327,6 @@ class TestFunctions(TestCase):
 class TestHBlack(TestCase):
     def setUp(self):
         self.view = sublime.active_window().new_file()
-        print(self.view.file_name())
         # make sure we have a window to work with
         s = sublime.load_settings("Preferences.sublime-settings")
         s.set("close_windows_when_empty", False)
@@ -342,25 +384,36 @@ class TestHBlack(TestCase):
         v.set_scratch(True)
         v.close()
 
+    def test_pyproject_toml(self, s):
 
-    def test_pyproject_toml(self,s):
-        import tempfile
-        import os
+        self.view.window().run_command("close_file")
+
+        pj = os.path.join
 
         with tempfile.TemporaryDirectory() as p:
 
-            print(type(p))
-            # p(".git").touch()
-            # p('pyproject.toml').write_text("[tool.black]\nline-length = 5")
-            # p('directory').mkdir()
-            # p('directory/rien.py').write_text('a = ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]')
+            file = pj(p, "module", "rien.py")
 
-            # view = sublime.active_window().open_file()
+            os.makedirs(pj(p, "module"))
+            with open(file, "w") as o:
+                o.write('a = ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]')
 
+            with open(pj(p, "pyproject.toml"), "w") as o:
+                o.write("[tool.black]\nline-length = 5")
 
-"""
-Todo
-------
+            with open(pj(p, ".git"), "w") as o:
+                o.write("a git file")
 
-- windows prepare on windows test_env
-"""
+            view = sublime.active_window().open_file(file)
+            view.window().focus_view(view)
+            view.run_command("black_file")
+            r = sublime.Region(0, view.size())
+            res = view.substr(r).strip()
+            self.view = view  # for teardown
+
+            self.assertEqual(
+                res,
+                """a = [
+    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+]""",
+            )

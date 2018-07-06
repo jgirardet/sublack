@@ -1,9 +1,9 @@
 {
-      // full path and command to run black
-      "black_command": "black",
+      // ########################
+      // Black specific options #
+      // ########################
 
-      // run black before saving document
-      "black_on_save": false,
+
 
       // line length
       // uses black default, if not modified
@@ -12,19 +12,29 @@
       // If --fast given, skip temporary sanity checks.
       "black_fast": false,
       
-      //debug mode
-      // show black log in console
-      // errors are always shown
-      "black_debug_on": false,
-
-
-      // default encoding for never saved file, if not specified un  first 2 lines (pep 263):
-      // default is "utf-8". Change this only if you want override default behaviour.
-      "black_default_encoding": "utf-8",
-      
-      
       // prevent black from changing single quote to double quotes
       // default is false
       // add --black_skip_string_normalization
       "black_skip_string_normalization": false,
+
+      // ##########################
+      // Sublack specific options #
+      // ##########################
+
+      // full path and command to run black
+      "black_command": "black",
+
+      // run black before saving document
+      "black_on_save": false,
+
+      //debug mode
+      // show black log in console, errors are always shown
+      "black_debug_on": false,
+
+      // default encoding for never saved file, if not specified un  first 2 lines (pep 263):
+      // default is "utf-8". Change this only if you want override default behaviour.
+      "black_default_encoding": "utf-8",
+ 
+      // Auto Use pyproject.toml
+      "black_autouse_pyproject": true
 }
