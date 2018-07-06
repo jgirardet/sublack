@@ -100,6 +100,11 @@ A sublack subsettings is still possible:
     	}
     }
 
+Sublime Linter integration
+----------------------------
+You can install `SublimeLinter-addon-black-for-flake <https://github.com/kaste/SublimeLinter-addon-black-for-flake>`_. The plugin will auto configure flake8 and mute all warnings black can actually fix.
+
+
 Issues
 ---------
 
