@@ -35,6 +35,4 @@
       // default is "utf-8". Change this only if you want override default behaviour.
       "black_default_encoding": "utf-8",
  
-      // Auto Use pyproject.toml
-      "black_autouse_pyproject": true
 }

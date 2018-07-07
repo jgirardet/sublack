@@ -19,6 +19,8 @@ Install Black. Minimal version : 18.6.b4
 
 Changelog
 -----------
+1.12.0:
+	- fix broken pyproject
 1.11.0:
 	- add pyproject support
 	- add "black_autouse_pyproject" option.

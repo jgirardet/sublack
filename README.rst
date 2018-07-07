@@ -81,10 +81,6 @@ Sublack specifics options
 * black_default_encoding:
     Should not be changed. Only needed on some OSX platforms.
 
-* black_autouse_pyproject:
-    By default, sublack uses pyproject.toml Black's config if present instead of sublack's settings. Set to false to ignore pyproject.toml
-
-
 
 Project settings
 *******************

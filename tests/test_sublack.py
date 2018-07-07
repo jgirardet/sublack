@@ -176,18 +176,12 @@ class TestBlackMethod(TestCase):
         c, e = gc(s)
         self.assertEqual(c.decode("utf-8"), "héllo")
 
-    def test_get_cwd(self):
-        gc = sublack.Black.get_cwd
-        s = MagicMock()
-        s.view.file_name.return_value = "/blabla/blabla/file.py"
-        self.assertEqual(gc(s), "/blabla/blabla")
-
     def test_run_black(self):
         rb = sublack.Black.run_black
         s = MagicMock()
         s.get_cwd.return_value = None
         s.windows_popen_prepare.return_value = None
-        a = rb(s, ["black", "-"], os.environ.copy(), "hello".encode())
+        a = rb(s, ["black", "-"], os.environ.copy(), None, "hello".encode())
         self.assertEqual(a[0], 0)
         self.assertEqual(a[1], b"hello\n")
         self.assertIn(b"reformatted", a[2])
@@ -195,7 +189,7 @@ class TestBlackMethod(TestCase):
         with patch.object(sublack, "sublime"):
             s.windows_popen_prepare.side_effect = OSError
             try:
-                a = rb(s, ["black", "-"], os.environ.copy(), "hello".encode())
+                a = rb(s, ["black", "-"], os.environ.copy(), None, "hello".encode())
             except OSError as e:
                 self.assertEqual(
                     str(e),
