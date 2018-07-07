@@ -93,27 +93,6 @@ class Black:
         self.all = sublime.Region(0, self.view.size())
         self.variables = view.window().extract_variables()
 
-    def use_pyproject(self):
-        """
-        find pyproject in project root
-        if present, find a black config line then return True
-        """
-
-        try:
-            current_folder = os.path.join(self.variables["folder"])
-        except KeyError:
-            current_folder = os.path.dirname(self.view.file_name())
-
-        pyproject_path = os.path.join(current_folder, "pyproject.toml")
-        try:
-            with open(pyproject_path, "r") as f:
-                lines = f.read()
-            if "[tool.black]" in lines:
-                return True
-        except IOError as e:  # no pyproject
-            return False
-
-        return False
 
     def get_command_line(self, edit, extra=[]):
         # prepare popen arguments
@@ -207,7 +186,6 @@ class Black:
                 startupinfo=self.windows_popen_prepare(),
             )
             out, err = p.communicate(input=content)
-            print(out, err)
 
         except UnboundLocalError as err:  # unboud pour p si popen echoue
             msg = "You may need to install Black and/or configure 'black_command' in Sublack's Settings."

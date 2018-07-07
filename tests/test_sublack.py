@@ -196,24 +196,28 @@ class TestBlackMethod(TestCase):
                     "You may need to install Black and/or configure 'black_command' in Sublack's Settings.",
                 )
 
-    def test_use_pyproject(self):
+    def test_good_working_dir(self):
+        gg = sublack.Black.get_good_working_dir
 
-        up = sublack.Black.use_pyproject
-        with tempfile.TemporaryDirectory() as p:
+        # filename ok
+        s = MagicMock()
+        s.view.file_name.return_value = "/bla/bla.py"
+        self.assertEqual("/bla", gg(s))
 
-            # no pyproject
-            s = MagicMock(**{"variables": {"folder": p}})
-            self.assertFalse(up(s))
+        # no filenmae, no window
+        s.view.file_name.return_value = None
+        s.view.window.return_value = None
+        self.assertEqual(None, gg(s))
 
-            # no  black in pyproejct
-            with open(os.path.join(p, "pyproject.toml"), "w") as o:
-                o.write("bla\nbla\nbla\nbla\nbla\nbla\n")
-            self.assertFalse(up(s))
+        # not folders
+        e = MagicMock()
+        s.view.window.return_value = e
+        e.folders.return_value = []
+        self.assertEqual(None, gg(s))
 
-            # black in pyproject
-            with open(os.path.join(p, "pyproject.toml"), "w") as o:
-                o.write("bla\nbla\nbla\nbla\nbla\nbla\n[tool.black]")
-            self.assertTrue(up(s))
+        # folder dir
+        e.folders.return_value = ["/bla", "ble"]
+        self.assertEqual("/bla", gg(s))
 
     def test_call(self):
         c = sublack.Black.__call__
@@ -318,6 +322,7 @@ class TestFunctions(TestCase):
         self.assertEqual(e, "deuxieme ligne")
 
 
+# from unittest import skip
 # @skip("demonstrating skipping")
 @patch.object(sublack, "is_python", return_value=True)
 class TestHBlack(TestCase):
@@ -379,35 +384,3 @@ class TestHBlack(TestCase):
         self.view = backup
         v.set_scratch(True)
         v.close()
-
-    def test_pyproject_toml(self, s):
-
-        pj = os.path.join
-
-        with tempfile.TemporaryDirectory() as p:
-
-            file = pj(p, "rien.py")
-
-            with open(file, "w") as o:
-                o.write('a = ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]\n')
-
-            with open(pj(p, "pyproject.toml"), "w") as o:
-                o.write("[tool.black]\nline-length = 5")
-
-            self.view.window().run_command("new_window")
-            view = sublime.active_window().open_file(file)
-            view.window().focus_view(view)
-
-            view.run_command("black_file")
-
-            r = sublime.Region(0, view.size())
-            res = view.substr(r).strip()
-
-            view.set_scratch(True)
-            view.window().run_command("close_window")
-            self.assertEqual(
-                res,
-                """a = [
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-]""",
-            )
