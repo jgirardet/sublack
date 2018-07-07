@@ -3,7 +3,6 @@ import sys
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 import os
-import tempfile
 
 version = sublime.version()
 

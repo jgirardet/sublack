@@ -93,7 +93,6 @@ class Black:
         self.all = sublime.Region(0, self.view.size())
         self.variables = view.window().extract_variables()
 
-
     def get_command_line(self, edit, extra=[]):
         # prepare popen arguments
         cmd = self.config["black_command"]
