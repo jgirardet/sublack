@@ -107,8 +107,15 @@ A sublack subsettings is still possible:
     	}
     }
 
+pyproject.toml settings
+***************************
+
+sublack support use of black configuration in pyproject.toml. Be aware that global/project settings will override pyproject.toml's settings.
+See `black about pyproject.toml <https://github.com/ambv/black/#pyprojecttoml>`_ .
+
 Sublime Linter integration
 ----------------------------
+
 You can install `SublimeLinter-addon-black-for-flake <https://github.com/kaste/SublimeLinter-addon-black-for-flake>`_. The plugin will auto configure flake8 and mute all warnings black can actually fix.
 
 
