@@ -164,12 +164,13 @@ class Black:
 
         return content, encoding
 
-    def run_black(self, cmd, env, content):
+    def run_black(self, cmd, env, cwd, content):
 
         try:
             p = subprocess.Popen(
                 cmd,
                 env=env,
+                cwd=cwd,
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -201,12 +202,28 @@ class Black:
         f.set_syntax_file("Packages/Diff/Diff.sublime-syntax")
         f.insert(edit, 0, out.decode(encoding))
 
+    def get_good_working_dir(self):
+        filename = self.view.file_name()
+        if filename:
+            return os.path.dirname(filename)
+
+        window = self.view.window()
+        if not window:
+            return None
+
+        folders = window.folders()
+        if not folders:
+            return None
+
+        return folders[0]
+
     def __call__(self, edit, extra=[]):
 
         cmd = self.get_command_line(edit, extra)
         env = self.get_env()
+        cwd = self.get_good_working_dir()
         content, encoding = self.get_content()
-        returncode, out, err = self.run_black(cmd, env, content)
+        returncode, out, err = self.run_black(cmd, env, cwd, content)
 
         error_message = err.decode(encoding).replace("\r\n", "\n").replace("\r", "\n")
 
