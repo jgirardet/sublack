@@ -2,7 +2,7 @@
 """
 Sublime Text 3 Plugin to invoke Black on a Python file.
 """
-
+import os.path
 import locale
 import os
 import subprocess
@@ -21,13 +21,14 @@ ENCODING_PATTERN = r"^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)"
 ALREADY_FORMATED_MESSAGE = "Sublack: already well formated !"
 
 CONFIG_OPTIONS = [
-    "black_command",
-    "black_on_save",
     "black_line_length",
     "black_fast",
+    "black_skip_string_normalization",
+    "black_command",
+    "black_on_save",
     "black_debug_on",
     "black_default_encoding",
-    "black_skip_string_normalization",
+    "black_autouse_pyproject",
 ]
 
 
@@ -90,6 +91,29 @@ class Black:
         self.view = view
         self.config = get_settings(view)
         self.all = sublime.Region(0, self.view.size())
+        self.variables = view.window().extract_variables()
+
+    def use_pyproject(self):
+        """
+        find pyproject in project root
+        if present, find a black config line then return True
+        """
+
+        try:
+            current_folder = os.path.join(self.variables["folder"])
+        except KeyError:
+            current_folder = os.path.dirname(self.view.file_name())
+
+        pyproject_path = os.path.join(current_folder, "pyproject.toml")
+        try:
+            with open(pyproject_path, "r") as f:
+                lines = f.read()
+            if "[tool.black]" in lines:
+                return True
+        except IOError as e:  # no pyproject
+            return False
+
+        return False
 
     def get_command_line(self, edit, extra=[]):
         # prepare popen arguments
@@ -107,6 +131,16 @@ class Black:
         # set  black in input/ouput mode with -
         cmd = [cmd, "-"]
 
+        # extra args
+        if extra:
+            cmd.extend(extra)
+
+        # skip other config if pyproject with black config in
+        if self.config["black_autouse_pyproject"] and self.use_pyproject():
+            return cmd
+
+        # add black specific config to cmmandline
+
         # Line length option
         if self.config.get("black_line_length"):
             cmd.extend(["-l", str(self.config["black_line_length"])])
@@ -119,13 +153,10 @@ class Black:
         if self.config.get("black_skip_string_normalization"):
             cmd.append("--skip-string-normalization")
 
+        # handle pyi
         filename = self.view.file_name()
         if filename and filename.endswith(".pyi"):
             cmd.append("--pyi")
-
-        # extra args
-        if extra:
-            cmd.extend(extra)
 
         return cmd
 
@@ -165,7 +196,6 @@ class Black:
         return content, encoding
 
     def run_black(self, cmd, env, cwd, content):
-
         try:
             p = subprocess.Popen(
                 cmd,
@@ -174,9 +204,11 @@ class Black:
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
+                cwd=self.get_cwd(),
                 startupinfo=self.windows_popen_prepare(),
             )
             out, err = p.communicate(input=content)
+            print(out,err)
 
         except UnboundLocalError as err:  # unboud pour p si popen echoue
             msg = "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
@@ -191,7 +223,6 @@ class Black:
             raise OSError(
                 "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
             )
-
         return p.returncode, out, err
 
     def do_diff(self, edit, out, encoding):

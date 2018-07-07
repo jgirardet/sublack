@@ -53,26 +53,37 @@ Global settings
 *****************
 Preferences -> Package Settings -> sublack -> settings : 
 
-* black_command:
-	Set custom location. Default = "black".
+Black specifics options
+++++++++++++++++++++++++
 
-* black_on_save:
-	Black is always run before saving file. Default = false.
 
 * black_line_length:
-	Set custom line length option used by `Black`_. Default = null which lets black default.
+    Set custom line length option used by `Black`_. Default = null which lets black default.
 
 * black_fast:
-	Black fast mode. default is false.
-
-* black_debug_on:
-	Show non error messages in console. Default = false. Error messages are always shown in console.
-
-* black_default_encoding:
-	Should not be changed. Only needed on some OSX platforms.
+    Black fast mode. default is false.
 
 * black_skip_string_normalization:
-	Don't normalize string quotes or prefixes. Default = false.
+    Don't normalize string quotes or prefixes. Default = false.
+
+Sublack specifics options
+++++++++++++++++++++++++++
+
+* black_command:
+    Set custom location. Default = "black".
+
+* black_on_save:
+    Black is always run before saving file. Default = false.
+
+* black_debug_on:
+    Show non error messages in console. Default = false. Error messages are always shown in console.
+
+* black_default_encoding:
+    Should not be changed. Only needed on some OSX platforms.
+
+* black_autouse_pyproject:
+    By default, sublack uses pyproject.toml Black's config if present instead of sublack's settings. Set to false to ignore pyproject.toml
+
 
 
 Project settings
