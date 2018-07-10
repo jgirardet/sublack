@@ -42,10 +42,10 @@ diff = """
 @@ -1,11 +1,12 @@
 -def get_encoding_from_file( view):
 +def get_encoding_from_file(view):
- 
+
 -    region = view.line( sublime.Region(0))
 +    region = view.line(sublime.Region(0))
- 
+
 -    encoding = get_encoding_from_region( region, view)
 +    encoding = get_encoding_from_region(region, view)
      if encoding:
@@ -70,12 +70,10 @@ class TestBlackMethod(TestCase):
         gcl = sublack.Black.get_command_line
         v = MagicMock()
         s = MagicMock()
-        s.use_pyproject.return_value = False
         s.config = {
             "black_command": "black",
             "black_line_length": None,
             "black_fast": False,
-            "black_autouse_pyproject": True,
         }
         s.view.file_name.return_value = "blabla.py"
         a = gcl(s, v)
@@ -85,7 +83,6 @@ class TestBlackMethod(TestCase):
             "black_command": "black",
             "black_line_length": 90,
             "black_fast": True,
-            "black_autouse_pyproject": True,
         }
         a = gcl(s, v)
         self.assertEqual(a, ["black", "-", "-l", "90", "--fast"])
@@ -98,27 +95,15 @@ class TestBlackMethod(TestCase):
         s.config = {
             "black_command": "black",
             "black_skip_string_normalization": True,
-            "black_autouse_pyproject": True,
         }
         a = gcl(s, v)
         self.assertEqual(a, ["black", "-", "--skip-string-normalization"])
 
         # test pyi
-        s.config = {"black_command": "black", "black_autouse_pyproject": True}
+        s.config = {"black_command": "black"}
         s.view.file_name.return_value = "blabla.pyi"
         a = gcl(s, v)
         self.assertEqual(a, ["black", "-", "--pyi"])
-
-        # autouse_pyproject
-        s.use_pyproject.return_value = True  # tearup
-        s.config = {
-            "black_command": "black",
-            "black_skip_string_normalization": True,
-            "black_autouse_pyproject": True,
-        }
-        a = gcl(s, v)
-        self.assertEqual(a, ["black", "-"])
-        s.use_pyproject.return_value = False  # Teardown
 
     def test_windows_prepare(self):
         with patch.object(sublack, "sublime") as m:
@@ -282,7 +267,6 @@ class TestFunctions(TestCase):
             "black_debug_on": False,
             "black_default_encoding": "utf-8",
             "black_skip_string_normalization": False,
-            "black_autouse_pyproject": True,
         }
         v = MagicMock()
         c = MagicMock()
@@ -297,7 +281,6 @@ class TestFunctions(TestCase):
             "black_debug_on": True,
             "black_default_encoding": "utf-8",
             "black_skip_string_normalization": False,
-            "black_autouse_pyproject": True,
         }
 
         # settings are all from setting file except on_save
