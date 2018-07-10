@@ -104,7 +104,7 @@ class Black:
 
         cmd = os.path.expanduser(cmd)
 
-        cmd = sublime.expand_variables(cmd, self.view.window().extract_variables())
+        cmd = sublime.expand_variables(cmd, self.variables)
 
         # set  black in input/ouput mode with -
         cmd = [cmd, "-"]
