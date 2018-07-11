@@ -268,6 +268,8 @@ class BlackFileCommand(sublime_plugin.TextCommand):
     def is_enabled(self):
         return is_python(self.view)
 
+    is_visible = is_enabled
+
     def run(self, edit):
         if get_settings(self.view)["black_debug_on"]:
             print("[SUBLACK] : run black_file")
@@ -281,6 +283,8 @@ class BlackDiffCommand(sublime_plugin.TextCommand):
 
     def is_enabled(self):
         return is_python(self.view)
+
+    is_visible = is_enabled
 
     def run(self, edit):
         if get_settings(self.view)["black_debug_on"]:
