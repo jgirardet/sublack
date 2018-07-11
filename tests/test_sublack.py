@@ -70,7 +70,6 @@ class TestBlackMethod(TestCase):
         gcl = sublack.Black.get_command_line
         v = MagicMock()
         s = MagicMock()
-        s.use_pyproject.return_value = False
         s.config = {
             "black_command": "black",
             "black_line_length": None,
