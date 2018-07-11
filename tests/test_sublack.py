@@ -75,7 +75,6 @@ class TestBlackMethod(TestCase):
             "black_command": "black",
             "black_line_length": None,
             "black_fast": False,
-            "black_autouse_pyproject": True,
         }
         s.view.file_name.return_value = "blabla.py"
         a = gcl(s, v)
@@ -85,7 +84,6 @@ class TestBlackMethod(TestCase):
             "black_command": "black",
             "black_line_length": 90,
             "black_fast": True,
-            "black_autouse_pyproject": True,
         }
         a = gcl(s, v)
         self.assertEqual(a, ["black", "-", "-l", "90", "--fast"])
@@ -95,30 +93,15 @@ class TestBlackMethod(TestCase):
         self.assertEqual(a, ["black", "-", "--diff", "-l", "90", "--fast"])
 
         # test skipstring
-        s.config = {
-            "black_command": "black",
-            "black_skip_string_normalization": True,
-            "black_autouse_pyproject": True,
-        }
+        s.config = {"black_command": "black", "black_skip_string_normalization": True}
         a = gcl(s, v)
         self.assertEqual(a, ["black", "-", "--skip-string-normalization"])
 
         # test pyi
-        s.config = {"black_command": "black", "black_autouse_pyproject": True}
+        s.config = {"black_command": "black"}
         s.view.file_name.return_value = "blabla.pyi"
         a = gcl(s, v)
         self.assertEqual(a, ["black", "-", "--pyi"])
-
-        # autouse_pyproject
-        s.use_pyproject.return_value = True  # tearup
-        s.config = {
-            "black_command": "black",
-            "black_skip_string_normalization": True,
-            "black_autouse_pyproject": True,
-        }
-        a = gcl(s, v)
-        self.assertEqual(a, ["black", "-"])
-        s.use_pyproject.return_value = False  # Teardown
 
     def test_windows_prepare(self):
         with patch.object(sublack, "sublime") as m:
@@ -282,7 +265,6 @@ class TestFunctions(TestCase):
             "black_debug_on": False,
             "black_default_encoding": "utf-8",
             "black_skip_string_normalization": False,
-            "black_autouse_pyproject": True,
         }
         v = MagicMock()
         c = MagicMock()
@@ -297,7 +279,6 @@ class TestFunctions(TestCase):
             "black_debug_on": True,
             "black_default_encoding": "utf-8",
             "black_skip_string_normalization": False,
-            "black_autouse_pyproject": True,
         }
 
         # settings are all from setting file except on_save
