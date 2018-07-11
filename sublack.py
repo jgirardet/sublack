@@ -28,7 +28,7 @@ CONFIG_OPTIONS = [
     "black_on_save",
     "black_debug_on",
     "black_default_encoding",
-    "black_autouse_pyproject",
+    # "black_autouse_pyproject",
 ]
 
 
@@ -104,7 +104,7 @@ class Black:
 
         cmd = os.path.expanduser(cmd)
 
-        cmd = sublime.expand_variables(cmd, self.view.window().extract_variables())
+        cmd = sublime.expand_variables(cmd, self.variables)
 
         # set  black in input/ouput mode with -
         cmd = [cmd, "-"]
@@ -113,9 +113,9 @@ class Black:
         if extra:
             cmd.extend(extra)
 
-        # skip other config if pyproject with black config in
-        if self.config["black_autouse_pyproject"] and self.use_pyproject():
-            return cmd
+        # # skip other config if pyproject with black config in
+        # if self.config["black_autouse_pyproject"] and self.use_pyproject():
+        #     return cmd
 
         # add black specific config to cmmandline
 
