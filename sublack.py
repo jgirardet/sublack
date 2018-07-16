@@ -16,6 +16,11 @@ SETTINGS_FILE_NAME = "{}.sublime-settings".format(PACKAGE_NAME)
 SETTINGS_NS_PREFIX = "{}.".format(PACKAGE_NAME)
 KEY_ERROR_MARKER = "__KEY_NOT_PRESENT_MARKER__"
 
+# The status sections are ordered by key, so using 'sublk' will place it after
+# the SublimeLinter stuff which uses 'subli...'.
+STATUS_KEY = "sublk"
+BLACK_ON_SAVE_VIEW_SETTING = "sublack.black_on_save"
+
 ENCODING_PATTERN = r"^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)"
 
 ALREADY_FORMATED_MESSAGE = "Sublack: already well formated !"
@@ -285,6 +290,50 @@ class BlackDiffCommand(sublime_plugin.TextCommand):
         if get_settings(self.view)["black_debug_on"]:
             print("[SUBLACK] : run black_diff")
         Black(self.view)(edit, extra=["--diff"])
+
+
+class BlackToggleBlackOnSaveCommand(sublime_plugin.TextCommand):
+    """
+    The "black_toggle_black_on_save" switches the setting with the same
+    name temporarily per view.
+    """
+
+    def is_enabled(self):
+        return is_python(self.view)
+
+    is_visible = is_enabled
+
+    def description(self):
+        settings = get_settings(self.view)
+        if settings['black_on_save']:
+            return "Sublack: Disable black on save"
+        else:
+            return "Sublack: Enable black on save"
+
+    def run(self, edit):
+        view = self.view
+
+        settings = get_settings(view)
+        current_state = settings['black_on_save']
+        next_state = not current_state
+
+        # A setting set on a particular view overules all other places where
+        # the same setting could have been set as well. E.g. project settings.
+        # Now, we first `erase` such a view setting which is luckily an
+        # operation that never throws, and immediately check again if the
+        # wanted next state is fulfilled by that side effect.
+        # If yes, we're almost done and just clean up the status area.
+        view.settings().erase(BLACK_ON_SAVE_VIEW_SETTING)
+        if get_settings(view)['black_on_save'] == next_state:
+            view.erase_status(STATUS_KEY)
+            return
+
+        # Otherwise, we set the next state, and indicate in the status bar
+        # that this view now deviates from the other views.
+        view.settings().set(BLACK_ON_SAVE_VIEW_SETTING, next_state)
+        view.set_status(
+            STATUS_KEY, "black: {}".format('ON' if next_state else 'OFF')
+        )
 
 
 class EventListener(sublime_plugin.EventListener):

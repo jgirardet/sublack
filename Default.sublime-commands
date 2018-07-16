@@ -2,9 +2,13 @@
     {
         "caption": "Sublack: Format file",
         "command": "black_file"
-    },    
+    },
     {
         "caption": "Sublack: Diff file",
         "command": "black_diff"
+    },
+    {
+        "caption": "Sublack: Toggle black on save for current view",
+        "command": "black_toggle_black_on_save"
     },
 ]
