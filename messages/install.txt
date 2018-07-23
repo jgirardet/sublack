@@ -21,7 +21,8 @@ Changelog
 -----------
 	:
 	code cleanup (Thanks to Herr Kaste)
-	add visble for blackcommand (Thanks to Herr Kaste)
+	add visible for blackcommand (Thanks to Herr Kaste)
+	add ToggleBlackOnSave par view command (thanks to Herr Kaste)
 1.11.1:
 	- fix broken pyproject
 1.11.0:
