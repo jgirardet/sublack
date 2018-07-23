@@ -29,7 +29,8 @@ Usage
 	Press `Ctrl-Alt-Shift-B` will show diff in a new tab.
 	You can also `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Diff file`.
 
-
+* Toggle Black on save for current view :
+    Press `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Toggle black on save for current view`.
 
 Installation
 -------------
