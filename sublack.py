@@ -340,3 +340,7 @@ class EventListener(sublime_plugin.EventListener):
     def on_pre_save(self, view):
         if get_settings(view)["black_on_save"]:
             view.run_command("black_file")
+
+    def on_post_text_command(self, view, command_name, args):
+        if command_name == 'black_file':
+            view.show(view.line(view.sel()[0]))
