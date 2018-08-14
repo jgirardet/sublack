@@ -96,6 +96,21 @@ class TestBlackMethod(TestCase):
         a = gcl(s, v)
         self.assertEqual(a, ["black", "-", "--skip-string-normalization"])
 
+        # test include
+        s.config = {"black_command": "black", "black_include": "hello"}
+        a = gcl(s, v)
+        self.assertEqual(a, ["black", "-", "--include", "hello"])
+
+        # test exclude
+        s.config = {"black_command": "black", "black_exclude": "hello"}
+        a = gcl(s, v)
+        self.assertEqual(a, ["black", "-", "--exclude", "hello"])
+
+        # test py36
+        s.config = {"black_command": "black", "black_py36": True}
+        a = gcl(s, v)
+        self.assertEqual(a, ["black", "-", "--py36"])
+
         # test pyi
         s.config = {"black_command": "black"}
         s.view.file_name.return_value = "blabla.pyi"
@@ -264,6 +279,9 @@ class TestFunctions(TestCase):
             "black_debug_on": False,
             "black_default_encoding": "utf-8",
             "black_skip_string_normalization": False,
+            "black_include": None,
+            "black_exclude": None,
+            "black_py36": None,
         }
         v = MagicMock()
         c = MagicMock()
@@ -278,7 +296,10 @@ class TestFunctions(TestCase):
             "black_debug_on": True,
             "black_default_encoding": "utf-8",
             "black_skip_string_normalization": False,
-        }
+            "black_include": None,
+            "black_py36": None,
+            "black_exclude": None,
+            }
 
         # settings are all from setting file except on_save
         self.assertDictEqual(res, gs(v))

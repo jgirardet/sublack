@@ -17,6 +17,15 @@
       // add --black_skip_string_normalization
       "black_skip_string_normalization": false,
 
+      // Directory to include: null is black's default
+      "black_include": null,
+
+      // Directory to exclude: null is black's default
+      "black_exclude": null,
+
+      // force py36 syntax mode
+      "black_py36": null,
+
       // ##########################
       // Sublack specific options #
       // ##########################

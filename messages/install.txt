@@ -20,8 +20,9 @@ Install Black. Minimal version : 18.6.b4
 Changelog
 -----------
 
-1.12.1:
+next:
 	fix scroll after "black_file"
+	add option include/exclude/py36
 1.12.0:
 	code cleanup (Thanks to Herr Kaste)
 	add visible for blackcommand (Thanks to Herr Kaste)

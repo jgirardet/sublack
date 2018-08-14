@@ -33,6 +33,9 @@ CONFIG_OPTIONS = [
     "black_on_save",
     "black_debug_on",
     "black_default_encoding",
+    "black_include",
+    "black_exclude",
+    "black_py36",
 ]
 
 
@@ -135,6 +138,18 @@ class Black:
         filename = self.view.file_name()
         if filename and filename.endswith(".pyi"):
             cmd.append("--pyi")
+
+        # include /exclude
+        if self.config.get("black_include"):
+            cmd.extend(["--include", str(self.config["black_include"])])
+
+        if self.config.get("black_exclude"):
+            cmd.extend(["--exclude", str(self.config["black_exclude"])])
+
+        # black_py36
+        if self.config.get("black_py36"):
+            cmd.append("--py36")
+        
 
         return cmd
 
@@ -305,7 +320,7 @@ class BlackToggleBlackOnSaveCommand(sublime_plugin.TextCommand):
 
     def description(self):
         settings = get_settings(self.view)
-        if settings['black_on_save']:
+        if settings["black_on_save"]:
             return "Sublack: Disable black on save"
         else:
             return "Sublack: Enable black on save"
@@ -314,7 +329,7 @@ class BlackToggleBlackOnSaveCommand(sublime_plugin.TextCommand):
         view = self.view
 
         settings = get_settings(view)
-        current_state = settings['black_on_save']
+        current_state = settings["black_on_save"]
         next_state = not current_state
 
         # A setting set on a particular view overules all other places where
@@ -324,16 +339,14 @@ class BlackToggleBlackOnSaveCommand(sublime_plugin.TextCommand):
         # wanted next state is fulfilled by that side effect.
         # If yes, we're almost done and just clean up the status area.
         view.settings().erase(BLACK_ON_SAVE_VIEW_SETTING)
-        if get_settings(view)['black_on_save'] == next_state:
+        if get_settings(view)["black_on_save"] == next_state:
             view.erase_status(STATUS_KEY)
             return
 
         # Otherwise, we set the next state, and indicate in the status bar
         # that this view now deviates from the other views.
         view.settings().set(BLACK_ON_SAVE_VIEW_SETTING, next_state)
-        view.set_status(
-            STATUS_KEY, "black: {}".format('ON' if next_state else 'OFF')
-        )
+        view.set_status(STATUS_KEY, "black: {}".format("ON" if next_state else "OFF"))
 
 
 class EventListener(sublime_plugin.EventListener):
@@ -342,5 +355,5 @@ class EventListener(sublime_plugin.EventListener):
             view.run_command("black_file")
 
     def on_post_text_command(self, view, command_name, args):
-        if command_name == 'black_file':
+        if command_name == "black_file":
             view.show(view.line(view.sel()[0]))
