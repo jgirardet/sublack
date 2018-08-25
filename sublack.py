@@ -11,6 +11,8 @@ import re
 import sublime
 import sublime_plugin
 
+import requests
+
 PACKAGE_NAME = "sublack"
 SETTINGS_FILE_NAME = "{}.sublime-settings".format(PACKAGE_NAME)
 SETTINGS_NS_PREFIX = "{}.".format(PACKAGE_NAME)
@@ -36,7 +38,18 @@ CONFIG_OPTIONS = [
     "black_include",
     "black_exclude",
     "black_py36",
+    "black_use_blackd",
+    "black_blackd_host",
+    "black_blackd_port",
 ]
+
+
+HEADERS_TABLE = {
+    "--fast": {"X-Fast-Or-Safe": "fast"},
+    "--skip-string-normalization": {"X-Skip-String-Normalization": "1"},
+    "--pyi": {"X-Python-Variant": {"X-Python-Variant": "pyi"}},
+    "--py36": {"X-Python-Variant": {"X-Python-Variant": "3.6"}},
+}
 
 
 def get_settings(view):
@@ -87,6 +100,62 @@ def get_encoding_from_file(view):
         encoding = get_encoding_from_region(view.line(region.end() + 1), view)
         return encoding
     return None
+
+
+class Blackd:
+    """warpper between black command line and blackd."""
+
+    def __init__(self, cmd, content, encoding, config):
+        self.headers = self.format_headers(cmd)
+        self.content = content
+        self.encoding = encoding
+        self.config = config
+
+    def format_headers(self, cmd):
+        """Get command line args and turn it to properly formatted headers"""
+        headers = {}
+
+        # all but line length
+        for item in cmd:
+            if item in HEADERS_TABLE:
+                headers.update(HEADERS_TABLE[item])
+        # line length
+        if "-l" in cmd:
+            headers["X-Line-Length"] = cmd[cmd.index("-l") + 1]
+
+        return headers
+
+    def process_response(self, response):
+        """Format to the Popen format.
+
+        returncode(int), out(byte), err(byte)
+        """
+        if response.status_code == 200:
+            return 0, response.content, b""
+
+        elif response.status_code == 204:
+            return 0, response.content, b"unchanged"
+
+        elif response.status_code in [400, 500]:
+            return -1, b"", response.content
+
+    def __call__(self):
+
+        self.headers.update(
+            {"Content-Type": "application/octet-stream; charset=" + self.encoding}
+        )
+
+        url = (
+            "http://"
+            + self.config["black_blackd_host"]
+            + ":"
+            + self.config["black_blackd_port"]
+            + "/"
+        )
+
+        response = requests.post(url, data=self.content, headers=self.headers)
+
+        return self.process_response(response)
 
 
 class Black:
@@ -149,7 +218,6 @@ class Black:
         # black_py36
         if self.config.get("black_py36"):
             cmd.append("--py36")
-        
 
         return cmd
 
@@ -245,7 +313,13 @@ class Black:
         env = self.get_env()
         cwd = self.get_good_working_dir()
         content, encoding = self.get_content()
-        returncode, out, err = self.run_black(cmd, env, cwd, content)
+
+        if (
+            self.config["black_use_blackd"] and not "--diff" in extra
+        ):  # no diff with server
+            returncode, out, err = Blackd(cmd, content, encoding, self.config)()
+        else:
+            returncode, out, err = self.run_black(cmd, env, cwd, content)
 
         error_message = err.decode(encoding).replace("\r\n", "\n").replace("\r", "\n")
 

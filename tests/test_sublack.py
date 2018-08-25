@@ -219,6 +219,7 @@ class TestBlackMethod(TestCase):
         c = sublack.Black.__call__
         s = MagicMock()
         s.get_content.return_value = (1, "utf-8")
+        s.config = {"black_use_blackd": False, "black_debug_on": False}
 
         # standard
         s.run_black.return_value = (0, b"hello\n", b"reformatted")
@@ -282,6 +283,9 @@ class TestFunctions(TestCase):
             "black_include": None,
             "black_exclude": None,
             "black_py36": None,
+            "black_use_blackd": False,
+            "black_blackd_host": "localhost",
+            "black_blackd_port": "45484",
         }
         v = MagicMock()
         c = MagicMock()
@@ -299,7 +303,10 @@ class TestFunctions(TestCase):
             "black_include": None,
             "black_py36": None,
             "black_exclude": None,
-            }
+            "black_use_blackd": False,
+            "black_blackd_host": "localhost",
+            "black_blackd_port": "45484",
+        }
 
         # settings are all from setting file except on_save
         self.assertDictEqual(res, gs(v))
@@ -325,7 +332,7 @@ class TestFunctions(TestCase):
 # from unittest import skip
 # @skip("demonstrating skipping")
 @patch.object(sublack, "is_python", return_value=True)
-class TestHBlack(TestCase):
+class TestBlack(TestCase):
     def setUp(self):
         self.view = sublime.active_window().new_file()
         # make sure we have a window to work with
@@ -348,6 +355,72 @@ class TestHBlack(TestCase):
 
     def test_blacked(self, s):
         self.setText(unblacked)
+        self.view.run_command("black_file")
+        self.assertEqual(blacked, self.all())
+
+    def test_nothing_todo(self, s):
+        self.setText(blacked)
+        self.view.run_command("black_file")
+        self.assertEqual(blacked, self.all())
+
+    def test_dirty_stay_dirty(self, s):
+        self.setText(blacked)
+        self.assertTrue(self.view.is_dirty())
+        self.view.run_command("black_file")
+        self.assertTrue(self.view.is_dirty())
+        self.assertEqual(blacked, self.all())
+
+    def test_do_diff(self, s):
+        # setup in case of fail
+        # self.addCleanup(self.view.close)
+        # self.addCleanup(self.view.set_scratch, True)
+
+        self.setText(unblacked)
+        self.view.set_name("base")
+        backup = self.view
+        self.view.run_command("black_diff")
+        w = sublime.active_window()
+        v = w.active_view()
+        res = sublime.Region(0, v.size())
+        res = sublime.Region(v.lines(res)[2].begin(), v.size())
+        res = v.substr(res).strip()
+        self.assertEqual(res, diff)
+        self.assertEqual(
+            v.settings().get("syntax"), "Packages/Diff/Diff.sublime-syntax"
+        )
+        self.view = backup
+        v.set_scratch(True)
+        v.close()
+
+
+@patch.object(sublack, "is_python", return_value=True)
+class TestBlackdServer(TestCase):
+    def setUp(self):
+        self.view = sublime.active_window().new_file()
+        # self.view.settings().set("black_use_blackd", True)
+        # make sure we have a window to work with
+        s = sublime.load_settings("Preferences.sublime-settings")
+        s.set("close_windows_when_empty", False)
+
+    def tearDown(self):
+        if self.view:
+            self.view.set_scratch(True)
+            self.view.window().focus_view(self.view)
+            self.view.window().run_command("close_file")
+
+    def all(self):
+        all_file = sublime.Region(0, self.view.size())
+        return self.view.substr(all_file).strip()
+
+    def setText(self, string):
+        self.view.run_command("append", {"characters": string})
+
+    # def test_fail(self, s):
+    #     self.assertEqual(True, self.view.settings().get("black_use_blackd"))
+
+    def test_blacked(self, s):
+        self.setText(unblacked)
+        self.view.settings().set("black_use_blackd", True)
         self.view.run_command("black_file")
         self.assertEqual(blacked, self.all())
 
