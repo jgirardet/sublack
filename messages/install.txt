@@ -21,6 +21,7 @@ Changelog
 -----------
 
 next:
+	add blackd support
 	fix scroll after "black_file"
 	add option include/exclude/py36
 1.12.0:

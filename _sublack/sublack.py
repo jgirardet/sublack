@@ -232,17 +232,17 @@ class Black:
         content, encoding = self.get_content()
 
         if (
-            self.config["black_use_blackd"] and not "--diff" in extra
+            self.config["black_use_blackd"] and "--diff" not in extra
         ):  # no diff with server
+            LOG.debug("using blackd")
             returncode, out, err = Blackd(cmd, content, encoding, self.config)()
         else:
+            LOG.debug("using black")
             returncode, out, err = self.run_black(cmd, env, cwd, content)
 
         error_message = err.decode(encoding).replace("\r\n", "\n").replace("\r", "\n")
 
-        # logging
-        if self.config["black_debug_on"]:
-            print("[SUBLACK] : %s" % error_message)
+        LOG.debug("[SUBLACK] : %s" % error_message)
 
         # failure
         if returncode != 0:

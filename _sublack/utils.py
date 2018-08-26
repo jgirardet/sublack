@@ -3,7 +3,7 @@ import subprocess
 import sublime
 import os
 import signal
-
+import socket
 from .consts import (
     CONFIG_OPTIONS,
     ENCODING_PATTERN,
@@ -12,6 +12,10 @@ from .consts import (
     SETTINGS_FILE_NAME,
     SETTINGS_NS_PREFIX,
 )
+
+import logging
+
+LOG = logging.getLogger("sublack")
 
 
 def get_settings(view):
@@ -45,7 +49,6 @@ def get_encoding_from_region(region, view):
     """
 
     ligne = view.substr(region)
-    print(ligne)
     encoding = re.findall(ENCODING_PATTERN, ligne)
 
     return encoding[0] if encoding else None
@@ -66,15 +69,30 @@ def get_encoding_from_file(view):
 
 
 class BlackdServer:
-    def __init__(self, host="localhost", port="45484"):
-        self.port = port
+    def __init__(self, host="localhost", port=None):
+        if not port:
+            self.port = self.get_open_port()
         self.host = host
+        self.proc = None
 
     def run(self):
         # use this complexity to properly terminate blackd
+
         self.proc = subprocess.Popen(
             ["blackd"], stdout=subprocess.PIPE, shell=True, preexec_fn=os.setsid
+        )
+        LOG.info(
+            "blackd running at {} on port {} with pid {}".format(
+                self.host, self.port, self.proc.pid
+            )
         )
 
     def stop(self):
         os.killpg(os.getpgid(self.proc.pid), signal.SIGTERM)
+
+    def get_open_port(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind(("", 0))
+        port = s.getsockname()[1]
+        s.close()
+        return port

@@ -22,12 +22,8 @@ class BlackFileCommand(sublime_plugin.TextCommand):
     is_visible = is_enabled
 
     def run(self, edit):
-        import time
-
-        debut = time.time()
         LOG.debug("[SUBLACK] : run black_file")
         Black(self.view)(edit)
-        # LOG.debug("elpsed = {}".format(time.time() - debut))
 
 
 class BlackDiffCommand(sublime_plugin.TextCommand):
@@ -41,8 +37,7 @@ class BlackDiffCommand(sublime_plugin.TextCommand):
     is_visible = is_enabled
 
     def run(self, edit):
-        if get_settings(self.view)["black_debug_on"]:
-            print("[SUBLACK] : run black_diff")
+        LOG.debug("[SUBLACK] : run black_diff")
         Black(self.view)(edit, extra=["--diff"])
 
 
