@@ -22,8 +22,11 @@ Changelog
 
 next:
 	add blackd support
+	refactor code
 	fix scroll after "black_file"
 	add option include/exclude/py36
+	fix "nothing to do" test
+
 1.12.0:
 	code cleanup (Thanks to Herr Kaste)
 	add visible for blackcommand (Thanks to Herr Kaste)

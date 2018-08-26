@@ -91,6 +91,14 @@ Sublack specifics options
 * black_default_encoding:
     Should not be changed. Only needed on some OSX platforms.
 
+* black_use_blackd:
+    Use blackd instead of black. Default is false.
+
+* blackd server host:
+    default = "localhost",
+
+* blackd server port:
+    default = "45484"
 
 Project settings
 *******************
@@ -151,6 +159,7 @@ Contributing
 * remove sublack via Package Control.
 * fork sublack
 * clone your sublack fork  to your Packages folder (Preferences -->  Browse Packages...).
+* Package Control: Satisfy Dependencies (install requests)
 * install UnitTesting in Package Control
 * adding a test for new features or bugfix is really nice	 if you can.
 * add your name to Authors in readme.

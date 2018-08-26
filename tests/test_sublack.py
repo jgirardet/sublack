@@ -429,6 +429,7 @@ BASE_SETTINGS = {
 }
 
 
+@skip("traivs")
 @patch.object(sublack.commands, "is_python", return_value=True)
 @patch.object(sublack.sublack, "get_settings", return_value=BASE_SETTINGS)
 class TestBlackdServer(TestCase):
