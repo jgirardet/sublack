@@ -11,7 +11,7 @@ version = sublime.version()
 sublack = sys.modules["sublack._sublack"]
 
 
-blackd_proc = sublack.utils.BlackdServer()
+# blackd_proc = sublack.utils.BlackdServer()
 
 
 def setUpModule():
