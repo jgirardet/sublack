@@ -14,17 +14,17 @@ sublack = sys.modules["sublack._sublack"]
 # blackd_proc = sublack.utils.BlackdServer()
 
 
-def setUpModule():
-    try:
-        requests.get("http://localhost:45484")
-    except requests.ConnectionError:
-        global blackd_proc
-        blackd_proc.run()
+# def setUpModule():
+#     try:
+#         requests.get("http://localhost:45484")
+#     except requests.ConnectionError:
+#         global blackd_proc
+#         blackd_proc.run()
 
 
-def tearDownModule():
-    global blackd_proc
-    blackd_proc.stop()
+# def tearDownModule():
+#     global blackd_proc
+#     blackd_proc.stop()
 
 
 blacked = """def get_encoding_from_file(view):
@@ -346,6 +346,7 @@ class TestUtils(TestCase):
         m.side_effect = [None, "deuxieme ligne"]
         e = sublack.utils.get_encoding_from_file(MagicMock())
         self.assertEqual(e, "deuxieme ligne")
+
 
 
 # @skip("demonstrating skipping")
