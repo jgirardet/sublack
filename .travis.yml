@@ -1,6 +1,6 @@
 env:
     global:
-        - PACKAGE="sublack" # Package name
+        - PACKAGE="sublack2" # Package name
         - SUBLIME_TEXT_VERSION="3"
         # use UNITTESTING_TAG to specific tag of UnitTesting
         # - UNITTESTING_TAG="master"
@@ -31,9 +31,12 @@ install:
             brew update;
             brew install python || brew upgrade python;
       fi
-    - pip3 install black
+    - pip3 install aiohttp
+    - pip3 install git+https://github.com/ambv/black@server
+    - pip3 install requests
+    # - pip3 install black requests
     # install Package Control and package denepdencies
-    # - sh travis.sh install_package_control
+    - sh travis.sh install_package_control
 
 script:
     # run tests with test coverage report

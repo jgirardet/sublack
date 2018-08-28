@@ -13,7 +13,7 @@ import requests
 
 import logging
 
-from .consts import HEADERS_TABLE, ALREADY_FORMATED_MESSAGE
+from .consts import HEADERS_TABLE, ALREADY_FORMATED_MESSAGE, STATUS_KEY
 from .utils import get_settings, get_encoding_from_file
 
 LOG = logging.getLogger("sublack")
@@ -61,7 +61,6 @@ class Blackd:
         self.headers.update(
             {"Content-Type": "application/octet-stream; charset=" + self.encoding}
         )
-
         url = (
             "http://"
             + self.config["black_blackd_host"]
@@ -69,8 +68,13 @@ class Blackd:
             + self.config["black_blackd_port"]
             + "/"
         )
-
-        response = requests.post(url, data=self.content, headers=self.headers)
+        try:
+            response = requests.post(url, data=self.content, headers=self.headers)
+        except Exception as err:
+            response = requests.Response()
+            response.status_code = 500
+            response._content = str(err).encode()
+            LOG.exception("Request to  Blackd failed")
 
         return self.process_response(response)
 
@@ -199,6 +203,7 @@ class Black:
             raise OSError(
                 "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
             )
+
         return p.returncode, out, err
 
     def do_diff(self, edit, out, encoding):
@@ -251,7 +256,7 @@ class Black:
 
         # already formated, nothing changes
         elif "unchanged" in error_message:
-            self.view.window().status_message(ALREADY_FORMATED_MESSAGE)
+            self.view.set_status(STATUS_KEY, ALREADY_FORMATED_MESSAGE)
 
         # diff mode
         elif "--diff" in extra:
