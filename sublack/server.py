@@ -6,7 +6,6 @@ import time
 
 
 import logging
-
 LOG = logging.getLogger("sublack")
 
 
@@ -50,7 +49,7 @@ class BlackdServer:
 
     def stop(self):
         self.proc.terminate()
-        LOG.info("blackd shutdown")
+        LOG.info('blackd shutdown')
 
     def get_open_port(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
