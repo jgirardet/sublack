@@ -1,9 +1,17 @@
+""" sublack
+    
+
+   isort:skip_file
+"""
+
 import sys
 
 import logging
 import sublime
+import sys, os
 
-from .sublack import *  # noqa
+sys.path.append(os.path.dirname(__file__))
+
 
 LOG = logging.getLogger("sublack")
 handler = logging.StreamHandler()
@@ -11,7 +19,11 @@ LOG.addHandler(handler)
 LOG.setLevel(logging.INFO)
 
 
-from . import sublack
+from .sublack import *  # noqa
+import sublack
+
+# from . import sublack
+
 
 sys.modules["sublack"] = sublack
 
