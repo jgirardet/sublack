@@ -1,6 +1,6 @@
 env:
     global:
-        - PACKAGE="sublack2" # Package name
+        - PACKAGE="sublack" # Package name
         - SUBLIME_TEXT_VERSION="3"
         # use UNITTESTING_TAG to specific tag of UnitTesting
         # - UNITTESTING_TAG="master"
