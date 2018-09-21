@@ -137,7 +137,7 @@ class TestRunUnix(TestCase):
         self.w.terminate()
         self.w.wait(timeout=2)
         self.assertIsNotNone(self.w.poll())
-        self.assertIsNotNone(self.t.wait(timeout=2))
+        self.assertIsNotNone(self.t.wait(timeout=6))
         self.assertIsNotNone(self.p.wait(timeout=2))
 
     def test_checker_stops_if_target_stops(self):
