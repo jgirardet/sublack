@@ -9,9 +9,13 @@ from .consts import (
     SETTINGS_NS_PREFIX,
 )
 
-import logging
-
-LOG = logging.getLogger("sublack")
+import pathlib
+import subprocess
+import signal
+import os
+from functools import partial
+import socket
+import requests
 
 
 def get_settings(view):
@@ -63,3 +67,56 @@ def get_encoding_from_file(view):
         return encoding
     return None
 
+
+def get_open_port():
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind(("", 0))
+    port = s.getsockname()[1]
+    s.close()
+    return port
+
+
+def cache_path():
+    return pathlib.Path(sublime.cache_path(), PACKAGE_NAME)
+
+
+def startup_info():
+    "running windows process in background"
+    if sublime.platform() == "windows":
+        st = subprocess.STARTUPINFO()
+        st.dwFlags = (
+            subprocess.STARTF_USESHOWWINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
+        )
+        st.wShowWindow = subprocess.SW_HIDE
+        return st
+    else:
+        return None
+
+
+def kill_with_pid(pid: int):
+    if sublime.platform() == "windows":
+        # need to properly kill precess traa
+        subprocess.call(
+            ["taskkill", "/F", "/T", "/PID", str(pid)], startupinfo=startup_info()
+        )
+    else:
+        os.kill(pid, signal.SIGTERM)
+
+
+popen = partial(subprocess.Popen, startupinfo=startup_info())
+
+
+def check_blackd_on_http(port, host="localhost"):
+    """Check if blackd is running and if tested port is free
+
+    Returns: is_Running, is_Port_is_Free"""
+    try:
+        resp = requests.post("http://" + host + ":" + port, data="a=1")
+    except requests.ConnectionError:
+        return False, True
+    else:
+
+        if resp.content == b"a = 1\n":
+            return True, False
+        else:
+            return False, False

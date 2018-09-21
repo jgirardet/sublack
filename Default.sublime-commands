@@ -11,4 +11,13 @@
         "caption": "Sublack: Toggle black on save for current view",
         "command": "black_toggle_black_on_save"
     },
+   {
+        "caption": "Sublack: Start Blackd Server",
+        "command": "blackd_start"
+    },
+   {
+        "caption": "Sublack: Stop Blackd Server",
+        "command": "blackd_stop"
+    }
+
 ]

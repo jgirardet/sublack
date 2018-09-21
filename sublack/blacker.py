@@ -13,22 +13,31 @@ import requests
 
 import logging
 
-from .consts import HEADERS_TABLE, ALREADY_FORMATED_MESSAGE, STATUS_KEY
-from .utils import get_settings, get_encoding_from_file
+from .consts import (
+    HEADERS_TABLE,
+    ALREADY_FORMATTED_MESSAGE,
+    STATUS_KEY,
+    PACKAGE_NAME,
+    REFORMATTED_MESSAGE,
+)
+from .utils import get_settings, get_encoding_from_file, check_blackd_on_http
 
-LOG = logging.getLogger("sublack")
+
+LOG = logging.getLogger(PACKAGE_NAME)
 
 
 class Blackd:
     """warpper between black command line and blackd."""
 
     def __init__(self, cmd, content, encoding, config):
+
         self.headers = self.format_headers(cmd)
         self.content = content
         self.encoding = encoding
         self.config = config
 
     def format_headers(self, cmd):
+
         """Get command line args and turn it to properly formatted headers"""
         headers = {}
 
@@ -40,6 +49,7 @@ class Blackd:
         if "-l" in cmd:
             headers["X-Line-Length"] = cmd[cmd.index("-l") + 1]
 
+        LOG.debug("headers : %s", headers)
         return headers
 
     def process_response(self, response):
@@ -47,16 +57,28 @@ class Blackd:
 
         returncode(int), out(byte), err(byte)
         """
+        LOG.debug("Respone status code : %s", response.status_code)
         if response.status_code == 200:
-            return 0, response.content, b""
+            return 0, response.content, b"1 file reformated"
 
         elif response.status_code == 204:
-            return 0, response.content, b"unchanged"
+            return 0, response.content, b"1 file left unchanged"
 
         elif response.status_code in [400, 500]:
             return -1, b"", response.content
 
     def __call__(self):
+
+        if not check_blackd_on_http(self.config["black_blackd_port"])[0]:
+            response = requests.Response()
+            response.status_code = 500
+            msg = "blackd not running on port {}".format(
+                self.config["black_blackd_port"]
+            )
+            response._content = msg.encode()
+            LOG.error(msg)
+            sublime.message_dialog(msg + ", you can start it with blackd_startcommand")
+            return self.process_response(response)
 
         self.headers.update(
             {"Content-Type": "application/octet-stream; charset=" + self.encoding}
@@ -74,7 +96,8 @@ class Blackd:
             response = requests.Response()
             response.status_code = 500
             response._content = str(err).encode()
-            LOG.exception("Request to  Blackd failed")
+            LOG.error("Request to  Blackd failed")
+            LOG.debug("%s", err)
 
         return self.process_response(response)
 
@@ -90,12 +113,14 @@ class Black:
         self.all = sublime.Region(0, self.view.size())
         self.variables = view.window().extract_variables()
 
+        LOG.debug("config: %s", self.config)
+
     def get_command_line(self, edit, extra=[]):
         # prepare popen arguments
         cmd = self.config["black_command"]
         if not cmd:
             # always show error in popup
-            msg = "Black command not configured. Problem with settings?"
+            msg = "Black command not configured. Problem with settings ?"
             sublime.error_message(msg)
             raise Exception(msg)
 
@@ -140,6 +165,7 @@ class Black:
         if self.config.get("black_py36"):
             cmd.append("--py36")
 
+        LOG.debug("command line: %s", cmd)
         return cmd
 
     def windows_popen_prepare(self):
@@ -175,6 +201,7 @@ class Black:
         content = self.view.substr(self.all)
         content = content.encode(encoding)
 
+        LOG.debug("encoding: %s", encoding)
         return content, encoding
 
     def run_black(self, cmd, env, cwd, content):
@@ -204,6 +231,7 @@ class Black:
                 "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
             )
 
+        LOG.debug("run_black: returncode %s, err: %s", p.returncode, err)
         return p.returncode, out, err
 
     def do_diff(self, edit, out, encoding):
@@ -234,6 +262,8 @@ class Black:
         cmd = self.get_command_line(edit, extra)
         env = self.get_env()
         cwd = self.get_good_working_dir()
+        LOG.debug("working dir: %s", cwd)
+
         content, encoding = self.get_content()
 
         if (
@@ -247,16 +277,16 @@ class Black:
 
         error_message = err.decode(encoding).replace("\r\n", "\n").replace("\r", "\n")
 
-        LOG.debug("[SUBLACK] : %s" % error_message)
+        LOG.debug("black says : %s" % error_message)
 
         # failure
         if returncode != 0:
-            self.view.window().status_message(error_message)
+            self.view.set_status(STATUS_KEY, error_message)
             return returncode
 
         # already formated, nothing changes
         elif "unchanged" in error_message:
-            self.view.set_status(STATUS_KEY, ALREADY_FORMATED_MESSAGE)
+            self.view.set_status(STATUS_KEY, ALREADY_FORMATTED_MESSAGE)
 
         # diff mode
         elif "--diff" in extra:
@@ -265,3 +295,4 @@ class Black:
         # standard mode
         else:
             self.view.replace(edit, self.all, out.decode(encoding))
+            self.view.set_status(STATUS_KEY, REFORMATTED_MESSAGE)

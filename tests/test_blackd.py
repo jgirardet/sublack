@@ -1,3 +1,7 @@
+"""
+TODO : test headers
+"""
+
 from unittest import TestCase
 from unittest.mock import patch
 
@@ -25,7 +29,7 @@ BASE_SETTINGS = {
     "black_fast": False,
     "black_debug_on": True,
     "black_default_encoding": "utf-8",
-    "black_skip_string_normalization": False,
+    "black_skip_string_normalization": True,
     "black_include": None,
     "black_py36": None,
     "black_exclude": None,
@@ -57,12 +61,10 @@ class TestBlackdServer(TestCase):
     def setText(self, string):
         self.view.run_command("append", {"characters": string})
 
-
     def test_blacked(self, s, c):
         self.setText(unblacked)
         self.view.run_command("black_file")
         self.assertEqual(blacked, self.all())
-
 
     def test_nothing_todo(self, s, c):
         self.setText(blacked)
@@ -70,7 +72,7 @@ class TestBlackdServer(TestCase):
         self.assertEqual(blacked, self.all())
         self.assertEqual(
             self.view.get_status(sublack.consts.STATUS_KEY),
-            sublack.consts.ALREADY_FORMATED_MESSAGE,
+            sublack.consts.ALREADY_FORMATTED_MESSAGE,
         )
 
     def test_do_diff(self, s, c):
@@ -92,3 +94,30 @@ class TestBlackdServer(TestCase):
         self.view = backup
         v.set_scratch(True)
         v.close()
+
+
+@patch.object(sublack.commands, "is_python", return_value=True)
+class TestBlackdServer(TestCase):
+    def setUp(self):
+        self.BASE_SETTINGS = dict(BASE_SETTINGS)
+        self.BASE_SETTINGS["black_blackd_port"] = "123465789"
+        self.view = sublime.active_window().new_file()
+        # make sure we have a window to work with
+        s = sublime.load_settings("Preferences.sublime-settings")
+        s.set("close_windows_when_empty", False)
+
+    def tearDown(self):
+        if self.view:
+            self.view.set_scratch(True)
+            self.view.window().focus_view(self.view)
+            self.view.window().run_command("close_file")
+
+    def test_blackd_not_runnint(self, s):
+        with patch.object(
+            sublack.blacker, "get_settings", return_value=self.BASE_SETTINGS
+        ):
+            with patch("sublime.message_dialog") as m:
+                self.view.run_command("black_file")
+                m.assert_called_with(
+                    "blackd not running on port 123465789, you can start it with blackd_startcommand"
+                )

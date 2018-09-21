@@ -3,13 +3,13 @@ from unittest import TestCase, skip  # noqa
 from unittest.mock import MagicMock, patch
 
 import sublime
-from fixtures import sublack, blacked, unblacked, diff
+from fixtures import sublack
 
 
 # @skip('mkoomk')
 class TestBlackMethod(TestCase):
     def test_init(self):
-        # test valid number of config options
+        # t*est valid number of config options
         with patch.object(sublack.blacker, "get_settings") as m:
             m.return_value = ["hello"] * 7
             a = sublack.blacker.Black(MagicMock())
@@ -123,6 +123,7 @@ class TestBlackMethod(TestCase):
         c, e = gc(s)
         self.assertEqual(c.decode("utf-8"), "héllo")
 
+    # @skip("demonstrating skipping")
     def test_run_black(self):
         rb = sublack.blacker.Black.run_black
         s = MagicMock()
@@ -188,7 +189,7 @@ class TestBlackMethod(TestCase):
         s.run_black.return_value = (0, b"hello\n", b"unchanged")
         c(s, "edit")
         s.view.set_status.assert_called_with(
-            sublack.consts.STATUS_KEY, sublack.consts.ALREADY_FORMATED_MESSAGE
+            sublack.consts.STATUS_KEY, sublack.consts.ALREADY_FORMATTED_MESSAGE
         )
 
         # diff alreadyformatted
@@ -196,7 +197,7 @@ class TestBlackMethod(TestCase):
         s.run_black.return_value = (0, b"hello\n", b"unchanged")
         c(s, "edit", ["--diff"])
         s.view.set_status.assert_called_with(
-            sublack.consts.STATUS_KEY, sublack.consts.ALREADY_FORMATED_MESSAGE
+            sublack.consts.STATUS_KEY, sublack.consts.ALREADY_FORMATTED_MESSAGE
         )
 
         # diff
@@ -204,71 +205,3 @@ class TestBlackMethod(TestCase):
         s.run_black.return_value = (0, b"hello\n", b"reformatted")
         c(s, "edit", ["--diff"])
         s.do_diff.assert_called_with("edit", b"hello\n", "utf-8")
-
-
-# @skip("demonstrating skipping")
-@patch.object(sublack.commands, "is_python", return_value=True)
-class TestBlack(TestCase):
-    def setUp(self):
-        self.view = sublime.active_window().new_file()
-        # make sure we have a window to work with
-        s = sublime.load_settings("Preferences.sublime-settings")
-        s.set("close_windows_when_empty", False)
-        self.maxDiff = None
-
-    def tearDown(self):
-        if self.view:
-            self.view.set_scratch(True)
-            self.view.window().focus_view(self.view)
-            self.view.window().run_command("close_file")
-
-    def all(self):
-        all_file = sublime.Region(0, self.view.size())
-        return self.view.substr(all_file)
-
-    def setText(self, string):
-        self.view.run_command("append", {"characters": string})
-
-    def test_blacked(self, s):
-        self.setText(unblacked)
-        self.view.run_command("black_file")
-        self.assertEqual(blacked, self.all())
-
-    def test_nothing_todo(self, s):
-        self.setText(blacked)
-        self.view.run_command("black_file")
-        self.assertEqual(blacked, self.all())
-        self.assertEqual(
-            self.view.get_status(sublack.consts.STATUS_KEY),
-            sublack.consts.ALREADY_FORMATED_MESSAGE,
-        )
-
-    def test_dirty_stay_dirty(self, s):
-        self.setText(blacked)
-        self.assertTrue(self.view.is_dirty())
-        self.view.run_command("black_file")
-        self.assertTrue(self.view.is_dirty())
-        self.assertEqual(blacked, self.all())
-
-    def test_do_diff(self, s):
-        # setup in case of fail
-        # self.addCleanup(self.view.close)
-        # self.addCleanup(self.view.set_scratch, True)
-
-        self.setText(unblacked)
-        self.view.set_name("base")
-        backup = self.view
-        self.view.run_command("black_diff")
-
-        w = sublime.active_window()
-        v = w.active_view()
-        res = sublime.Region(0, v.size())
-        res = sublime.Region(v.lines(res)[2].begin(), v.size())
-        res = v.substr(res).strip()
-        self.assertEqual(res, diff)
-        self.assertEqual(
-            v.settings().get("syntax"), "Packages/Diff/Diff.sublime-syntax"
-        )
-        self.view = backup
-        v.set_scratch(True)
-        v.close()

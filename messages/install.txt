@@ -21,11 +21,15 @@ Changelog
 -----------
 
 next:
-	add blackd support
+	add blackd support to fomratting
+	add blackd run/stop from sublime
+	add checker to auto-stop blackd at sublime exit
+	add option include/exclude/py36
+	add logging
+	black_on_save is now async
 	refactor code
 	fix scroll after "black_file"
-	add option include/exclude/py36
-	fix "nothing to do" test
+	fix various tests
 
 1.12.0:
 	code cleanup (Thanks to Herr Kaste)

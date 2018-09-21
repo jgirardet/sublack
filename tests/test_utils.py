@@ -26,7 +26,7 @@ class TestUtils(TestCase):
             "black_on_save": False,
             "black_line_length": None,
             "black_fast": False,
-            "black_debug_on": False,
+            "black_log": "debug",
             "black_default_encoding": "utf-8",
             "black_skip_string_normalization": False,
             "black_include": None,
@@ -35,6 +35,7 @@ class TestUtils(TestCase):
             "black_use_blackd": False,
             "black_blackd_host": "localhost",
             "black_blackd_port": "45484",
+            "black_blackd_autostart": False,
         }
         v = MagicMock()
         c = MagicMock()
@@ -46,7 +47,7 @@ class TestUtils(TestCase):
             "black_on_save": True,
             "black_line_length": None,
             "black_fast": False,
-            "black_debug_on": True,
+            "black_log": "debug",
             "black_default_encoding": "utf-8",
             "black_skip_string_normalization": False,
             "black_include": None,
@@ -55,6 +56,7 @@ class TestUtils(TestCase):
             "black_use_blackd": False,
             "black_blackd_host": "localhost",
             "black_blackd_port": "45484",
+            "black_blackd_autostart": False,
         }
 
         # settings are all from setting file except on_save

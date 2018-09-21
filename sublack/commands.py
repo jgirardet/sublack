@@ -1,11 +1,20 @@
 import sublime_plugin
-from .consts import BLACK_ON_SAVE_VIEW_SETTING, STATUS_KEY
+import sublime
+from .consts import (
+    BLACK_ON_SAVE_VIEW_SETTING,
+    STATUS_KEY,
+    BLACKD_STARTED,
+    BLACKD_STOPPED,
+    BLACKD_START_FAILED,
+    BLACKD_STOP_FAILED,
+    PACKAGE_NAME,
+)
 from .utils import get_settings
 from .blacker import Black
 import logging
+from .server import BlackdServer
 
-
-LOG = logging.getLogger("sublack")
+LOG = logging.getLogger(PACKAGE_NAME)
 
 
 def is_python(view):
@@ -23,7 +32,7 @@ class BlackFileCommand(sublime_plugin.TextCommand):
     is_visible = is_enabled
 
     def run(self, edit):
-        LOG.debug("[SUBLACK] : run black_file")
+        LOG.debug("running black_file")
         Black(self.view)(edit)
 
 
@@ -38,7 +47,7 @@ class BlackDiffCommand(sublime_plugin.TextCommand):
     is_visible = is_enabled
 
     def run(self, edit):
-        LOG.debug("[SUBLACK] : run black_diff")
+        LOG.debug("running black_file")
         Black(self.view)(edit, extra=["--diff"])
 
 
@@ -84,11 +93,47 @@ class BlackToggleBlackOnSaveCommand(sublime_plugin.TextCommand):
         view.set_status(STATUS_KEY, "black: {}".format("ON" if next_state else "OFF"))
 
 
+class BlackdStartCommand(sublime_plugin.TextCommand):
+    def is_enabled(self):
+        return True
+
+    is_visible = is_enabled
+
+    def run(self, edit):
+        LOG.debug("blackd_start command running")
+        port = get_settings(self.view)["black_blackd_port"]
+        sv = BlackdServer(deamon=True, host="localhost", port=port)
+        running = sv.run()
+        if running:
+            self.view.set_status(STATUS_KEY, BLACKD_STARTED.format(port))
+        else:
+            self.view.set_status(STATUS_KEY, BLACKD_START_FAILED.format(port))
+
+
+class BlackdStopCommand(sublime_plugin.ApplicationCommand):
+    def is_enabled(self):
+        return True
+
+    is_visible = is_enabled
+
+    def run(self):
+        LOG.debug("blackd_stop command running")
+        if BlackdServer().stop_deamon():
+            sublime.active_window().active_view().set_status(STATUS_KEY, BLACKD_STOPPED)
+        else:
+            sublime.active_window().active_view().set_status(
+                STATUS_KEY, BLACKD_STOP_FAILED
+            )
+
+
 class EventListener(sublime_plugin.EventListener):
-    def on_pre_save(self, view):
+    def on_pre_save_async(self, view):
         if get_settings(view)["black_on_save"]:
             view.run_command("black_file")
 
     def on_post_text_command(self, view, command_name, args):
         if command_name == "black_file":
             view.show(view.line(view.sel()[0]))
+
+
+# class Black
