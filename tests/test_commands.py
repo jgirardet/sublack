@@ -3,17 +3,7 @@ from unittest.mock import patch
 
 import sublime
 from fixtures import sublack, blacked, unblacked, diff
-from sublack.utils import get_open_port, check_blackd_on_http
-from sublack.server import BlackdServer
-import time
 import requests
-from sublack.consts import (
-    BLACKD_STARTED,
-    STATUS_KEY,
-    BLACKD_STOPPED,
-    BLACKD_START_FAILED,
-    BLACKD_STOP_FAILED,
-)
 
 
 TEST_BLACK_SETTINGS = {
@@ -23,7 +13,7 @@ TEST_BLACK_SETTINGS = {
     "black_fast": False,
     "black_debug_on": True,
     "black_default_encoding": "utf-8",
-    "black_skip_string_normalization": True,
+    "black_skip_string_normalization": False,
     "black_include": None,
     "black_py36": None,
     "black_exclude": None,
@@ -33,6 +23,7 @@ TEST_BLACK_SETTINGS = {
 }
 
 
+# @patch.object(sublack.utils, "get_settings", return_value=TEST_BLACK_SETTINGS)
 @patch.object(sublack.commands, "is_python", return_value=True)
 @patch.object(sublack.blacker, "get_settings", return_value=TEST_BLACK_SETTINGS)
 class TestBlack(TestCase):
@@ -105,7 +96,7 @@ class TestBlack(TestCase):
 # @patch.object(sublack.blacker, "get_settings", return_value=BLACKDSERVER_SETTINGS)
 class TestBlackdServer(TestCase):
     def setUp(self):
-        self.port = str(get_open_port())
+        self.port = str(sublack.get_open_port())
         SETTINGS = {"sublack.black_blackd_port": self.port}
 
         self.view = sublime.active_window().new_file()
@@ -124,10 +115,10 @@ class TestBlackdServer(TestCase):
     def test_startblackd(self):
         # First normal Run
         self.view.run_command("blackd_start")
-        self.assertTrue(check_blackd_on_http(self.port), "should have been formatted")
+        self.assertTrue(sublack.check_blackd_on_http(self.port), "should have been formatted")
         self.assertEqual(
-            self.view.get_status(STATUS_KEY),
-            BLACKD_STARTED.format(self.port),
+            self.view.get_status(sublack.STATUS_KEY),
+            sublack.BLACKD_STARTED.format(self.port),
             "sould tell it starts",
         )
 
@@ -135,8 +126,8 @@ class TestBlackdServer(TestCase):
         with patch("sublime.message_dialog"):
             self.view.run_command("blackd_start")
         self.assertEqual(
-            self.view.get_status(STATUS_KEY),
-            BLACKD_START_FAILED.format(self.port),
+            self.view.get_status(sublack.STATUS_KEY),
+            sublack.BLACKD_START_FAILED.format(self.port),
             "sould tell it fails",
         )
 
@@ -144,7 +135,7 @@ class TestBlackdServer(TestCase):
         # set up
         self.view.run_command("blackd_start")
         self.assertTrue(
-            check_blackd_on_http(self.port), "ensure blackd is running for the test"
+            sublack.check_blackd_on_http(self.port), "ensure blackd is running for the test"
         )
 
         # already running, normal way
@@ -156,13 +147,13 @@ class TestBlackdServer(TestCase):
             ),
         )
         self.assertEqual(
-            self.view.get_status(STATUS_KEY), BLACKD_STOPPED, "should tell it stops"
+            self.view.get_status(sublack.STATUS_KEY), sublack.BLACKD_STOPPED, "should tell it stops"
         )
 
         # already stopped
         sublime.run_command("blackd_stop")
         self.assertEqual(
-            self.view.get_status(STATUS_KEY),
-            BLACKD_STOP_FAILED,
+            self.view.get_status(sublack.STATUS_KEY),
+            sublack.BLACKD_STOP_FAILED,
             "status tell stop failed",
         )

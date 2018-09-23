@@ -4,17 +4,18 @@ Sublack
 Order of imports should not be changed
 """
 import logging
-import sys
-
 import sublime
 
-from .sublack import *  # noqa
-from . import sublack
-
-sys.modules["sublack"] = sublack
-
-from sublack.utils import cache_path
-from sublack.consts import PACKAGE_NAME
+from .sublack import (
+    PACKAGE_NAME,
+    get_settings,
+    BlackFileCommand,
+    BlackDiffCommand,
+    BlackToggleBlackOnSaveCommand,
+    BlackEventListener,
+    BlackdStartCommand,
+    BlackdStopCommand,
+)  # flake8: noqa
 
 
 LOG = logging.getLogger(PACKAGE_NAME)
@@ -24,7 +25,7 @@ LOG.propagate = False
 def plugin_loaded():
     # load config
     current_view = sublime.active_window().active_view()
-    config = sublack.utils.get_settings(current_view)
+    config = get_settings(current_view)
 
     # Setup  logging
     if not LOG.handlers:

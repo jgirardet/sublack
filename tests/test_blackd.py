@@ -97,7 +97,7 @@ class TestBlackdServer(TestCase):
 
 
 @patch.object(sublack.commands, "is_python", return_value=True)
-class TestBlackdServer(TestCase):
+class TestBlackdServerNotRunning(TestCase):
     def setUp(self):
         self.BASE_SETTINGS = dict(BASE_SETTINGS)
         self.BASE_SETTINGS["black_blackd_port"] = "123465789"

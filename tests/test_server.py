@@ -1,17 +1,15 @@
-from fixtures import sublack
+from fixtures import sublack as s
 import time
 
 from unittest import TestCase
 from unittest.mock import patch
-import subprocess
 import requests
 
-from sublack.server import BlackdServer
-from sublack.utils import popen, kill_with_pid, get_open_port
+BlackdServer = s.BlackdServer
 
 
 test_proc = None
-test_port = str(get_open_port())
+test_port = str(s.get_open_port())
 
 
 def setUpModule():
@@ -20,8 +18,8 @@ def setUpModule():
 
     global test_port
 
-    # test_proc = subprocess.Popen(["blackd", "--bind-port", test_port])
-    test_proc = popen(["blackd", "--bind-port", test_port])
+    # test_proc = subprocess.s.popen(["blackd", "--bind-port", test_port])
+    test_proc = s.popen(["blackd", "--bind-port", test_port])
     time.sleep(0.5)  # wait balckd on
     print("tup fin", test_proc.poll(), test_proc.pid, test_port)
     # import requests
@@ -32,7 +30,7 @@ def setUpModule():
 
 def tearDownModule():
     global test_proc
-    kill_with_pid(test_proc.pid)
+    s.kill_with_pid(test_proc.pid)
 
 
 class TestBlackdServer(TestCase):
@@ -61,9 +59,9 @@ class TestBlackdServer(TestCase):
         self.assertNotEqual(c.port, b.port)
 
     def test_is_running_blackd_not_running_return_False(self):
-        b = sublack.server.BlackdServer(timeout=0.001)
-        with patch(
-            "sublack.server.requests.post", side_effect=requests.ConnectionError
+        b = BlackdServer(timeout=0.001)
+        with patch.object(
+            s.server.requests, "post", side_effect=requests.ConnectionError
         ) as m:
             # b = sublack.server.BlackdServer(timeout=0)
             self.assertFalse(b.is_running())
@@ -73,18 +71,18 @@ class TestBlackdServer(TestCase):
 
     def test_is_running_blackd_running_return_True(self):
         global test_port
-        b = sublack.server.BlackdServer(port=test_port, sleep_time=0.1)
+        b = BlackdServer(port=test_port, sleep_time=0.1)
         self.assertTrue(b.is_running())
 
     def test_stop(self):
-        self.serv = sublack.server.BlackdServer(checker_interval=0, sleep_time=0.001)
+        self.serv = BlackdServer(checker_interval=0, sleep_time=0.001)
         self.serv.run()
         self.assertTrue(self.serv.is_running())
         self.serv.stop()
         self.assertEqual(self.serv.proc.wait(timeout=2), self.return_code)
 
     def test_daemon(self):
-        self.serv = sublack.server.BlackdServer(
+        self.serv = BlackdServer(
             sleep_time=0, checker_interval=0, deamon=True
         )
         self.assertTrue(self.serv.run())
@@ -107,7 +105,7 @@ class TestBlackdServer(TestCase):
 
     def test_run_start_fail(self):
         global test_port
-        self.serv = sublack.server.BlackdServer(
+        self.serv = BlackdServer(
             sleep_time=0, checker_interval=0, port=test_port
         )
         with patch("sublime.message_dialog"):
@@ -115,6 +113,6 @@ class TestBlackdServer(TestCase):
         self.assertFalse(running)
 
     def test_run_blackd_start_ok(self):
-        self.serv = sublack.server.BlackdServer(sleep_time=0, checker_interval=0)
+        self.serv = BlackdServer(sleep_time=0, checker_interval=0)
         running = self.serv.run()
         self.assertTrue(running)

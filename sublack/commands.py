@@ -33,7 +33,9 @@ class BlackFileCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
         LOG.debug("running black_file")
-        Black(self.view)(edit)
+        a = Black(self.view)
+        a(edit)
+        print(a.config)
 
 
 class BlackDiffCommand(sublime_plugin.TextCommand):
@@ -126,7 +128,7 @@ class BlackdStopCommand(sublime_plugin.ApplicationCommand):
             )
 
 
-class EventListener(sublime_plugin.EventListener):
+class BlackEventListener(sublime_plugin.EventListener):
     def on_pre_save(self, view):
         if get_settings(view)["black_on_save"]:
             view.run_command("black_file")
