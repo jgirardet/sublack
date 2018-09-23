@@ -20,8 +20,7 @@ from .consts import (
     PACKAGE_NAME,
     REFORMATTED_MESSAGE,
 )
-from .utils import get_settings, get_encoding_from_file, check_blackd_on_http
-from .server import BlackdServer
+from .utils import get_settings, get_encoding_from_file
 
 LOG = logging.getLogger(PACKAGE_NAME)
 

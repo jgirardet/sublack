@@ -12,21 +12,22 @@
 Installation
 -------------
 
-Install Black. Minimal version : 18.6.b4
+Install Black. Minimal version : stable
    
 	  pip install black # Requires python 3.6
+	  and/or
+	  pip install blackd # for blackd support
 
 
 Changelog
 -----------
 
-next:
+2.0:
 	add blackd support to fomratting
 	add blackd run/stop from sublime
 	add checker to auto-stop blackd at sublime exit
 	add option include/exclude/py36
 	add logging
-	black_on_save is now async
 	refactor code
 	fix scroll after "black_file"
 	fix various tests

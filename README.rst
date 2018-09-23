@@ -17,20 +17,6 @@ sublack
 
 
 
-Usage
---------
-
-* Run Black on current file:
-	Press `Ctrl-Alt-B` to format the entire file.
-	You can also `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Format file`.
-
-
-* Run Black with --diff:
-	Press `Ctrl-Alt-Shift-B` will show diff in a new tab.
-	You can also `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Diff file`.
-
-* Toggle Black on save for current view :
-    Press `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Toggle black on save for current view`.
 
 Installation
 -------------
@@ -38,6 +24,7 @@ Installation
 #. Install `Black`_ (if you haven't already)::
    
 	   pip install black # Requires python 3.6
+       or pip install blackd # for blackd support
 
 #. In PackageControl just find ``sublack``, and that's it !
 
@@ -46,6 +33,39 @@ or
 Without PackageControl  install manually by navigating to Sublime's `Packages` folder and cloning this repository::
 
       git clone https://github.com/jgirardet/sublack.git
+
+Usage
+--------
+
+* Run Black on current file:
+    Press `Ctrl-Alt-B` to format the entire file.
+    You can also `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Format file`.
+
+
+* Run Black with --diff:
+    Press `Ctrl-Alt-Shift-B` will show diff in a new tab.
+    You can also `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Diff file`.
+
+* Toggle Black on save for current view :
+    Press `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Toggle black on save for current view`.
+
+* Start Blackd Server :
+    Press `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Start BlackdServer`.
+
+* Stop Blackd Server :
+    Press `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Stop BlackdServer`.
+
+
+Blackd Mode
+------------
+
+Sublack supports blackd. If option `black_use_blackd` is to yes, Sublack will use blackd (and not black) according the 'host' and 'port' configuration.
+
+You can run blackd from SublimeText manually via `Start Blackd Server` command or automatically at sublimetext start via setting `black_blackd_autostart` to true.
+
+Blackd server started via SublimeText can be stopped manually via the `Stop Blackd Server` command or automatically at sublime's exit.
+
+Diff is always run with black.
 
 Settings
 ---------
@@ -94,11 +114,14 @@ Sublack specifics options
 * black_use_blackd:
     Use blackd instead of black. Default is false.
 
-* blackd server host:
+* black_blackd_server_host:
     default = "localhost",
 
-* blackd server port:
+* black_blackd_server_port:
     default = "45484"
+
+* black_blackd_autostart:
+    Automaticaly run blackd in the background wen sublime starts. default is false.
 
 Project settings
 *******************
