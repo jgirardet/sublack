@@ -33,9 +33,7 @@ class BlackFileCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
         LOG.debug("running black_file")
-        a = Black(self.view)
-        a(edit)
-        print(a.config)
+        Black(self.view)(edit)
 
 
 class BlackDiffCommand(sublime_plugin.TextCommand):

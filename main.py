@@ -9,6 +9,7 @@ import sublime
 from .sublack import (
     PACKAGE_NAME,
     get_settings,
+    cache_path,
     BlackFileCommand,
     BlackDiffCommand,
     BlackToggleBlackOnSaveCommand,
