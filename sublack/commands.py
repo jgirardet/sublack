@@ -8,8 +8,9 @@ from .consts import (
     BLACKD_START_FAILED,
     BLACKD_STOP_FAILED,
     PACKAGE_NAME,
+    BLACKD_ALREADY_RUNNING,
 )
-from .utils import get_settings
+from .utils import get_settings, check_blackd_on_http
 from .blacker import Black
 import logging
 from .server import BlackdServer
@@ -100,11 +101,19 @@ class BlackdStartCommand(sublime_plugin.TextCommand):
     is_visible = is_enabled
 
     def run(self, edit):
+        started = None
         LOG.debug("blackd_start command running")
         port = get_settings(self.view)["black_blackd_port"]
-        sv = BlackdServer(deamon=True, host="localhost", port=port)
-        running = sv.run()
+        running, port_free = check_blackd_on_http(port)
         if running:
+            LOG.info(BLACKD_ALREADY_RUNNING.format(port))
+            self.view.set_status(STATUS_KEY, BLACKD_ALREADY_RUNNING.format(port))
+            return
+        elif port_free:
+            sv = BlackdServer(deamon=True, host="localhost", port=port)
+            started = sv.run()
+
+        if started:
             self.view.set_status(STATUS_KEY, BLACKD_STARTED.format(port))
         else:
             self.view.set_status(STATUS_KEY, BLACKD_START_FAILED.format(port))
@@ -128,6 +137,9 @@ class BlackdStopCommand(sublime_plugin.ApplicationCommand):
 
 class BlackEventListener(sublime_plugin.EventListener):
     def on_pre_save(self, view):
+        """use blackd at saving time
+
+        Cannot be async since black should be run before save"""
         if get_settings(view)["black_on_save"]:
             view.run_command("black_file")
 

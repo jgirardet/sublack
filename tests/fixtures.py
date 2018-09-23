@@ -1,7 +1,6 @@
 import sys
 
 sublack = sys.modules["sublack.sublack"]
-# import sublack
 
 
 blacked = """def get_encoding_from_file(view):

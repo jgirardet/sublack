@@ -112,7 +112,9 @@ class TestBlackdServer(TestCase):
     def test_startblackd(self):
         # First normal Run
         self.view.run_command("blackd_start")
-        self.assertTrue(sublack.check_blackd_on_http(self.port), "should have been formatted")
+        self.assertTrue(
+            sublack.check_blackd_on_http(self.port), "should have been formatted"
+        )
         self.assertEqual(
             self.view.get_status(sublack.STATUS_KEY),
             sublack.BLACKD_STARTED.format(self.port),
@@ -124,7 +126,7 @@ class TestBlackdServer(TestCase):
             self.view.run_command("blackd_start")
         self.assertEqual(
             self.view.get_status(sublack.STATUS_KEY),
-            sublack.BLACKD_START_FAILED.format(self.port),
+            sublack.BLACKD_ALREADY_RUNNING.format(self.port),
             "sould tell it fails",
         )
 
@@ -132,7 +134,8 @@ class TestBlackdServer(TestCase):
         # set up
         self.view.run_command("blackd_start")
         self.assertTrue(
-            sublack.check_blackd_on_http(self.port), "ensure blackd is running for the test"
+            sublack.check_blackd_on_http(self.port),
+            "ensure blackd is running for the test",
         )
 
         # already running, normal way
@@ -144,7 +147,9 @@ class TestBlackdServer(TestCase):
             ),
         )
         self.assertEqual(
-            self.view.get_status(sublack.STATUS_KEY), sublack.BLACKD_STOPPED, "should tell it stops"
+            self.view.get_status(sublack.STATUS_KEY),
+            sublack.BLACKD_STOPPED,
+            "should tell it stops",
         )
 
         # already stopped

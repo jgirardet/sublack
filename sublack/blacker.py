@@ -21,7 +21,7 @@ from .consts import (
     REFORMATTED_MESSAGE,
 )
 from .utils import get_settings, get_encoding_from_file, check_blackd_on_http
-
+from .server import BlackdServer
 
 LOG = logging.getLogger(PACKAGE_NAME)
 
@@ -93,10 +93,10 @@ class Blackd:
             msg = "blackd not running on port {}".format(
                 self.config["black_blackd_port"]
             )
-            self.process_errros(msg)
+            response = self.process_errros(msg)
             sublime.message_dialog(msg + ", you can start it with blackd_start command")
         except Exception as err:
-            self.process_errros(str(err))
+            response = self.process_errros(str(err))
             LOG.error("Request to  Blackd failed")
 
         return self.process_response(response)

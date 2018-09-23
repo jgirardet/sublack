@@ -52,6 +52,7 @@ def plugin_loaded():
     if not cp.exists():
         cp.mkdir()
 
-    # check blackd autostart
-    # if config["black_blackd_autostart"]:
-    #     current_view.run_command("blackd_start")
+    # # check blackd autostart
+
+    if config["black_blackd_autostart"]:
+        sublime.set_timeout_async(lambda: current_view.run_command("blackd_start"), 0)
