@@ -67,18 +67,14 @@ class Blackd:
         elif response.status_code in [400, 500]:
             return -1, b"", response.content
 
-    def __call__(self):
+    def process_errros(self, msg):
+        response = requests.Response()
+        response.status_code = 500
+        LOG.error(msg)
+        response._content = msg.encode()
+        return response
 
-        if not check_blackd_on_http(self.config["black_blackd_port"])[0]:
-            response = requests.Response()
-            response.status_code = 500
-            msg = "blackd not running on port {}".format(
-                self.config["black_blackd_port"]
-            )
-            response._content = msg.encode()
-            LOG.error(msg)
-            sublime.message_dialog(msg + ", you can start it with blackd_startcommand")
-            return self.process_response(response)
+    def __call__(self):
 
         self.headers.update(
             {"Content-Type": "application/octet-stream; charset=" + self.encoding}
@@ -92,12 +88,16 @@ class Blackd:
         )
         try:
             response = requests.post(url, data=self.content, headers=self.headers)
+        except requests.ConnectionError as err:
+
+            msg = "blackd not running on port {}".format(
+                self.config["black_blackd_port"]
+            )
+            self.process_errros(msg)
+            sublime.message_dialog(msg + ", you can start it with blackd_start command")
         except Exception as err:
-            response = requests.Response()
-            response.status_code = 500
-            response._content = str(err).encode()
+            self.process_errros(str(err))
             LOG.error("Request to  Blackd failed")
-            LOG.debug("%s", err)
 
         return self.process_response(response)
 

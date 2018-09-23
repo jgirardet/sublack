@@ -119,5 +119,5 @@ class TestBlackdServerNotRunning(TestCase):
             with patch("sublime.message_dialog") as m:
                 self.view.run_command("black_file")
                 m.assert_called_with(
-                    "blackd not running on port 123465789, you can start it with blackd_startcommand"
+                    "blackd not running on port 123465789, you can start it with blackd_start command"
                 )

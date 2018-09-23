@@ -8,6 +8,7 @@ import os
 import platform
 import pathlib
 import sys
+
 Checker = s.Checker
 popen = s.popen
 kill_with_pid = s.kill_with_pid
@@ -61,7 +62,9 @@ class TestIsRunningUnix(TestCase):
         self.assertFalse(c.is_running())
 
     def test_do_not_take_checker_args_in_account_return_false(self):
-        p = subprocess.Popen(["python3", "checker.py", "head", "987654"], cwd=str(sublack_dir))
+        p = subprocess.Popen(
+            ["python3", "checker.py", "head", "987654"], cwd=str(sublack_dir)
+        )
         c = Checker("head", os.getpid())
         try:
             self.assertFalse(c.is_running())
@@ -97,13 +100,6 @@ class TestIsRunningWindows(TestCase):
         p.terminate()
         p.wait(timeout=2)
         self.assertFalse(c.is_running())
-
-    # def test_do_not_take_checker_args_in_account_return_false(self):
-    #     p = subprocess.Popen(["python3", "checker.py", "head", "987654"], cwd=str(sublack_dir))
-    #     c = Checker("head", os.getpid())
-    #     self.assertFalse(c.is_running())
-    #     p.terminate()
-    #     p.wait(timeout=2)
 
 
 @skipIf(platform.system() == "Windows", "unix tests")

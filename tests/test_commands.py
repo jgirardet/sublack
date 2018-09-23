@@ -23,7 +23,6 @@ TEST_BLACK_SETTINGS = {
 }
 
 
-# @patch.object(sublack.utils, "get_settings", return_value=TEST_BLACK_SETTINGS)
 @patch.object(sublack.commands, "is_python", return_value=True)
 @patch.object(sublack.blacker, "get_settings", return_value=TEST_BLACK_SETTINGS)
 class TestBlack(TestCase):
@@ -92,8 +91,6 @@ class TestBlack(TestCase):
         v.close()
 
 
-# @patch.object(sublack.commands, "is_python", return_value=True)
-# @patch.object(sublack.blacker, "get_settings", return_value=BLACKDSERVER_SETTINGS)
 class TestBlackdServer(TestCase):
     def setUp(self):
         self.port = str(sublack.get_open_port())

@@ -2,11 +2,9 @@ import os
 from unittest import TestCase, skip  # noqa
 from unittest.mock import MagicMock, patch
 
-import sublime
 from fixtures import sublack
 
 
-# @skip('mkoomk')
 class TestBlackMethod(TestCase):
     def test_init(self):
         # t*est valid number of config options
@@ -123,7 +121,6 @@ class TestBlackMethod(TestCase):
         c, e = gc(s)
         self.assertEqual(c.decode("utf-8"), "héllo")
 
-    # @skip("demonstrating skipping")
     def test_run_black(self):
         rb = sublack.blacker.Black.run_black
         s = MagicMock()
