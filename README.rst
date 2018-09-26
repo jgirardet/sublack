@@ -59,7 +59,7 @@ Usage
 Blackd Mode
 ------------
 
-Sublack supports blackd. If option `black_use_blackd` is to yes, Sublack will use blackd (and not black) according the 'host' and 'port' configuration.
+Sublack supports blackd. If option `black_use_blackd` is to true, Sublack will use blackd (and not black) according the 'host' and 'port' configuration.
 
 You can run blackd from SublimeText manually via `Start Blackd Server` command or automatically at sublimetext start via setting `black_blackd_autostart` to true.
 
