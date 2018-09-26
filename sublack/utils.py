@@ -163,7 +163,7 @@ def find_pyproject(view):
     variables = window.extract_variables()
     # project path
     path = Path(variables.get("project_path", "")) / "pyproject.toml"
-    # LOG.debug("pyproject path %s", path)
+    LOG.debug("pyproject path %s", path)
     if path.exists():
         return path
 
@@ -171,7 +171,7 @@ def find_pyproject(view):
     folders = window.folders()
 
     for path in folders:
-        # LOG.debug("Folders : %s", path)
+        LOG.debug("Folders : %s", path)
         path = Path(path) / "pyproject.toml"
         if path.exists():
 
@@ -198,8 +198,9 @@ LOG = logging.getLogger("sublack")
 def read_pyproject_toml(pyproject: Path) -> dict:
     """Return config options foud in pyproject
     """
+    config = {}
     if not pyproject:
-        # LOG.debug("No pyproject.toml file found")
+        LOG.debug("No pyproject.toml file found")
         return {}
 
     try:
