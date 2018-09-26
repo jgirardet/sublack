@@ -10,7 +10,7 @@ from .consts import (
     PACKAGE_NAME,
     BLACKD_ALREADY_RUNNING,
 )
-from .utils import get_settings, check_blackd_on_http
+from .utils import get_settings, check_blackd_on_http, get_on_save_fast, timed
 from .blacker import Black
 import logging
 from .server import BlackdServer
@@ -32,6 +32,7 @@ class BlackFileCommand(sublime_plugin.TextCommand):
 
     is_visible = is_enabled
 
+    @timed
     def run(self, edit):
         LOG.debug("running black_file")
         import time
@@ -144,7 +145,7 @@ class BlackEventListener(sublime_plugin.EventListener):
         """use blackd at saving time
 
         Cannot be async since black should be run before save"""
-        if get_settings(view)["black_on_save"]:
+        if get_on_save_fast(view):
             view.run_command("black_file")
 
     def on_post_text_command(self, view, command_name, args):
@@ -152,4 +153,13 @@ class BlackEventListener(sublime_plugin.EventListener):
             view.show(view.line(view.sel()[0]))
 
 
-# class Black
+class FormatAllCommand(sublime_plugin.WindowCommand):
+    """ Format a Whole project
+    select a dir, ask ?
+    let choise dir ?
+    on prent preoct path if exist
+    sinon folder, select which
+    subprocess inside
+
+    see you later
+    """

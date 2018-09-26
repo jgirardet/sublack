@@ -7,7 +7,7 @@ from .utils import (
     startup_info,
     popen,
     check_blackd_on_http,
-    kill_with_pid
+    kill_with_pid,
 )
 from .server import BlackdServer
 from .blacker import Blackd, Black
@@ -30,17 +30,15 @@ __all__ = [
     "cache_path",
     "startup_info",
     "popen",
-    "kill_with_pid"
-    "check_blackd_on_http",
+    "kill_with_pid" "check_blackd_on_http",
     "BlackdServer",
     "Black",
     "Blackd",
-    "is_python"
-    "BlackFileCommand",
+    "is_python" "BlackFileCommand",
     "BlackDiffCommand",
     "BlackToggleBlackOnSaveCommand",
     "BlackEventListener",
     "BlackdStartCommand",
     "BlackdStopCommand",
-    "Checker"
+    "Checker",
 ]
