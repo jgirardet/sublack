@@ -31,7 +31,6 @@ def timed(fn):
     return to_time
 
 
-@timed
 def get_on_save_fast(view):
     """Fast checker for black_on_save setting"""
     flat_settings = view.settings()
@@ -47,7 +46,6 @@ def get_on_save_fast(view):
     return False
 
 
-@timed
 def get_settings(view):
     flat_settings = view.settings()
     nested_settings = flat_settings.get(PACKAGE_NAME, {})

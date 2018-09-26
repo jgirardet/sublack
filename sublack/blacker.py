@@ -20,7 +20,7 @@ from .consts import (
     PACKAGE_NAME,
     REFORMATTED_MESSAGE,
 )
-from .utils import get_settings, get_encoding_from_file
+from .utils import get_settings, get_encoding_from_file, timed
 
 LOG = logging.getLogger(PACKAGE_NAME)
 
