@@ -32,7 +32,7 @@ install:
             brew install python || brew upgrade python;
       fi
     - pip3 install aiohttp
-    - pip3 install git+https://github.com/ambv/black
+    - pip3 install black
     - pip3 install requests
     # - pip3 install black requests
     # install Package Control and package denepdencies
