@@ -165,10 +165,14 @@ class TestBlackdServer(TestCase):
 class TestFormatAll(TestCase):
     def setUp(self):
         self.window = sublime.active_window()
+        self.view = self.window.new_file()
+        self.view.set_scratch(True)
 
     def tearDown(self):
         if hasattr(self, "wrong"):
             self.wrong.unlink()
+        self.window.focus_view(self.view)
+        self.window.run_command("close_file")
 
     def test_black_all_success(self):
 
