@@ -39,9 +39,21 @@ class TestBlackMethod(TestCase):
         self.assertEqual(a, ["black", "-", "--diff", "-l", "90", "--fast"])
 
         # test skipstring
-        s.config = {"black_command": "black", "black_skip_string_normalization": True}
+        s.config = {
+            "black_command": "black",
+            "black_skip_string_normalization": True,
+            "black_skip_numeric_underscore_normalization": True,
+        }
         a = gcl(s, v)
-        self.assertEqual(a, ["black", "-", "--skip-string-normalization"])
+        self.assertEqual(
+            a,
+            [
+                "black",
+                "-",
+                "--skip-string-normalization",
+                "--skip-numeric-underscore-normalization",
+            ],
+        )
 
         # test include
         s.config = {"black_command": "black", "black_include": "hello"}

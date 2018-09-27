@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 import sublime
 from fixtures import sublack, blacked, unblacked, diff
+import requests
 
 blackd_proc = sublack.server.BlackdServer()
 
@@ -121,3 +122,20 @@ class TestBlackdServerNotRunning(TestCase):
                 m.assert_called_with(
                     "blackd not running on port 123465789, you can start it with blackd_start command"
                 )
+
+
+class TestHeaders(TestCase):
+    def test_format_header(self):
+        self.maxDiff = None
+        cmd = "black - -l 25 --fast --skip-string-normalization --skip-numeric-underscore-normalization --py36".split()
+        h = sublack.blacker.Blackd.format_headers("self", cmd)
+        self.assertEqual(
+            h,
+            {
+                "X-Line-Length": "25",
+                "X-Skip-String-Normalization": "1",
+                "X-Python-Variant": "3.6",
+                "X-Fast-Or-Safe": "fast",
+                "X-Skip-Numeric-Underscore-Normalization": "1",
+            },
+        )
