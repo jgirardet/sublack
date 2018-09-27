@@ -4,6 +4,7 @@ from unittest.mock import patch
 import sublime
 from fixtures import sublack, blacked, unblacked, diff
 import requests
+from pathlib import Path
 
 
 TEST_BLACK_SETTINGS = {
@@ -158,4 +159,41 @@ class TestBlackdServer(TestCase):
             self.view.get_status(sublack.STATUS_KEY),
             sublack.BLACKD_STOP_FAILED,
             "status tell stop failed",
+        )
+
+
+class TestFormatAll(TestCase):
+    def setUp(self):
+        self.window = sublime.active_window()
+
+    def tearDown(self):
+        if hasattr(self, "wrong"):
+            self.wrong.unlink()
+
+    def test_black_all_success(self):
+
+        # make sure we have a window to work with
+        # s = sublime.load_settings("Preferences.sublime-settings")
+        # s.set("close_windows_when_empty", False)
+        # self.maxDiff = None
+
+        self.window.run_command("black_format_all")
+        self.assertEqual(
+            self.window.active_view().get_status(sublack.STATUS_KEY),
+            sublack.REFORMATTED_MESSAGE,
+            "reformat should be ok",
+        )
+
+    def test_black_all_fail(self):
+
+        folder = Path(__file__).parent
+        self.wrong = folder / "wrong.py"
+        with open(str(self.wrong), "w") as ww:
+            ww.write("ab ac = 2")
+
+        self.window.run_command("black_format_all")
+        self.assertEqual(
+            self.window.active_view().get_status(sublack.STATUS_KEY),
+            sublack.REFORMAT_ERRORS,
+            "reformat should be error",
         )
