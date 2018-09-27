@@ -167,6 +167,7 @@ class TestFormatAll(TestCase):
         self.window = sublime.active_window()
         self.view = self.window.new_file()
         self.view.set_scratch(True)
+        self.window.focus_view(self.view)
 
     def tearDown(self):
         if hasattr(self, "wrong"):
