@@ -16,6 +16,7 @@ from .sublack import (
     BlackEventListener,
     BlackdStartCommand,
     BlackdStopCommand,
+    BlackFormatAllCommand,
 )  # flake8: noqa
 
 

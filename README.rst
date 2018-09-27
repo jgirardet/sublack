@@ -49,6 +49,9 @@ Usage
 * Toggle Black on save for current view :
     Press `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Toggle black on save for current view`.
 
+* run Black Format All :
+    Press `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Format All`. Run black against each root folder  in a standard way (without taking care of sublack options and configuration). Same thing as running `black .` being in the folder.
+
 * Start Blackd Server :
     Press `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Start BlackdServer`.
 

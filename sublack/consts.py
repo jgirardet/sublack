@@ -16,6 +16,7 @@ ENCODING_PATTERN = r"^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)"
 ALREADY_FORMATTED_MESSAGE = "Sublack: already well formated !"
 
 REFORMATTED_MESSAGE = "Sublack: reformatted !"
+REFORMAT_ERRORS = "Sublack: Reformatting error, check console for logs"
 
 CONFIG_OPTIONS = [
     "black_line_length",

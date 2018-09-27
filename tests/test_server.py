@@ -82,9 +82,7 @@ class TestBlackdServer(TestCase):
         self.assertEqual(self.serv.proc.wait(timeout=2), self.return_code)
 
     def test_daemon(self):
-        self.serv = BlackdServer(
-            sleep_time=0, checker_interval=0, deamon=True
-        )
+        self.serv = BlackdServer(sleep_time=0, checker_interval=0, deamon=True)
         self.assertTrue(self.serv.run())
         self.assertTrue(self.serv.is_running(), msg="should wait blackd is running")
         self.assertEqual(
@@ -105,9 +103,7 @@ class TestBlackdServer(TestCase):
 
     def test_run_start_fail(self):
         global test_port
-        self.serv = BlackdServer(
-            sleep_time=0, checker_interval=0, port=test_port
-        )
+        self.serv = BlackdServer(sleep_time=0, checker_interval=0, port=test_port)
         with patch("sublime.message_dialog"):
             running = self.serv.run()
         self.assertFalse(running)

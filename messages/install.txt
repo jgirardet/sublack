@@ -15,8 +15,8 @@ Installation
 Install Black. Minimal version : stable
    
 	  pip install black # Requires python 3.6
-	  and/or
-	  pip install blackd # for blackd support
+	  and
+	  pip install aiohttp # for blackd support
 
 
 Changelog
@@ -28,6 +28,7 @@ Changelog
 	add checker to auto-stop blackd at sublime exit
 	add option include/exclude/py36
 	add logging
+	add command Black_format_all to format project
 	pyproject.toml now overrides other settings
 	refactor code
 	fix scroll after "black_file"

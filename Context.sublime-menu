@@ -11,4 +11,8 @@
         "caption": "Sublack: Toggle black on save for current view",
         "command": "black_toggle_black_on_save"
     },
+    {
+        "caption": "Sublack: Format All",
+        "command": "black_format_all"
+    },
 ]

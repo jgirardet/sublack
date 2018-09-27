@@ -9,11 +9,14 @@ from .consts import (
     BLACKD_STOP_FAILED,
     PACKAGE_NAME,
     BLACKD_ALREADY_RUNNING,
+    REFORMATTED_MESSAGE,
+    REFORMAT_ERRORS,
 )
-from .utils import get_settings, check_blackd_on_http, get_on_save_fast, timed
+from .utils import get_settings, check_blackd_on_http, get_on_save_fast, timed, popen
 from .blacker import Black
 import logging
 from .server import BlackdServer
+import subprocess
 
 LOG = logging.getLogger(PACKAGE_NAME)
 
@@ -148,13 +151,37 @@ class BlackEventListener(sublime_plugin.EventListener):
             view.show(view.line(view.sel()[0]))
 
 
-class FormatAllCommand(sublime_plugin.WindowCommand):
-    """ Format a Whole project
-    select a dir, ask ?
-    let choise dir ?
-    on prent preoct path if exist
-    sinon folder, select which
-    subprocess inside
+class BlackFormatAllCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        folders = self.window.folders()
 
-    see you later
-    """
+        success = []
+        errors = []
+        dispatcher = None
+        for folder in folders:
+            p = popen(
+                ["black", "."],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                cwd=folder,
+            )
+            p.wait(timeout=10)
+            dispatcher = success if p.returncode == 0 else errors
+            dispatcher.append((folder, p.returncode, p.stderr.read()))
+
+        if not errors:  # all 0 return_code
+            self.window.active_view().set_status(STATUS_KEY, REFORMATTED_MESSAGE)
+        else:
+            self.window.active_view().set_status(STATUS_KEY, REFORMAT_ERRORS)
+
+        for out in success:
+            LOG.debug(
+                "black formatted folder %s with returncode %s and following en stderr :%s",
+                *out
+            )
+
+        for out in errors:
+            LOG.error(
+                "black formatted folder %s with returncode %s and following en stderr :%s",
+                *out
+            )
