@@ -16,6 +16,9 @@ import os
 from functools import partial
 import socket
 import requests
+import logging
+
+LOG = logging.getLogger("sublack")
 
 
 def timed(fn):
@@ -182,16 +185,13 @@ def find_pyproject(view):
 
 
 ############################
-# td = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, "st3"))
+# Let it like this wainting for toml depedency in package contrl
+# https://github.com/wbond/package_control_channel/pull/7298
 import sys
 
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-
 import toml
-import logging
 
-LOG = logging.getLogger("sublack")
-# from .toml import decoder as toml # waiting dependency validation
 ###################""
 
 
