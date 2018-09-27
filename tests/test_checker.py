@@ -109,7 +109,7 @@ class TestRunUnix(TestCase):
 
     def setUp(self):
         self.w = subprocess.Popen(["sleep", "3"])
-        self.t = subprocess.Popen(["vi"])
+        self.t = subprocess.Popen(["man", "vi"])
 
         self.p = subprocess.Popen(
             ["python3", "checker.py", "sleep", str(self.t.pid), "0"],
