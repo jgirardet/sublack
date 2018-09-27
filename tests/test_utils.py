@@ -88,6 +88,7 @@ class TestUtils(TestCase):
 
         # check len consts.CONFIG_OPTIONS == sublime-settings file
         path = sublime.active_window().extract_variables().get("folder")
+        self.assertFalse(sublime.active_window().extract_variables())
         c = open(path + "/sublack.sublime-settings").read()
         settings = re.findall(r"black_[a-z_0-9]+", c)
         self.assertEqual(set(settings), set(sublack.consts.CONFIG_OPTIONS))
