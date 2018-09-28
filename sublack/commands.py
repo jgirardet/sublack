@@ -106,14 +106,17 @@ class BlackdStartCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         started = None
         LOG.debug("blackd_start command running")
-        port = get_settings(self.view)["black_blackd_port"]
+        settings = get_settings(self.view)
+        port = settings["black_blackd_port"]
         running, port_free = check_blackd_on_http(port)
         if running:
             LOG.info(BLACKD_ALREADY_RUNNING.format(port))
             self.view.set_status(STATUS_KEY, BLACKD_ALREADY_RUNNING.format(port))
             return
         elif port_free:
-            sv = BlackdServer(deamon=True, host="localhost", port=port)
+            sv = BlackdServer(
+                deamon=True, host="localhost", port=port, settings=settings
+            )
             started = sv.run()
 
         if started:
