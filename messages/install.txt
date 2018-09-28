@@ -19,17 +19,26 @@ Install Black. Minimal version : stable
 	  pip install aiohttp # for blackd support
 
 
+
+### BREAKING CHANGES in 2.0 ###
+
+Now the global/project settings are OVERRIDEN by pyproject.toml's settings
+##############          ###########
+
+
+
 Changelog
 -----------
 
 2.0:
-	add blackd support to fomratting
+	add command Black_format_all to format project
+	add blackd support
 	add blackd run/stop from sublime
 	add checker to auto-stop blackd at sublime exit
-	add option include/exclude/py36
+	add option include/exclude
+	add option py36
 	add option black_skip_numeric_underscore_normalization
 	add logging
-	add command Black_format_all to format project
 	pyproject.toml now overrides other settings
 	refactor code
 	fix scroll after "black_file"
