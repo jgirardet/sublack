@@ -102,6 +102,9 @@ Black specifics options
 * black_skip_string_normalization:
     Don't normalize string quotes or prefixes. Default = false.
 
+* black_skip_numeric_underscore_normalization:
+    Don't normalize underscores in numeric literals.
+
 * black_exclude:
     Regex matching excluded path. Default is Black's default.
 

@@ -27,6 +27,7 @@ Changelog
 	add blackd run/stop from sublime
 	add checker to auto-stop blackd at sublime exit
 	add option include/exclude/py36
+	add option black_skip_numeric_underscore_normalization
 	add logging
 	add command Black_format_all to format project
 	pyproject.toml now overrides other settings
