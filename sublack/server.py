@@ -5,7 +5,14 @@ import time
 import os
 import sys
 import logging
-from .utils import cache_path, kill_with_pid, popen, get_open_port, check_blackd_on_http
+from .utils import (
+    cache_path,
+    kill_with_pid,
+    popen,
+    get_open_port,
+    check_blackd_on_http,
+    get_settings,
+)
 from .consts import PACKAGE_NAME
 
 LOG = logging.getLogger(PACKAGE_NAME)
@@ -25,6 +32,7 @@ class BlackdServer:
         self.sleep_time = kwargs.get("sleep_time", 0.1)
         self.watched = kwargs.get("watched", "plugin_host")
         self.checker_interval = kwargs.get("checker_interval", None)
+        self.settings = kwargs.get("settings", None)
 
         self.platform = sublime.platform()
         LOG.debug("New blackdServer instance with params : %s", vars(self))
@@ -112,7 +120,8 @@ class BlackdServer:
 
     def run(self):
 
-        cmd = ["blackd", "--bind-port", self.port]
+        blackd = self.settings["black_command"] + "d" if self.settings else "blackd"
+        cmd = [blackd, "--bind-port", self.port]
 
         self.proc, running = self._run_blackd(cmd)
 
