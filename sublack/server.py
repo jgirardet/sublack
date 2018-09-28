@@ -5,14 +5,7 @@ import time
 import os
 import sys
 import logging
-from .utils import (
-    cache_path,
-    kill_with_pid,
-    popen,
-    get_open_port,
-    check_blackd_on_http,
-    get_settings,
-)
+from .utils import cache_path, kill_with_pid, popen, get_open_port, check_blackd_on_http
 from .consts import PACKAGE_NAME
 
 LOG = logging.getLogger(PACKAGE_NAME)
@@ -118,10 +111,15 @@ class BlackdServer:
 
         return proc, running
 
+    @property
+    def blackd_cmd(self):
+        blackd = self.settings["black_command"] + "d" if self.settings else "blackd"
+        LOG.debug("using %s as blackd command", blackd)
+        return blackd
+
     def run(self):
 
-        blackd = self.settings["black_command"] + "d" if self.settings else "blackd"
-        cmd = [blackd, "--bind-port", self.port]
+        cmd = [self.blackd_cmd, "--bind-port", self.port]
 
         self.proc, running = self._run_blackd(cmd)
 
