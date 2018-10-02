@@ -260,6 +260,13 @@ class Black:
 
         return folders[0]
 
+
+    def is_cached(self, content, cmd):
+        #cache
+        for line in self.content_cache.open().readline():
+            if line.split() == [hash(content), hash(cmd)]:
+                return True
+
     def __call__(self, edit, extra=[]):
 
         cmd = self.get_command_line(edit, extra)
@@ -268,6 +275,18 @@ class Black:
         LOG.debug("working dir: %s", cwd)
 
         content, encoding = self.get_content()
+
+        """
+        if content_hash in cache
+             if hash(cmd) = cmd_cache:
+                return True # alrady cached/ok
+        return  False
+
+
+        # cache_file :
+        content_hash cmd_hash
+
+        """
 
         if (
             self.config["black_use_blackd"] and "--diff" not in extra
