@@ -20,7 +20,7 @@ from .consts import (
     PACKAGE_NAME,
     REFORMATTED_MESSAGE,
 )
-from .utils import get_settings, get_encoding_from_file, timed
+from .utils import get_settings, get_encoding_from_file, timed, cache_path
 
 LOG = logging.getLogger(PACKAGE_NAME)
 
@@ -111,6 +111,7 @@ class Black:
         self.config = get_settings(view)
         self.all = sublime.Region(0, self.view.size())
         self.variables = view.window().extract_variables()
+        self.formatted_cache = cache_path() / "formatted"
 
         LOG.debug("config: %s", self.config)
 
@@ -260,12 +261,23 @@ class Black:
 
         return folders[0]
 
+    def is_formatted(self, content, cmd):
+        h_content = hash(content)
+        cache = self.formatted_cache.read_text()
+        for line in cache.splitlines():
+            content, cmd_f = line.split()
+            if content == h_content:
+                if cmd_f == str(cmd):
+                    return True
+        return False
 
-    def is_cached(self, content, cmd):
-        #cache
-        for line in self.content_cache.open().readline():
-            if line.split() == [hash(content), hash(cmd)]:
-                return True
+    def add_to_cache(self, content, cmd):
+
+        LOG.debug(self.formatted_cache)
+        with self.formatted_cache.open("r+") as cache:
+            old = cache.read()
+            cache.seek(0)
+            cache.write(str(hash(content)) + "|" + str(cmd) + "\n" + old)
 
     def __call__(self, edit, extra=[]):
 
@@ -318,3 +330,4 @@ class Black:
         else:
             self.view.replace(edit, self.all, out.decode(encoding))
             self.view.set_status(STATUS_KEY, REFORMATTED_MESSAGE)
+            self.add_to_cache(content, cmd)

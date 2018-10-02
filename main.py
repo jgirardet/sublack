@@ -53,6 +53,10 @@ def plugin_loaded():
     if not cp.exists():
         cp.mkdir()
 
+    # clear cache
+    with ( cp / 'formatted').open('wt') as file:
+        file.write('')
+
     # # check blackd autostart
 
     if config["black_blackd_autostart"]:
