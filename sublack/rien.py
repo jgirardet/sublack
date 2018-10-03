@@ -2324,6 +2324,8 @@ class BlackFormatAllCommand(sublime_plugin.WindowCommand):
                 "black formatted folder %s with returncode %s and following en stderr :%s",
                 *out
             )
+
+
 import sublime_plugin
 import sublime
 from .consts import (

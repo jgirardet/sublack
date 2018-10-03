@@ -16,6 +16,7 @@ import logging
 from .consts import (
     HEADERS_TABLE,
     ALREADY_FORMATTED_MESSAGE,
+    ALREADY_FORMATTED_MESSAGE_CACHE,
     STATUS_KEY,
     PACKAGE_NAME,
     REFORMATTED_MESSAGE,
@@ -261,23 +262,30 @@ class Black:
 
         return folders[0]
 
-    def is_formatted(self, content, cmd):
+    def is_cached(self, content, cmd):
         h_content = hash(content)
-        cache = self.formatted_cache.read_text()
-        for line in cache.splitlines():
-            content, cmd_f = line.split()
-            if content == h_content:
+        cache = self.formatted_cache.open().read().splitlines()
+        for line in cache:
+            content, cmd_f = line.split("|")
+            if int(content) == h_content:
                 if cmd_f == str(cmd):
                     return True
         return False
 
     def add_to_cache(self, content, cmd):
-
-        LOG.debug(self.formatted_cache)
+        if self.is_cached(content, cmd):
+            return
         with self.formatted_cache.open("r+") as cache:
-            old = cache.read()
+            old = cache.read().splitlines()
+            if len(old) > 250:
+                old.pop()
+
             cache.seek(0)
-            cache.write(str(hash(content)) + "|" + str(cmd) + "\n" + old)
+            new = [str(hash(content)) + "|" + str(cmd)]
+            LOG.debug("write to cache %s", str(new))
+
+            new_file = "\n".join((new + old))
+            cache.write(new_file)
 
     def __call__(self, edit, extra=[]):
 
@@ -300,6 +308,10 @@ class Black:
 
         """
 
+        if self.is_cached(content, cmd):
+            self.view.set_status(STATUS_KEY, ALREADY_FORMATTED_MESSAGE_CACHE)
+            return
+
         if (
             self.config["black_use_blackd"] and "--diff" not in extra
         ):  # no diff with server
@@ -321,6 +333,7 @@ class Black:
         # already formated, nothing changes
         elif "unchanged" in error_message:
             self.view.set_status(STATUS_KEY, ALREADY_FORMATTED_MESSAGE)
+            self.add_to_cache(content, cmd)
 
         # diff mode
         elif "--diff" in extra:
@@ -328,6 +341,7 @@ class Black:
 
         # standard mode
         else:
-            self.view.replace(edit, self.all, out.decode(encoding))
+            new_content = out.decode(encoding)
+            self.view.replace(edit, self.all, new_content)
             self.view.set_status(STATUS_KEY, REFORMATTED_MESSAGE)
-            self.add_to_cache(content, cmd)
+            sublime.set_timeout_async(lambda: self.add_to_cache(new_content, cmd))

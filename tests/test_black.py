@@ -1,9 +1,11 @@
 import os
 from unittest import TestCase, skip  # noqa
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, mock_open
 
 from fixtures import sublack
-
+import io
+import pathlib
+import sublime
 
 class TestBlackMethod(TestCase):
     def test_init(self):
@@ -176,41 +178,16 @@ class TestBlackMethod(TestCase):
         e.folders.return_value = ["/bla", "ble"]
         self.assertEqual("/bla", gg(s))
 
-    def test_call(self):
-        c = sublack.blacker.Black.__call__
-        s = MagicMock()
-        s.get_content.return_value = (1, "utf-8")
-        s.config = {"black_use_blackd": False, "black_debug_on": False}
+    def test_is_cached(self):
+        ah = str(hash('a'))
+        bh = str(hash('b'))
+        cmd1 = "cmd1"
 
-        # standard
-        s.run_black.return_value = (0, b"hello\n", b"reformatted")
-        c(s, "edit")
-        s.view.replace.assert_called_with("edit", s.all, "hello\n")
-
-        # failure
-        s.reset_mock()
-        s.run_black.return_value = (1, b"hello\n", b"reformatted")
-        a = c(s, "edit")
-        self.assertEqual(a, 1)
-
-        # alreadyformatted
-        s.reset_mock()
-        s.run_black.return_value = (0, b"hello\n", b"unchanged")
-        c(s, "edit")
-        s.view.set_status.assert_called_with(
-            sublack.consts.STATUS_KEY, sublack.consts.ALREADY_FORMATTED_MESSAGE
-        )
-
-        # diff alreadyformatted
-        s.reset_mock()
-        s.run_black.return_value = (0, b"hello\n", b"unchanged")
-        c(s, "edit", ["--diff"])
-        s.view.set_status.assert_called_with(
-            sublack.consts.STATUS_KEY, sublack.consts.ALREADY_FORMATTED_MESSAGE
-        )
-
-        # diff
-        s.reset_mock()
-        s.run_black.return_value = (0, b"hello\n", b"reformatted")
-        c(s, "edit", ["--diff"])
-        s.do_diff.assert_called_with("edit", b"hello\n", "utf-8")
+        cache = ah+'|'+cmd1+'\n'+bh+'|'+cmd1
+        v = sublime.active_window().active_view()
+        black = sublack.blacker.Black(v)
+        black.formatted_cache = MagicMock()
+        black.formatted_cache.open.return_value = io.StringIO(cache)
+        print(cache)
+        self.assertTrue(black.is_cached('a','cmd1'))
+        self.assertTrue(black.is_cached('b','cmd1'))

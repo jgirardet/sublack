@@ -212,3 +212,8 @@ def read_pyproject_toml(pyproject: Path) -> dict:
 
     LOG.debug("config values extracted from %s : %r", pyproject, config)
     return config
+
+
+def clear_cache():
+    with (cache_path() / "formatted").open("wt") as file:
+        file.write("")

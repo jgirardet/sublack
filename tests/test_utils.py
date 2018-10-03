@@ -170,3 +170,11 @@ class TestUtils(TestCase):
                 f.write(error)
             config = sublack.utils.read_pyproject_toml(pp)
             self.assertEqual(config, {})
+
+    def test_clear_cache(self):
+        cache =  sublack.utils.cache_path() / "formatted"
+        with cache.open('w') as f:
+            f.write("balbalbalbalbal")
+        self.assertEqual(cache.open().read(), "balbalbalbalbal")
+        sublack.utils.clear_cache()
+        self.assertFalse(cache.open().read())

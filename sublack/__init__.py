@@ -3,6 +3,7 @@ from .utils import (
     get_settings,
     get_open_port,
     cache_path,
+    clear_cache,
     startup_info,
     popen,
     check_blackd_on_http,

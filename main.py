@@ -10,6 +10,7 @@ from .sublack import (
     PACKAGE_NAME,
     get_settings,
     cache_path,
+    clear_cache,
     BlackFileCommand,
     BlackDiffCommand,
     BlackToggleBlackOnSaveCommand,
@@ -54,10 +55,8 @@ def plugin_loaded():
         cp.mkdir()
 
     # clear cache
-    with ( cp / 'formatted').open('wt') as file:
-        file.write('')
+    clear_cache()
 
     # # check blackd autostart
-
     if config["black_blackd_autostart"]:
         sublime.set_timeout_async(lambda: current_view.run_command("blackd_start"), 0)

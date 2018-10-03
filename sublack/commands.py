@@ -35,6 +35,7 @@ class BlackFileCommand(sublime_plugin.TextCommand):
 
     is_visible = is_enabled
 
+    @timed
     def run(self, edit):
         LOG.debug("running black_file")
         Black(self.view)(edit)
