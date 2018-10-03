@@ -17,6 +17,7 @@ from functools import partial
 import socket
 import requests
 import logging
+import yaml
 
 LOG = logging.getLogger("sublack")
 
@@ -220,8 +221,7 @@ import toml
 
 
 def read_pyproject_toml(pyproject: Path) -> dict:
-    """Return config options foud in pyproject
-    """
+    """Return config options foud in pyproject"""
     config = {}
     if not pyproject:
         LOG.debug("No pyproject.toml file found")
@@ -236,6 +236,19 @@ def read_pyproject_toml(pyproject: Path) -> dict:
 
     LOG.debug("config values extracted from %s : %r", pyproject, config)
     return config
+
+
+def use_pre_commit(precommit: Path) -> bool:
+    """Returns True if black in .pre-commit-config.yaml"""
+
+    if not precommit:
+        LOG.debug("No .pre-commit-config.yaml file found")
+        return False
+        
+    config = yaml.load(precommit.open().read())
+    for repo in config["repos"]:
+        if "https://github.com/ambv/black" == repo["repo"]:
+            return True
 
 
 def clear_cache():
