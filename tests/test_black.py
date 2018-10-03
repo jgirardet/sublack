@@ -191,7 +191,7 @@ class TestCache(TestCase):
         self.black = sublack.blacker.Black(view())
         temp = pathlib.Path(str(tempfile.TemporaryFile()))
         self.black.formatted_cache = temp
-        with temp.open("wt") as f:
+        with temp.open(mode="w") as f:
             f.write(self.cache)
 
     def test_is_cached(self):
