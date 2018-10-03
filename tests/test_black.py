@@ -182,6 +182,7 @@ class TestBlackMethod(TestCase):
 
 class TestCache(TestCase):
     def setUp(self):
+        #data
         self.view = view()
         self.ah = str(hash("a"))
         self.bh = str(hash("b"))
@@ -189,8 +190,13 @@ class TestCache(TestCase):
         self.cache = (
             self.ah + "|" + str(self.cmd1) + "\n" + self.bh + "|" + str(self.cmd1)
         )
+        #view
         self.black = sublack.blacker.Black(self.view)
-        self.black.formatted_cache = pathlib.Path(tempfile.mkstemp()[1])
+
+        #temp file
+        temp = tempfile.NamedTemporaryFile(delete=True)
+        temp.close()
+        self.black.formatted_cache = pathlib.Path(temp.name)
         with self.black.formatted_cache.open(mode="w") as f:
             f.write(self.cache)
 
