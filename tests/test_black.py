@@ -164,8 +164,14 @@ class TestBlackMethod(TestCase):
         s.view.file_name.return_value = "/bla/bla.py"
         self.assertEqual("/bla", gg(s))
 
+        # no filename project ok
+        s.view.file_name.return_value = None
+        s.variables.get.return_value = "/there/here"
+        self.assertEqual("/there/here", gg(s))
+
         # no filenmae, no window
         s.view.file_name.return_value = None
+        s.variables.get.return_value = ""
         s.view.window.return_value = None
         self.assertEqual(None, gg(s))
 
@@ -182,7 +188,7 @@ class TestBlackMethod(TestCase):
 
 class TestCache(TestCase):
     def setUp(self):
-        #data
+        # data
         self.view = view()
         self.ah = str(hash("a"))
         self.bh = str(hash("b"))
@@ -190,10 +196,10 @@ class TestCache(TestCase):
         self.cache = (
             self.ah + "|" + str(self.cmd1) + "\n" + self.bh + "|" + str(self.cmd1)
         )
-        #view
+        # view
         self.black = sublack.blacker.Black(self.view)
 
-        #temp file
+        # temp file
         temp = tempfile.NamedTemporaryFile(delete=True)
         temp.close()
         self.black.formatted_cache = pathlib.Path(temp.name)
