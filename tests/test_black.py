@@ -182,13 +182,14 @@ class TestBlackMethod(TestCase):
 
 class TestCache(TestCase):
     def setUp(self):
+        self.view = view()
         self.ah = str(hash("a"))
         self.bh = str(hash("b"))
         self.cmd1 = ["cmd1"]
         self.cache = (
             self.ah + "|" + str(self.cmd1) + "\n" + self.bh + "|" + str(self.cmd1)
         )
-        self.black = sublack.blacker.Black(view())
+        self.black = sublack.blacker.Black(self.view)
         self.temp = tempfile.NamedTemporaryFile()
         self.black.formatted_cache = pathlib.Path(self.temp.name)
         with self.black.formatted_cache.open(mode="w") as f:
@@ -196,6 +197,8 @@ class TestCache(TestCase):
 
     def tearDown(self):
         self.temp.close()
+        self.view.set_scratch(True)
+        self.view.window().run_command("close_file")
 
     def test_is_cached(self):
 

@@ -49,4 +49,4 @@ diff = """@@ -1,12 +1,12 @@
 +"""
 
 
-view = lambda: sublime.active_window().active_view()
+view = lambda: sublime.active_window().new_file()
