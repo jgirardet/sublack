@@ -190,13 +190,12 @@ class TestCache(TestCase):
             self.ah + "|" + str(self.cmd1) + "\n" + self.bh + "|" + str(self.cmd1)
         )
         self.black = sublack.blacker.Black(self.view)
-        self.temp = tempfile.NamedTemporaryFile()
-        self.black.formatted_cache = pathlib.Path(self.temp.name)
+        self.black.formatted_cache = pathlib.Path(tempfile.mkstemp()[1])
         with self.black.formatted_cache.open(mode="w") as f:
             f.write(self.cache)
 
     def tearDown(self):
-        self.temp.close()
+        self.black.formatted_cache.unlink()
         self.view.set_scratch(True)
         self.view.window().run_command("close_file")
 
