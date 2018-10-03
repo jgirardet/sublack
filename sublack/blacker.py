@@ -245,6 +245,10 @@ class Black:
         if filename:
             return os.path.dirname(filename)
 
+        prog = self.variables.get("project_path", "")
+        if prog:
+            return prog
+
         window = self.view.window()
         if not window:
             return None
@@ -281,44 +285,10 @@ class Black:
             cache.write(new_file)
             return True
 
-    def __call__(self, edit, extra=[]):
-
-        cmd = self.get_command_line(edit, extra)
-        env = self.get_env()
-        cwd = self.get_good_working_dir()
-        LOG.debug("working dir: %s", cwd)
-
-        content, encoding = self.get_content()
-
-        """
-        if content_hash in cache
-             if hash(cmd) = cmd_cache:
-                return True # alrady cached/ok
-        return  False
-
-
-        # cache_file :
-        content_hash cmd_hash
-
-        """
-
-        if self.is_cached(content, cmd):
-            self.view.set_status(STATUS_KEY, ALREADY_FORMATTED_MESSAGE_CACHE)
-            return
-
-        if (
-            self.config["black_use_blackd"] and "--diff" not in extra
-        ):  # no diff with server
-            LOG.debug("using blackd")
-            returncode, out, err = Blackd(cmd, content, encoding, self.config)()
-        else:
-            LOG.debug("using black")
-            returncode, out, err = self.run_black(cmd, env, cwd, content)
-
+    def finalize(self, edit, extra, returncode, out, err, content, cmd, encoding):
         error_message = err.decode(encoding).replace("\r\n", "\n").replace("\r", "\n")
 
         LOG.debug("black says : %s" % error_message)
-
         # failure
         if returncode != 0:
             self.view.set_status(STATUS_KEY, error_message)
@@ -339,3 +309,31 @@ class Black:
             self.view.replace(edit, self.all, new_content)
             self.view.set_status(STATUS_KEY, REFORMATTED_MESSAGE)
             sublime.set_timeout_async(lambda: self.add_to_cache(new_content, cmd))
+
+    def __call__(self, edit, extra=[]):
+
+        # get command_line  + args
+        cmd = self.get_command_line(edit, extra)
+        env = self.get_env()
+        cwd = self.get_good_working_dir()
+        LOG.debug("working dir: %s", cwd)
+
+        content, encoding = self.get_content()
+
+        # check the cache
+        if self.is_cached(content, cmd):
+            self.view.set_status(STATUS_KEY, ALREADY_FORMATTED_MESSAGE_CACHE)
+            return
+
+        # call black or balckd
+        if (
+            self.config["black_use_blackd"] and "--diff" not in extra
+        ):  # no diff with server
+            LOG.debug("using blackd")
+            returncode, out, err = Blackd(cmd, content, encoding, self.config)()
+        else:
+            LOG.debug("using black")
+            returncode, out, err = self.run_black(cmd, env, cwd, content)
+
+        # format/diff in editor
+        self.finalize(edit, extra, returncode, out, err, content, cmd, encoding)
