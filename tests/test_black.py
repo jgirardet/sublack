@@ -2,7 +2,10 @@ import os
 from unittest import TestCase, skip  # noqa
 from unittest.mock import MagicMock, patch
 
-from fixtures import sublack
+from fixtures import sublack, view
+import io
+import pathlib
+import tempfile
 
 
 class TestBlackMethod(TestCase):
@@ -176,41 +179,68 @@ class TestBlackMethod(TestCase):
         e.folders.return_value = ["/bla", "ble"]
         self.assertEqual("/bla", gg(s))
 
-    def test_call(self):
-        c = sublack.blacker.Black.__call__
-        s = MagicMock()
-        s.get_content.return_value = (1, "utf-8")
-        s.config = {"black_use_blackd": False, "black_debug_on": False}
 
-        # standard
-        s.run_black.return_value = (0, b"hello\n", b"reformatted")
-        c(s, "edit")
-        s.view.replace.assert_called_with("edit", s.all, "hello\n")
+class TestCache(TestCase):
+    def setUp(self):
+        #data
+        self.view = view()
+        self.ah = str(hash("a"))
+        self.bh = str(hash("b"))
+        self.cmd1 = ["cmd1"]
+        self.cache = (
+            self.ah + "|" + str(self.cmd1) + "\n" + self.bh + "|" + str(self.cmd1)
+        )
+        #view
+        self.black = sublack.blacker.Black(self.view)
 
-        # failure
-        s.reset_mock()
-        s.run_black.return_value = (1, b"hello\n", b"reformatted")
-        a = c(s, "edit")
-        self.assertEqual(a, 1)
+        #temp file
+        temp = tempfile.NamedTemporaryFile(delete=True)
+        temp.close()
+        self.black.formatted_cache = pathlib.Path(temp.name)
+        with self.black.formatted_cache.open(mode="w") as f:
+            f.write(self.cache)
 
-        # alreadyformatted
-        s.reset_mock()
-        s.run_black.return_value = (0, b"hello\n", b"unchanged")
-        c(s, "edit")
-        s.view.set_status.assert_called_with(
-            sublack.consts.STATUS_KEY, sublack.consts.ALREADY_FORMATTED_MESSAGE
+    def tearDown(self):
+        self.black.formatted_cache.unlink()
+        self.view.set_scratch(True)
+        self.view.window().run_command("close_file")
+
+    def test_is_cached(self):
+
+        # test first line present
+        self.assertTrue(self.black.is_cached("a", self.cmd1))
+
+        # test second line present
+        self.assertTrue(self.black.is_cached("b", self.cmd1))
+
+        # test content ok cmd not ok
+        self.assertFalse(self.black.is_cached("b", ["cmd2"]))
+
+        # test contnent not cmd ok
+        self.assertFalse(self.black.is_cached("c", self.cmd1))
+
+    def test_add_to_cache(self):
+
+        # test already in , not added
+        self.assertFalse(self.black.add_to_cache("a", self.cmd1))
+
+        # test added and contenu
+        self.assertTrue(self.black.add_to_cache("c", self.cmd1))
+        self.assertEqual(
+            self.black.formatted_cache.open().read(),
+            "{}|['cmd1']\n{}|['cmd1']\n{}|['cmd1']".format(
+                str(hash("c")), self.ah, self.bh
+            ),
         )
 
-        # diff alreadyformatted
-        s.reset_mock()
-        s.run_black.return_value = (0, b"hello\n", b"unchanged")
-        c(s, "edit", ["--diff"])
-        s.view.set_status.assert_called_with(
-            sublack.consts.STATUS_KEY, sublack.consts.ALREADY_FORMATTED_MESSAGE
-        )
+    def test_limite_cache_size(self):
+        ligne = self.ah + "|" + str(self.cmd1) + "\n"
+        with self.black.formatted_cache.open("wt") as f:
+            f.write(251 * ligne)
 
-        # diff
-        s.reset_mock()
-        s.run_black.return_value = (0, b"hello\n", b"reformatted")
-        c(s, "edit", ["--diff"])
-        s.do_diff.assert_called_with("edit", b"hello\n", "utf-8")
+        self.black.add_to_cache("b", self.cmd1)
+
+        new_line = "{}|['cmd1']".format(self.bh)
+        cached = self.black.formatted_cache.open().read().splitlines()
+        self.assertEqual(len(cached), 251)
+        self.assertEqual(cached[:2], [new_line] + [ligne.strip()])

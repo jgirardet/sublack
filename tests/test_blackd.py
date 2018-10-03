@@ -68,12 +68,29 @@ class TestBlackdServer(TestCase):
         self.assertEqual(blacked, self.all())
 
     def test_nothing_todo(self, s, c):
+        # clear cache
+        sublack.utils.clear_cache()
+
         self.setText(blacked)
         self.view.run_command("black_file")
         self.assertEqual(blacked, self.all())
         self.assertEqual(
             self.view.get_status(sublack.consts.STATUS_KEY),
             sublack.consts.ALREADY_FORMATTED_MESSAGE,
+        )
+
+    def test_black_file_nothing_todo_cached(self, s, c):
+        # clear cache
+        sublack.utils.clear_cache()
+
+        self.setText(blacked)
+        self.view.run_command("black_file")
+
+        self.view.run_command("black_file")
+        self.assertEqual(blacked, self.all())
+        self.assertEqual(
+            self.view.get_status(sublack.consts.STATUS_KEY),
+            sublack.consts.ALREADY_FORMATTED_MESSAGE_CACHE,
         )
 
     def test_do_diff(self, s, c):

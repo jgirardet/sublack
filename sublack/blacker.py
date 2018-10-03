@@ -16,11 +16,12 @@ import logging
 from .consts import (
     HEADERS_TABLE,
     ALREADY_FORMATTED_MESSAGE,
+    ALREADY_FORMATTED_MESSAGE_CACHE,
     STATUS_KEY,
     PACKAGE_NAME,
     REFORMATTED_MESSAGE,
 )
-from .utils import get_settings, get_encoding_from_file, timed
+from .utils import get_settings, get_encoding_from_file, timed, cache_path
 
 LOG = logging.getLogger(PACKAGE_NAME)
 
@@ -111,6 +112,7 @@ class Black:
         self.config = get_settings(view)
         self.all = sublime.Region(0, self.view.size())
         self.variables = view.window().extract_variables()
+        self.formatted_cache = cache_path() / "formatted"
 
         LOG.debug("config: %s", self.config)
 
@@ -260,6 +262,32 @@ class Black:
 
         return folders[0]
 
+    def is_cached(self, content, cmd):
+        h_content = hash(content)
+        cache = self.formatted_cache.open().read().splitlines()
+        for line in cache:
+            content_f, cmd_f = line.split("|")
+            if int(content_f) == h_content:
+                if cmd_f == str(cmd):
+                    return True
+        return False
+
+    def add_to_cache(self, content, cmd):
+        if self.is_cached(content, cmd):
+            return
+        with self.formatted_cache.open("r+") as cache:
+            old = cache.read().splitlines()
+            if len(old) > 250:
+                old.pop()
+
+            cache.seek(0)
+            new = [str(hash(content)) + "|" + str(cmd)]
+            LOG.debug("write to cache %s", str(new))
+
+            new_file = "\n".join((new + old))
+            cache.write(new_file)
+            return True
+
     def __call__(self, edit, extra=[]):
 
         cmd = self.get_command_line(edit, extra)
@@ -268,6 +296,22 @@ class Black:
         LOG.debug("working dir: %s", cwd)
 
         content, encoding = self.get_content()
+
+        """
+        if content_hash in cache
+             if hash(cmd) = cmd_cache:
+                return True # alrady cached/ok
+        return  False
+
+
+        # cache_file :
+        content_hash cmd_hash
+
+        """
+
+        if self.is_cached(content, cmd):
+            self.view.set_status(STATUS_KEY, ALREADY_FORMATTED_MESSAGE_CACHE)
+            return
 
         if (
             self.config["black_use_blackd"] and "--diff" not in extra
@@ -290,6 +334,7 @@ class Black:
         # already formated, nothing changes
         elif "unchanged" in error_message:
             self.view.set_status(STATUS_KEY, ALREADY_FORMATTED_MESSAGE)
+            self.add_to_cache(content, cmd)
 
         # diff mode
         elif "--diff" in extra:
@@ -297,5 +342,7 @@ class Black:
 
         # standard mode
         else:
-            self.view.replace(edit, self.all, out.decode(encoding))
+            new_content = out.decode(encoding)
+            self.view.replace(edit, self.all, new_content)
             self.view.set_status(STATUS_KEY, REFORMATTED_MESSAGE)
+            sublime.set_timeout_async(lambda: self.add_to_cache(new_content, cmd))
