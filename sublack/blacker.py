@@ -266,8 +266,8 @@ class Black:
         h_content = hash(content)
         cache = self.formatted_cache.open().read().splitlines()
         for line in cache:
-            content, cmd_f = line.split("|")
-            if int(content) == h_content:
+            content_f, cmd_f = line.split("|")
+            if int(content_f) == h_content:
                 if cmd_f == str(cmd):
                     return True
         return False
@@ -286,6 +286,7 @@ class Black:
 
             new_file = "\n".join((new + old))
             cache.write(new_file)
+            return True
 
     def __call__(self, edit, extra=[]):
 

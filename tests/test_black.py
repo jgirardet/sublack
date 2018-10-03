@@ -1,11 +1,12 @@
 import os
 from unittest import TestCase, skip  # noqa
-from unittest.mock import MagicMock, patch, mock_open
+from unittest.mock import MagicMock, patch
 
-from fixtures import sublack
+from fixtures import sublack, view
 import io
 import pathlib
-import sublime
+import tempfile
+
 
 class TestBlackMethod(TestCase):
     def test_init(self):
@@ -178,16 +179,57 @@ class TestBlackMethod(TestCase):
         e.folders.return_value = ["/bla", "ble"]
         self.assertEqual("/bla", gg(s))
 
-    def test_is_cached(self):
-        ah = str(hash('a'))
-        bh = str(hash('b'))
-        cmd1 = "cmd1"
 
-        cache = ah+'|'+cmd1+'\n'+bh+'|'+cmd1
-        v = sublime.active_window().active_view()
-        black = sublack.blacker.Black(v)
-        black.formatted_cache = MagicMock()
-        black.formatted_cache.open.return_value = io.StringIO(cache)
-        print(cache)
-        self.assertTrue(black.is_cached('a','cmd1'))
-        self.assertTrue(black.is_cached('b','cmd1'))
+class TestCache(TestCase):
+    def setUp(self):
+        self.ah = str(hash("a"))
+        self.bh = str(hash("b"))
+        self.cmd1 = ["cmd1"]
+        self.cache = (
+            self.ah + "|" + str(self.cmd1) + "\n" + self.bh + "|" + str(self.cmd1)
+        )
+        self.black = sublack.blacker.Black(view())
+        temp = pathlib.Path(str(tempfile.TemporaryFile()))
+        self.black.formatted_cache = temp
+        with temp.open("wt") as f:
+            f.write(self.cache)
+
+    def test_is_cached(self):
+
+        # test first line present
+        self.assertTrue(self.black.is_cached("a", self.cmd1))
+
+        # test second line present
+        self.assertTrue(self.black.is_cached("b", self.cmd1))
+
+        # test content ok cmd not ok
+        self.assertFalse(self.black.is_cached("b", ["cmd2"]))
+
+        # test contnent not cmd ok
+        self.assertFalse(self.black.is_cached("c", self.cmd1))
+
+    def test_add_to_cache(self):
+
+        # test already in , not added
+        self.assertFalse(self.black.add_to_cache("a", self.cmd1))
+
+        # test added and contenu
+        self.assertTrue(self.black.add_to_cache("c", self.cmd1))
+        self.assertEqual(
+            self.black.formatted_cache.open().read(),
+            "{}|['cmd1']\n{}|['cmd1']\n{}|['cmd1']".format(
+                str(hash("c")), self.ah, self.bh
+            ),
+        )
+
+    def test_limite_cache_size(self):
+        ligne = self.ah + "|" + str(self.cmd1) + "\n"
+        with self.black.formatted_cache.open("wt") as f:
+            f.write(251 * ligne)
+
+        self.black.add_to_cache("b", self.cmd1)
+
+        new_line = "{}|['cmd1']".format(self.bh)
+        cached = self.black.formatted_cache.open().read().splitlines()
+        self.assertEqual(len(cached), 251)
+        self.assertEqual(cached[:2], [new_line] + [ligne.strip()])

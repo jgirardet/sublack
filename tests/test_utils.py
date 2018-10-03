@@ -172,8 +172,8 @@ class TestUtils(TestCase):
             self.assertEqual(config, {})
 
     def test_clear_cache(self):
-        cache =  sublack.utils.cache_path() / "formatted"
-        with cache.open('w') as f:
+        cache = sublack.utils.cache_path() / "formatted"
+        with cache.open("w") as f:
             f.write("balbalbalbalbal")
         self.assertEqual(cache.open().read(), "balbalbalbalbal")
         sublack.utils.clear_cache()

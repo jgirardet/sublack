@@ -1,4 +1,5 @@
 import sys
+import sublime
 
 sublack = sys.modules["sublack.sublack"]
 
@@ -46,3 +47,6 @@ diff = """@@ -1,12 +1,12 @@
          return encoding
      return None
 +"""
+
+
+view = lambda: sublime.active_window().active_view()
