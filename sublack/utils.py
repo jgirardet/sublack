@@ -53,7 +53,7 @@ def get_settings(view):
     flat_settings = view.settings()
     nested_settings = flat_settings.get(PACKAGE_NAME, {})
     global_settings = sublime.load_settings(SETTINGS_FILE_NAME)
-    pyproject_settings = read_pyproject_toml(find_pyproject(view))
+    pyproject_settings = read_pyproject_toml(find_root_file(view, "pyproject.toml"))
     settings = {}
 
     for k in CONFIG_OPTIONS:
@@ -160,13 +160,37 @@ def check_blackd_on_http(port, host="localhost"):
             return False, False
 
 
-def find_pyproject(view):
-    """Only search in projects and folders since pyproject.toml should be nowhere else"""
+# def find_pyproject(view):
+#     """Only search in projects and folders since pyproject.toml should be nowhere else"""
+#     window = view.window()
+#     variables = window.extract_variables()
+#     # project path
+#     path = Path(variables.get("project_path", "")) / "pyproject.toml"
+#     LOG.debug("pyproject path %s", path)
+#     if path.exists():
+#         return path
+
+#     # folders
+#     folders = window.folders()
+
+#     for path in folders:
+#         LOG.debug("Folders : %s", path)
+#         path = Path(path) / "pyproject.toml"
+#         if path.exists():
+
+#             return path
+
+#     # nothing found
+#     return None
+
+
+def find_root_file(view, filename):
+    """Only search in projects and folders since pyproject.toml/precommit, ... should be nowhere else"""
     window = view.window()
     variables = window.extract_variables()
     # project path
-    path = Path(variables.get("project_path", "")) / "pyproject.toml"
-    LOG.debug("pyproject path %s", path)
+    path = Path(variables.get("project_path", "")) / filename
+    LOG.debug("%s path %s", filename, path)
     if path.exists():
         return path
 
@@ -175,7 +199,7 @@ def find_pyproject(view):
 
     for path in folders:
         LOG.debug("Folders : %s", path)
-        path = Path(path) / "pyproject.toml"
+        path = Path(path) / filename
         if path.exists():
 
             return path

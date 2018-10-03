@@ -132,22 +132,24 @@ class TestUtils(TestCase):
                     return []
 
             # nothing
-            self.assertIsNone(sublack.utils.find_pyproject(View))
+            self.assertIsNone(sublack.utils.find_root_file(View, "pyproject.toml"))
             pp = root / "pyproject.toml"
             pp.touch()
             self.assertTrue(pp.exists())
             # pyproject in project
             self.assertEqual(
-                sublack.utils.find_pyproject(View), root / "pyproject.toml"
+                sublack.utils.find_root_file(View, "pyproject.toml"),
+                root / "pyproject.toml",
             )
 
             View.extract_variables = lambda: {}
             # re nothing
-            self.assertIsNone(sublack.utils.find_pyproject(View))
+            self.assertIsNone(sublack.utils.find_root_file(View, "pyproject.toml"))
             # pyproject in folders
             View.folders = lambda: ["", T]
             self.assertEqual(
-                sublack.utils.find_pyproject(View), root / "pyproject.toml"
+                sublack.utils.find_root_file(View, "pyproject.toml"),
+                root / "pyproject.toml",
             )
 
     def test_read_pyproject(self):
