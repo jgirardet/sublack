@@ -21,7 +21,14 @@ from .consts import (
     PACKAGE_NAME,
     REFORMATTED_MESSAGE,
 )
-from .utils import get_settings, get_encoding_from_file, timed, cache_path
+from .utils import (
+    get_settings,
+    get_encoding_from_file,
+    timed,
+    cache_path,
+    find_root_file,
+    use_pre_commit,
+)
 
 LOG = logging.getLogger(PACKAGE_NAME)
 
@@ -113,6 +120,9 @@ class Black:
         self.all = sublime.Region(0, self.view.size())
         self.variables = view.window().extract_variables()
         self.formatted_cache = cache_path() / "formatted"
+        self.use_pre_commit = use_pre_commit(
+            find_root_file(view, ".pre-commit-config.yaml")
+        )
 
         LOG.debug("config: %s", self.config)
 
@@ -320,8 +330,13 @@ class Black:
     def __call__(self, edit, extra=[]):
 
         # get command_line  + args
-        cmd = self.get_command_line(edit, extra)
+
+        if self.use_pre_commit:
+            cmd = ["pre-commit", "run", "black", "--files"]
+        else:
+            cmd = self.get_command_line(edit, extra)
         env = self.get_env()
+
         cwd = self.get_good_working_dir()
         LOG.debug("working dir: %s", cwd)
 
@@ -333,8 +348,11 @@ class Black:
             return
 
         # call black or balckd
+        if self.use_pre_commit:
+            self.run_standalone('')
         if (
-            self.config["black_use_blackd"] and "--diff" not in extra
+            self.config["black_use_blackd"]
+            and "--diff" not in extra
         ):  # no diff with server
             LOG.debug("using blackd")
             returncode, out, err = Blackd(cmd, content, encoding, self.config)()
