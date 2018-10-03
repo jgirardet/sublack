@@ -189,10 +189,13 @@ class TestCache(TestCase):
             self.ah + "|" + str(self.cmd1) + "\n" + self.bh + "|" + str(self.cmd1)
         )
         self.black = sublack.blacker.Black(view())
-        temp = pathlib.Path(str(tempfile.TemporaryFile()))
-        self.black.formatted_cache = temp
-        with temp.open(mode="w") as f:
+        self.temp = tempfile.NamedTemporaryFile()
+        self.black.formatted_cache = pathlib.Path(self.temp.name)
+        with self.black.formatted_cache.open(mode="w") as f:
             f.write(self.cache)
+
+    def tearDown(self):
+        self.temp.close()
 
     def test_is_cached(self):
 
