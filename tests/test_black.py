@@ -182,18 +182,18 @@ class TestBlackMethod(TestCase):
 
 class TestCache(TestCase):
     def setUp(self):
-        #data
+        # data
         self.view = view()
         self.ah = str(hash("a"))
         self.bh = str(hash("b"))
         self.cmd1 = ["cmd1"]
         self.cache = (
-            self.ah + "|" + str(self.cmd1) + "\n" + self.bh + "|" + str(self.cmd1)
+            self.ah + "|||" + str(self.cmd1) + "\n" + self.bh + "|||" + str(self.cmd1)
         )
-        #view
+        # view
         self.black = sublack.blacker.Black(self.view)
 
-        #temp file
+        # temp file
         temp = tempfile.NamedTemporaryFile(delete=True)
         temp.close()
         self.black.formatted_cache = pathlib.Path(temp.name)
@@ -228,19 +228,19 @@ class TestCache(TestCase):
         self.assertTrue(self.black.add_to_cache("c", self.cmd1))
         self.assertEqual(
             self.black.formatted_cache.open().read(),
-            "{}|['cmd1']\n{}|['cmd1']\n{}|['cmd1']".format(
+            "{}|||['cmd1']\n{}|||['cmd1']\n{}|||['cmd1']".format(
                 str(hash("c")), self.ah, self.bh
             ),
         )
 
     def test_limite_cache_size(self):
-        ligne = self.ah + "|" + str(self.cmd1) + "\n"
+        ligne = self.ah + "|||" + str(self.cmd1) + "\n"
         with self.black.formatted_cache.open("wt") as f:
             f.write(251 * ligne)
 
         self.black.add_to_cache("b", self.cmd1)
 
-        new_line = "{}|['cmd1']".format(self.bh)
+        new_line = "{}|||['cmd1']".format(self.bh)
         cached = self.black.formatted_cache.open().read().splitlines()
         self.assertEqual(len(cached), 251)
         self.assertEqual(cached[:2], [new_line] + [ligne.strip()])
