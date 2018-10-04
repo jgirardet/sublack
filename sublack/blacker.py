@@ -327,20 +327,41 @@ class Black:
             self.view.set_status(STATUS_KEY, REFORMATTED_MESSAGE)
             sublime.set_timeout_async(lambda: self.add_to_cache(new_content, cmd))
 
+    def format_via_precommit(self, cmd, edit, content):
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(
+            prefix=".sublack", suffix=".py", dir=self.get_good_working_dir()
+        ) as tmp:
+
+            with open(tmp.name, "w") as f:
+                f.write(content)
+
+            # import time
+            # time.sleep(10)
+            cmd.append(tmp.name)
+            p = subprocess.Popen(
+                cmd, stdout=subprocess.PIPE, cwd=self.get_good_working_dir()
+            )
+            print(p.stdout.read())
+            new_content = open(tmp.name).read()
+            self.view.replace(edit, self.all, new_content)
+
     def __call__(self, edit, extra=[]):
 
         # get command_line  + args
+        content, encoding = self.get_content()
 
         if self.use_pre_commit:
             cmd = ["pre-commit", "run", "black", "--files"]
+            self.format_via_precommit(cmd, edit, content.decode(encoding))
+            return
         else:
             cmd = self.get_command_line(edit, extra)
         env = self.get_env()
 
         cwd = self.get_good_working_dir()
         LOG.debug("working dir: %s", cwd)
-
-        content, encoding = self.get_content()
 
         # check the cache
         if self.is_cached(content, cmd):
@@ -349,10 +370,9 @@ class Black:
 
         # call black or balckd
         if self.use_pre_commit:
-            self.run_standalone('')
+            self.run_standalone("")
         if (
-            self.config["black_use_blackd"]
-            and "--diff" not in extra
+            self.config["black_use_blackd"] and "--diff" not in extra
         ):  # no diff with server
             LOG.debug("using blackd")
             returncode, out, err = Blackd(cmd, content, encoding, self.config)()
