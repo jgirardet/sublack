@@ -159,13 +159,6 @@ class Black:
         if filename and filename.endswith(".pyi"):
             cmd.append("--pyi")
 
-        # include /exclude
-        if self.config.get("black_include"):
-            cmd.extend(["--include", str(self.config["black_include"])])
-
-        if self.config.get("black_exclude"):
-            cmd.extend(["--exclude", str(self.config["black_exclude"])])
-
         # black_py36
         if self.config.get("black_py36"):
             cmd.append("--py36")
