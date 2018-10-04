@@ -32,6 +32,7 @@ Changelog
 
 2.1:
 	add a cache system to bypass black check for already formatted file.
+	remove inclue/exclude : useless
 2.0:
 	add command Black_format_all to format project
 	add blackd support
