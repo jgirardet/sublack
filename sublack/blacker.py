@@ -280,7 +280,7 @@ class Black:
         h_content = hash(content)
         cache = self.formatted_cache.open().read().splitlines()
         for line in cache:
-            content_f, cmd_f = line.split("|")
+            content_f, cmd_f = line.split("|||")
             if int(content_f) == h_content:
                 if cmd_f == str(cmd):
                     return True
@@ -295,7 +295,7 @@ class Black:
                 old.pop()
 
             cache.seek(0)
-            new = [str(hash(content)) + "|" + str(cmd)]
+            new = [str(hash(content)) + "|||" + str(cmd)]
             LOG.debug("write to cache %s", str(new))
 
             new_file = "\n".join((new + old))
