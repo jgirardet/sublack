@@ -58,16 +58,6 @@ class TestBlackMethod(TestCase):
             ],
         )
 
-        # test include
-        s.config = {"black_command": "black", "black_include": "hello"}
-        a = gcl(s, v)
-        self.assertEqual(a, ["black", "-", "--include", "hello"])
-
-        # test exclude
-        s.config = {"black_command": "black", "black_exclude": "hello"}
-        a = gcl(s, v)
-        self.assertEqual(a, ["black", "-", "--exclude", "hello"])
-
         # test py36
         s.config = {"black_command": "black", "black_py36": True}
         a = gcl(s, v)

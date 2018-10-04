@@ -20,12 +20,6 @@
       // Don't normalize underscores in numeric literals.   
       "black_skip_numeric_underscore_normalization": false,
 
-      // Directory to include: null is black's default
-      "black_include": null,
-
-      // Directory to exclude: null is black's default
-      "black_exclude": null,
-
       // force py36 syntax mode
       "black_py36": null,
 

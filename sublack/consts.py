@@ -28,8 +28,6 @@ CONFIG_OPTIONS = [
     "black_on_save",
     "black_log",
     "black_default_encoding",
-    "black_include",
-    "black_exclude",
     "black_py36",
     "black_use_blackd",
     "black_blackd_host",

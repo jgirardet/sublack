@@ -16,12 +16,7 @@ class TestUtils(TestCase):
 
         flat = {"sublack.black_fast": 2, "sublack.black_skip_string_normalization": 2}
 
-        nested = {
-            "black_line_length": 3,
-            "black_fast": 3,
-            "black_include": 3,
-            "black_py36": 3,
-        }
+        nested = {"black_line_length": 3, "black_fast": 3, "black_py36": 3}
 
         globale = {
             "black_command": 4,
@@ -32,9 +27,7 @@ class TestUtils(TestCase):
             "black_default_encoding": 4,
             "black_skip_string_normalization": 4,
             "black_skip_numeric_underscore_normalization": 4,
-            "black_include": 4,
             "black_py36": 4,
-            "black_exclude": 4,
             "black_use_blackd": 4,
             "black_blackd_host": 4,
             "black_blackd_port": 4,
@@ -50,9 +43,7 @@ class TestUtils(TestCase):
             "black_default_encoding": 4,
             "black_skip_string_normalization": 2,
             "black_skip_numeric_underscore_normalization": 4,
-            "black_include": 3,
             "black_py36": 3,
-            "black_exclude": 4,
             "black_use_blackd": 4,
             "black_blackd_host": 4,
             "black_blackd_port": 4,
