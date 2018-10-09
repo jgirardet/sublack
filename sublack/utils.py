@@ -32,15 +32,17 @@ class Path(type(pathlib.Path())):
             mode="w", buffering=-1, encoding=None, errors=None, newline=None) as file:
             
             return file.write(content)
-# fmt: on
 
     def read_text(
-        self,mode="w", buffering=-1, encoding=None, errors=None, newline=None):
-        
+        self, mode="w", buffering=-1, encoding=None, errors=None, newline=None
+    ):
+
         with self.open(
-            mode="r", buffering=-1, encoding=None, errors=None, newline=None) as file:
-            
+            mode="r", buffering=-1, encoding=None, errors=None, newline=None
+        ) as file:
+
             return file.read()
+# fmt: on
 
 
 def timed(fn):
@@ -212,8 +214,8 @@ def find_root_file(view, filename):
     variables = window.extract_variables()
     # project path
     path = Path(variables.get("project_path", "")) / filename
-    LOG.debug("%s path %s", filename, path)
     if path.exists():
+        LOG.debug("%s path %s", filename, path)
         return path
 
     # folders
@@ -224,6 +226,7 @@ def find_root_file(view, filename):
         path = Path(path) / filename
         if path.exists():
 
+            LOG.debug("%s path %s", filename, path)
             return path
 
     # nothing found
@@ -270,10 +273,9 @@ def use_pre_commit(precommit: Path) -> bool:
     if not config:
         return False
 
-    if  "repos" not in config:
-        LOG.debug(".pre-commit-config.yaml has no \"repos\"")
+    if "repos" not in config:
+        LOG.debug('.pre-commit-config.yaml has no "repos"')
         return False
-
 
     for repo in config["repos"]:
         if "https://github.com/ambv/black" == repo["repo"]:
