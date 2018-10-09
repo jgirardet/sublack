@@ -3,7 +3,6 @@ from unittest import TestCase, skip  # noqa
 from unittest.mock import MagicMock, patch
 
 from fixtures import sublack, view
-import io
 import pathlib
 import tempfile
 
@@ -240,3 +239,20 @@ class TestCache(TestCase):
         cached = self.black.formatted_cache.open().read().splitlines()
         self.assertEqual(len(cached), 251)
         self.assertEqual(cached[:2], [new_line] + [ligne.strip()])
+
+
+class TestBlackdClass(TestCase):
+    def test_format_header(self):
+        self.maxDiff = None
+        cmd = "black - -l 25 --fast --skip-string-normalization --skip-numeric-underscore-normalization --py36".split()
+        h = sublack.blacker.Blackd.format_headers("self", cmd)
+        self.assertEqual(
+            h,
+            {
+                "X-Line-Length": "25",
+                "X-Skip-String-Normalization": "1",
+                "X-Python-Variant": "3.6",
+                "X-Fast-Or-Safe": "fast",
+                "X-Skip-Numeric-Underscore-Normalization": "1",
+            },
+        )

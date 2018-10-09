@@ -2,12 +2,10 @@
 TODO : test headers
 """
 
-from unittest import TestCase
 from unittest.mock import patch
 
 import sublime
-from fixtures import sublack, blacked, unblacked, diff
-import requests
+from fixtures import sublack, blacked, unblacked, diff, TestCaseBlack
 
 blackd_proc = sublack.server.BlackdServer()
 
@@ -43,19 +41,7 @@ BASE_SETTINGS = {
 
 @patch.object(sublack.commands, "is_python", return_value=True)
 @patch.object(sublack.blacker, "get_settings", return_value=BASE_SETTINGS)
-class TestBlackdServer(TestCase):
-    def setUp(self):
-        self.view = sublime.active_window().new_file()
-        # make sure we have a window to work with
-        s = sublime.load_settings("Preferences.sublime-settings")
-        s.set("close_windows_when_empty", False)
-
-    def tearDown(self):
-        if self.view:
-            self.view.set_scratch(True)
-            self.view.window().focus_view(self.view)
-            self.view.window().run_command("close_file")
-
+class TestBlackdServer(TestCaseBlack):
     def all(self):
         all_file = sublime.Region(0, self.view.size())
         return self.view.substr(all_file)
@@ -116,20 +102,11 @@ class TestBlackdServer(TestCase):
 
 
 @patch.object(sublack.commands, "is_python", return_value=True)
-class TestBlackdServerNotRunning(TestCase):
+class TestBlackdServerNotRunning(TestCaseBlack):
     def setUp(self):
+        super().setUp()
         self.BASE_SETTINGS = dict(BASE_SETTINGS)
         self.BASE_SETTINGS["black_blackd_port"] = "123465789"
-        self.view = sublime.active_window().new_file()
-        # make sure we have a window to work with
-        s = sublime.load_settings("Preferences.sublime-settings")
-        s.set("close_windows_when_empty", False)
-
-    def tearDown(self):
-        if self.view:
-            self.view.set_scratch(True)
-            self.view.window().focus_view(self.view)
-            self.view.window().run_command("close_file")
 
     def test_blackd_not_runnint(self, s):
         with patch.object(
@@ -140,20 +117,3 @@ class TestBlackdServerNotRunning(TestCase):
                 m.assert_called_with(
                     "blackd not running on port 123465789, you can start it with blackd_start command"
                 )
-
-
-class TestHeaders(TestCase):
-    def test_format_header(self):
-        self.maxDiff = None
-        cmd = "black - -l 25 --fast --skip-string-normalization --skip-numeric-underscore-normalization --py36".split()
-        h = sublack.blacker.Blackd.format_headers("self", cmd)
-        self.assertEqual(
-            h,
-            {
-                "X-Line-Length": "25",
-                "X-Skip-String-Normalization": "1",
-                "X-Python-Variant": "3.6",
-                "X-Fast-Or-Safe": "fast",
-                "X-Skip-Numeric-Underscore-Normalization": "1",
-            },
-        )
