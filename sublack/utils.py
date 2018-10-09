@@ -249,7 +249,9 @@ def use_pre_commit(precommit: Path) -> bool:
     for repo in config["repos"]:
         if "https://github.com/ambv/black" == repo["repo"]:
             return True
-
+        for hooks in repo['hooks']:
+            if hooks['id'] == "black":
+                return True
 
 def clear_cache():
     with (cache_path() / "formatted").open("wt") as file:

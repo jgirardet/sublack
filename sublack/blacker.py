@@ -28,6 +28,7 @@ from .utils import (
     cache_path,
     find_root_file,
     use_pre_commit,
+    popen,
 )
 
 LOG = logging.getLogger(PACKAGE_NAME)
@@ -120,11 +121,10 @@ class Black:
         self.all = sublime.Region(0, self.view.size())
         self.variables = view.window().extract_variables()
         self.formatted_cache = cache_path() / "formatted"
-        self.use_pre_commit = use_pre_commit(
+        LOG.debug("config: %s", self.config)
+        self.use_pre_commit = self.config["black_use_precommit"] and use_pre_commit(
             find_root_file(view, ".pre-commit-config.yaml")
         )
-
-        LOG.debug("config: %s", self.config)
 
     def get_command_line(self, edit, extra=[]):
         # prepare popen arguments
@@ -337,13 +337,9 @@ class Black:
             with open(tmp.name, "w") as f:
                 f.write(content)
 
-            # import time
-            # time.sleep(10)
             cmd.append(tmp.name)
-            p = subprocess.Popen(
-                cmd, stdout=subprocess.PIPE, cwd=self.get_good_working_dir()
-            )
-            print(p.stdout.read())
+            p = popen(cmd, stdout=subprocess.PIPE, cwd=self.get_good_working_dir())
+            p.wait(timeout=5)
             new_content = open(tmp.name).read()
             self.view.replace(edit, self.all, new_content)
 
@@ -351,6 +347,8 @@ class Black:
 
         # get command_line  + args
         content, encoding = self.get_content()
+
+        print("use precommit : ", self.use_pre_commit)
 
         if self.use_pre_commit:
             cmd = ["pre-commit", "run", "black", "--files"]

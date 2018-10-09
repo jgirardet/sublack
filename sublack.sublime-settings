@@ -57,6 +57,9 @@
       "black_blackd_port": "45484",
 
       // Start blackdserver on start. shuts down at sublimetext exit.
-      "black_blackd_autostart": false
+      "black_blackd_autostart": false,
+
+      // Use pre-commit if possible
+      "black_use_precommit": false
  
 }
