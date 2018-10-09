@@ -187,6 +187,7 @@ class TestUtils(TestCase):
 
             # time.sleep(10)
             # invalid file
+            path.touch()
             path.write_text("")
             self.assertFalse(sublack.utils.use_pre_commit(path))
 
