@@ -33,6 +33,7 @@ CONFIG_OPTIONS = [
     "black_blackd_host",
     "black_blackd_port",
     "black_blackd_autostart",
+    "black_use_precommit"
 ]
 
 
