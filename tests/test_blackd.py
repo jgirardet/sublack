@@ -37,6 +37,7 @@ BASE_SETTINGS = {
     "black_use_blackd": True,
     "black_blackd_host": "localhost",
     "black_blackd_port": blackd_proc.port,
+    "black_use_precommit": False,
 }
 
 

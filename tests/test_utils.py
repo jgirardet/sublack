@@ -1,11 +1,12 @@
 from unittest import TestCase, skip  # noqa
 from unittest.mock import MagicMock, patch
 
-from fixtures import sublack
+from fixtures import sublack, pre_commit_config
 import sublime
 import re
-from pathlib import Path
 import tempfile
+
+Path = sublack.utils.Path
 
 
 class TestUtils(TestCase):
@@ -32,6 +33,7 @@ class TestUtils(TestCase):
             "black_blackd_host": 4,
             "black_blackd_port": 4,
             "black_blackd_autostart": 4,
+            "black_use_precommit": 4,
         }
 
         res = {
@@ -48,6 +50,7 @@ class TestUtils(TestCase):
             "black_blackd_host": 4,
             "black_blackd_port": 4,
             "black_blackd_autostart": 4,
+            "black_use_precommit": 4,
         }
 
         class View(str):
@@ -171,3 +174,42 @@ class TestUtils(TestCase):
         self.assertEqual(cache.open().read(), "balbalbalbalbal")
         sublack.utils.clear_cache()
         self.assertFalse(cache.open().read())
+
+    def test_use_precommit(self):
+        print("test use precommit")
+        with tempfile.TemporaryDirectory() as T:
+            path = Path(T, ".pre-commit-config.yaml")
+
+            # no file
+            self.assertFalse(sublack.utils.use_pre_commit(None))
+
+            # import time
+
+            # time.sleep(10)
+            # invalid file
+            path.write_text("")
+            self.assertFalse(sublack.utils.use_pre_commit(path))
+
+            # validfile hook
+            path.write_text(pre_commit_config["hook_id"])
+            self.assertTrue(sublack.utils.use_pre_commit(path))
+
+            # validfile repo
+            path.write_text(pre_commit_config["repo_repo"])
+            self.assertTrue(sublack.utils.use_pre_commit(path))
+
+            # validfile repo
+            path.write_text(pre_commit_config["nothing"])
+            self.assertFalse(sublack.utils.use_pre_commit(path))
+
+    def test_class_path(self):
+        with tempfile.NamedTemporaryFile() as T:
+            f = sublack.utils.Path(T.name)
+            written = f.write_text("hello")
+
+            # test write
+            self.assertEqual(written, 5)
+            self.assertEqual(open(T.name).read(), "hello")
+
+            # test read
+            self.assertEqual(f.read_text(), "hello")

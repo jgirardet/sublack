@@ -10,7 +10,7 @@ import subprocess
 import sublime
 
 import requests
-
+import functools
 import logging
 
 from .consts import (
@@ -122,8 +122,14 @@ class Black:
         self.variables = view.window().extract_variables()
         self.formatted_cache = cache_path() / "formatted"
         LOG.debug("config: %s", self.config)
-        self.use_pre_commit = self.config["black_use_precommit"] and use_pre_commit(
-            find_root_file(view, ".pre-commit-config.yaml")
+        # self.use_pre_commit = self.config["black_use_precommit"] and use_pre_commit(
+        #     find_root_file(view, ".pre-commit-config.yaml")
+        # )
+
+    @property
+    def use_pre_commit(self):
+        return self.config["black_use_precommit"] and use_pre_commit(
+            find_root_file(self.view, ".pre-commit-config.yaml")
         )
 
     def get_command_line(self, edit, extra=[]):
@@ -320,7 +326,7 @@ class Black:
             self.view.set_status(STATUS_KEY, REFORMATTED_MESSAGE)
             sublime.set_timeout_async(lambda: self.add_to_cache(new_content, cmd))
 
-    def format_via_precommit(self, cmd, edit, content):
+    def format_via_precommit(self, cmd, edit, content, cwd, env):
         import tempfile
 
         with tempfile.NamedTemporaryFile(
@@ -331,28 +337,34 @@ class Black:
                 f.write(content)
 
             cmd.append(tmp.name)
-            p = popen(cmd, stdout=subprocess.PIPE, cwd=self.get_good_working_dir())
-            p.wait(timeout=5)
+
+            try:
+                subprocess.check_output(
+                    cmd,
+                    cwd=self.get_good_working_dir(),
+                    env=env,
+                    startupinfo=self.windows_popen_prepare(),
+                )
+            except subprocess.CalledProcessError as err:
+                return err
             new_content = open(tmp.name).read()
             self.view.replace(edit, self.all, new_content)
+            return
 
     def __call__(self, edit, extra=[]):
 
         # get command_line  + args
         content, encoding = self.get_content()
-
-        print("use precommit : ", self.use_pre_commit)
+        cwd = self.get_good_working_dir()
+        LOG.debug("working dir: %s", cwd)
+        env = self.get_env()
 
         if self.use_pre_commit:
             cmd = ["pre-commit", "run", "black", "--files"]
-            self.format_via_precommit(cmd, edit, content.decode(encoding))
+            self.format_via_precommit(cmd, edit, content.decode(encoding), cwd, env)
             return
         else:
             cmd = self.get_command_line(edit, extra)
-        env = self.get_env()
-
-        cwd = self.get_good_working_dir()
-        LOG.debug("working dir: %s", cwd)
 
         # check the cache
         if self.is_cached(content, cmd):
@@ -360,8 +372,9 @@ class Black:
             return
 
         # call black or balckd
-        if self.use_pre_commit:
-            self.run_standalone("")
+
+        # if self.use_pre_commit:
+
         if (
             self.config["black_use_blackd"] and "--diff" not in extra
         ):  # no diff with server

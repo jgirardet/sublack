@@ -2,7 +2,7 @@ from unittest import TestCase, skip  # noqa
 from unittest.mock import patch
 
 import sublime
-from fixtures import sublack, blacked, unblacked, diff
+from fixtures import sublack, blacked, unblacked, diff, TestCaseBlack
 import requests
 from pathlib import Path
 
@@ -21,32 +21,13 @@ TEST_BLACK_SETTINGS = {
     "black_use_blackd": False,
     "black_blackd_host": "localhost",
     "black_blackd_port": "",
+    "black_use_precommit": False,
 }
 
 
 @patch.object(sublack.commands, "is_python", return_value=True)
 @patch.object(sublack.blacker, "get_settings", return_value=TEST_BLACK_SETTINGS)
-class TestBlack(TestCase):
-    def setUp(self):
-        self.view = sublime.active_window().new_file()
-        # make sure we have a window to work with
-        s = sublime.load_settings("Preferences.sublime-settings")
-        s.set("close_windows_when_empty", False)
-        self.maxDiff = None
-
-    def tearDown(self):
-        if self.view:
-            self.view.set_scratch(True)
-            self.view.window().focus_view(self.view)
-            self.view.window().run_command("close_file")
-
-    def all(self):
-        all_file = sublime.Region(0, self.view.size())
-        return self.view.substr(all_file)
-
-    def setText(self, string):
-        self.view.run_command("append", {"characters": string})
-
+class TestBlack(TestCaseBlack):
     def test_black_file(self, s, c):
         self.setText(unblacked)
         self.view.run_command("black_file")
@@ -86,9 +67,6 @@ class TestBlack(TestCase):
         self.assertEqual(blacked, self.all())
 
     def test_black_diff(self, s, c):
-        # setup in case of fail
-        # self.addCleanup(self.view.close)
-        # self.addCleanup(self.view.set_scratch, True)
 
         self.setText(unblacked)
         self.view.set_name("base")
@@ -179,23 +157,15 @@ class TestBlackdServer(TestCase):
         )
 
 
-class TestFormatAll(TestCase):
+class TestFormatAll(TestCaseBlack):
     def setUp(self):
-        self.window = sublime.active_window()
-        self.view = self.window.new_file()
-        self.view.set_scratch(True)
-        self.window.focus_view(self.view)
-
-        self.folder = Path(__file__).parents[1]
-        self.old_data = self.window.project_data()
+        super().setUp()
         self.window.set_project_data({"folders": [{"path": str(self.folder)}]})
 
     def tearDown(self):
+        super().tearDown()
         if hasattr(self, "wrong"):
             self.wrong.unlink()
-        self.window.set_project_data(self.old_data)
-        self.window.focus_view(self.view)
-        self.window.run_command("close_file")
 
     def test_black_all_success(self):
 

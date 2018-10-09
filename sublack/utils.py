@@ -9,7 +9,7 @@ from .consts import (
     SETTINGS_NS_PREFIX,
 )
 
-from pathlib import Path
+import pathlib
 import subprocess
 import signal
 import os
@@ -20,6 +20,27 @@ import logging
 import yaml
 
 LOG = logging.getLogger("sublack")
+
+
+# fmt: off
+class Path(type(pathlib.Path())):
+    def write_text(
+        self, content, mode="w", buffering=-1, encoding=None, errors=None,
+        newline=None):
+        
+        with self.open(
+            mode="w", buffering=-1, encoding=None, errors=None, newline=None) as file:
+            
+            return file.write(content)
+# fmt: on
+
+    def read_text(
+        self,mode="w", buffering=-1, encoding=None, errors=None, newline=None):
+        
+        with self.open(
+            mode="r", buffering=-1, encoding=None, errors=None, newline=None) as file:
+            
+            return file.read()
 
 
 def timed(fn):
@@ -244,14 +265,25 @@ def use_pre_commit(precommit: Path) -> bool:
     if not precommit:
         LOG.debug("No .pre-commit-config.yaml file found")
         return False
-        
-    config = yaml.load(precommit.open().read())
+
+    config = yaml.load(precommit.read_text())
+    if not config:
+        return False
+
+    if  "repos" not in config:
+        LOG.debug(".pre-commit-config.yaml has no \"repos\"")
+        return False
+
+
     for repo in config["repos"]:
         if "https://github.com/ambv/black" == repo["repo"]:
             return True
-        for hooks in repo['hooks']:
-            if hooks['id'] == "black":
+        for hooks in repo["hooks"]:
+            if hooks["id"] == "black":
                 return True
+
+    return False
+
 
 def clear_cache():
     with (cache_path() / "formatted").open("wt") as file:
