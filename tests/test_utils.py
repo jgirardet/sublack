@@ -183,11 +183,6 @@ class TestUtils(TestCase):
             # no file
             self.assertFalse(sublack.utils.use_pre_commit(None))
 
-            # import time
-
-            # time.sleep(10)
-            # invalid file
-            path.touch()
             path.write_text("")
             self.assertFalse(sublack.utils.use_pre_commit(path))
 
@@ -204,13 +199,13 @@ class TestUtils(TestCase):
             self.assertFalse(sublack.utils.use_pre_commit(path))
 
     def test_class_path(self):
-        with tempfile.NamedTemporaryFile() as T:
-            f = sublack.utils.Path(T.name)
+        with tempfile.TemporaryDirectory() as T:
+            f = sublack.utils.Path(T, "rien")
             written = f.write_text("hello")
 
             # test write
             self.assertEqual(written, 5)
-            self.assertEqual(open(T.name).read(), "hello")
+            self.assertEqual(f.open().read(), "hello")
 
             # test read
             self.assertEqual(f.read_text(), "hello")
