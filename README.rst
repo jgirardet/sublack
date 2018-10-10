@@ -141,6 +141,9 @@ Sublack specifics options
 * black_blackd_autostart:
     Automaticaly run blackd in the background wen sublime starts. default is false.
 
+* black_use_precommit:
+    run black via pre-commit hook.
+
 
 Project settings
 *******************
@@ -180,6 +183,11 @@ Sublime Linter integration
 
 You can install `SublimeLinter-addon-black-for-flake <https://github.com/kaste/SublimeLinter-addon-black-for-flake>`_. The plugin will auto configure flake8 and mute all warnings black can actually fix.
 
+
+Pre-commit integration
+------------------------
+
+You can choose tu run Black via pre-commit by setting `black_use_precommit` to `true`. Sublack settings will be ignored.
 
 Issues
 ---------

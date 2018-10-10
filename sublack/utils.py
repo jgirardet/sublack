@@ -22,15 +22,15 @@ import yaml
 LOG = logging.getLogger("sublack")
 
 
-# fmt: off
 class Path(type(pathlib.Path())):
     def write_text(
-        self, content, mode="w", buffering=-1, encoding=None, errors=None,
-        newline=None):
-        
+        self, content, mode="w", buffering=-1, encoding=None, errors=None, newline=None
+    ):
+
         with self.open(
-            mode="w", buffering=-1, encoding=None, errors=None, newline=None) as file:
-            
+            mode="w", buffering=-1, encoding=None, errors=None, newline=None
+        ) as file:
+
             return file.write(content)
 
     def read_text(
@@ -42,7 +42,6 @@ class Path(type(pathlib.Path())):
         ) as file:
 
             return file.read()
-# fmt: on
 
 
 def timed(fn):
@@ -279,10 +278,10 @@ def use_pre_commit(precommit: Path) -> bool:
 
     for repo in config["repos"]:
         if "https://github.com/ambv/black" == repo["repo"]:
-            return True
+            return precommit
         for hooks in repo["hooks"]:
             if hooks["id"] == "black":
-                return True
+                return precommit
 
     return False
 

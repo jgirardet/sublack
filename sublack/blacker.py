@@ -10,7 +10,6 @@ import subprocess
 import sublime
 
 import requests
-import functools
 import logging
 
 from .consts import (
@@ -121,16 +120,15 @@ class Black:
         self.all = sublime.Region(0, self.view.size())
         self.variables = view.window().extract_variables()
         self.formatted_cache = cache_path() / "formatted"
-        LOG.debug("config: %s", self.config)
-        # self.use_pre_commit = self.config["black_use_precommit"] and use_pre_commit(
-        #     find_root_file(view, ".pre-commit-config.yaml")
-        # )
 
-    @property
-    def use_pre_commit(self):
-        return self.config["black_use_precommit"] and use_pre_commit(
-            find_root_file(self.view, ".pre-commit-config.yaml")
-        )
+        LOG.debug("config: %s", self.config)
+
+        if self.config["black_use_precommit"]:
+            self.pre_commit_config = use_pre_commit(
+                find_root_file(self.view, ".pre-commit-config.yaml")
+            )
+        else:
+            self.pre_commit_config = False
 
     def get_command_line(self, edit, extra=[]):
         # prepare popen arguments
@@ -326,30 +324,33 @@ class Black:
             self.view.set_status(STATUS_KEY, REFORMATTED_MESSAGE)
             sublime.set_timeout_async(lambda: self.add_to_cache(new_content, cmd))
 
-    def format_via_precommit(self, cmd, edit, content, cwd, env):
+    def format_via_precommit(self, edit, content, cwd, env):
+        cmd = ["pre-commit", "run", "black", "--files"]
+
         import tempfile
 
         with tempfile.NamedTemporaryFile(
-            prefix=".sublack", suffix=".py", dir=self.get_good_working_dir()
+            prefix=".sublack", suffix=".py", dir=cwd
         ) as tmp:
 
             with open(tmp.name, "w") as f:
                 f.write(content)
 
-            cmd.append(tmp.name)
-
+            cmd.extend([tmp.name, "--config", str(self.pre_commit_config)])
             try:
                 subprocess.check_output(
                     cmd,
                     cwd=self.get_good_working_dir(),
                     env=env,
                     startupinfo=self.windows_popen_prepare(),
+                    stderr=subprocess.STDOUT,
                 )
             except subprocess.CalledProcessError as err:
+                LOG.error(err)
                 return err
+
             new_content = open(tmp.name).read()
             self.view.replace(edit, self.all, new_content)
-            return
 
     def __call__(self, edit, extra=[]):
 
@@ -359,21 +360,20 @@ class Black:
         LOG.debug("working dir: %s", cwd)
         env = self.get_env()
 
-        if self.use_pre_commit:
-            cmd = ["pre-commit", "run", "black", "--files"]
-            self.format_via_precommit(cmd, edit, content.decode(encoding), cwd, env)
+        if self.pre_commit_config:
+            LOG.debug("Using pre-commit with %s", self.pre_commit_config)
+            self.format_via_precommit(edit, content.decode(encoding), cwd, env)
             return
         else:
             cmd = self.get_command_line(edit, extra)
 
         # check the cache
+        # cache may not be used with pre-commit
         if self.is_cached(content, cmd):
             self.view.set_status(STATUS_KEY, ALREADY_FORMATTED_MESSAGE_CACHE)
             return
 
         # call black or balckd
-
-        # if self.use_pre_commit:
 
         if (
             self.config["black_use_blackd"] and "--diff" not in extra

@@ -8,13 +8,6 @@ import tempfile
 
 
 class TestBlackMethod(TestCase):
-    def test_init(self):
-        # t*est valid number of config options
-        with patch.object(sublack.blacker, "get_settings") as m:
-            m.return_value = ["hello"] * 7
-            a = sublack.blacker.Black(MagicMock())
-            self.assertEqual(a.config, ["hello"] * 7)
-
     def test_get_command_line(self):
         gcl = sublack.blacker.Black.get_command_line
         v = MagicMock()

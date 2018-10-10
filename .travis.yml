@@ -34,6 +34,7 @@ install:
     - pip3 install aiohttp
     - pip3 install black
     - pip3 install requests
+    - pip3 install pre-commit
     # - pip3 install black requests
     # install Package Control and package denepdencies
     - sh travis.sh install_package_control
