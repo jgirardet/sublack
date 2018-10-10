@@ -3,9 +3,10 @@ from unittest.mock import patch
 
 import sublime
 from fixtures import sublack, blacked, unblacked, diff, TestCaseBlack
-import requests
-from pathlib import Path
 
+Path = sublack.utils.Path
+import requests
+import tempfile
 
 TEST_BLACK_SETTINGS = {
     "black_command": "black",
@@ -193,3 +194,34 @@ class TestFormatAll(TestCaseBlack):
             sublack.REFORMAT_ERRORS,
             "reformat should be error",
         )
+
+
+PRECOMMIT_BLACK_SETTINGS = {
+    "black_command": "black",
+    "black_on_save": True,
+    "black_line_length": None,
+    "black_fast": False,
+    "black_debug_on": True,
+    "black_default_encoding": "utf-8",
+    "black_skip_string_normalization": False,
+    "black_include": None,
+    "black_py36": None,
+    "black_exclude": None,
+    "black_use_blackd": False,
+    "black_blackd_host": "localhost",
+    "black_blackd_port": "",
+    "black_use_precommit": True,
+}
+
+precommit_config_path = Path(Path(__file__).parent, ".pre-commit-config.yaml")
+
+
+@patch.object(sublack.blacker, "use_pre_commit", return_value=precommit_config_path)
+@patch.object(sublack.commands, "is_python", return_value=True)
+@patch.object(sublack.blacker, "get_settings", return_value=PRECOMMIT_BLACK_SETTINGS)
+class TestPrecommit(TestCaseBlack):
+    def test_black_file(self, s, c, p):
+        with tempfile.TemporaryDirectory() as T:
+            self.setText(unblacked)
+            self.view.run_command("black_file")
+            self.assertEqual(blacked, self.all())

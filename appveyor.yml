@@ -9,6 +9,7 @@ install:
     # - pip install black
     - pip install aiohttp
     - pip install black
+    - pip install pre-commit
     - ps: appveyor DownloadFile "https://raw.githubusercontent.com/SublimeText/UnitTesting/master/sbin/appveyor.ps1"
     - ps: .\appveyor.ps1 "bootstrap" -verbose
     # install Package Control
