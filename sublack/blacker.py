@@ -337,13 +337,15 @@ class Black:
 
             cmd.extend([tmp.name, "--config", str(self.pre_commit_config)])
             try:
-                subprocess.check_output(
+                a = subprocess.Popen(
                     cmd,
                     cwd=self.get_good_working_dir(),
                     env=env,
                     startupinfo=self.windows_popen_prepare(),
                     stderr=subprocess.STDOUT,
+                    stdout=subprocess.STDOUT,
                 )
+                LOG.error(a.stdout.read())
             except subprocess.CalledProcessError as err:
                 LOG.error(err)
                 return err
