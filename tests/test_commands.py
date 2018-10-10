@@ -223,9 +223,8 @@ class TestPrecommit(TestCaseBlack):
     def test_black_file(self, s, c, p):
         project = {
             "folders": [{"path": str(Path(Path(__file__).parents[1]))}]
-        }  # '/home/jimmy/.config/sublime-text-3/Packages/sublack'}]}
+        }
         self.window.set_project_data(project)
-        print(self.window.extract_variables())
         with tempfile.TemporaryDirectory() as T:
             self.setText(unblacked)
             self.view.run_command("black_file")
