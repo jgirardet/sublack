@@ -339,15 +339,16 @@ class Black:
             LOG.error(self.view.window().folders())
             LOG.error(cmd)
             try:
-                a = subprocess.Popen(
+                # a = subprocess.Popen(
+                a = subprocess.check_output(
                     cmd,
                     cwd=self.get_good_working_dir(),
                     env=env,
                     startupinfo=self.windows_popen_prepare(),
                     stderr=subprocess.STDOUT,
-                    stdout=subprocess.STDOUT,
+                    # stdout=subprocess.STDOUT,
                 )
-                LOG.error(a.stdout.read())
+                # LOG.error(a.stdout.read())
             except subprocess.CalledProcessError as err:
                 LOG.error(err)
                 return err
