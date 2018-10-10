@@ -336,6 +336,8 @@ class Black:
                 f.write(content)
 
             cmd.extend([tmp.name, "--config", str(self.pre_commit_config)])
+            LOG.error(self.view.window().folders())
+            LOG.error(cmd)
             try:
                 a = subprocess.Popen(
                     cmd,
