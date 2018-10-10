@@ -51,7 +51,7 @@ def timed(fn):
         st = time.time()
         rev = fn(*args, **kwargs)
         end = time.time()
-        print("durée {} {:.2f} ms".format(fn.__name__, (end - st) * 1000))
+        LOG.debug("durée {} {:.2f} ms".format(fn.__name__, (end - st) * 1000))
         return rev
 
     return to_time

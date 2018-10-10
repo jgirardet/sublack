@@ -122,7 +122,6 @@ class Black:
         self.formatted_cache = cache_path() / "formatted"
 
         LOG.debug("config: %s", self.config)
-
         if self.config["black_use_precommit"]:
             self.pre_commit_config = use_pre_commit(
                 find_root_file(self.view, ".pre-commit-config.yaml")
