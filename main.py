@@ -5,6 +5,7 @@ Order of imports should not be changed
 """
 import logging
 import sublime
+import os
 
 from .sublack import (
     PACKAGE_NAME,
@@ -20,9 +21,12 @@ from .sublack import (
     BlackFormatAllCommand,
 )  # flake8: noqa
 
+# LOG = logging.getLogger("sublack")
 
 LOG = logging.getLogger(PACKAGE_NAME)
-LOG.propagate = False
+
+if not os.environ.get('CI', None):
+    LOG.propagate = False
 
 
 def plugin_loaded():
