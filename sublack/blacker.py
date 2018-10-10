@@ -28,7 +28,7 @@ from .utils import (
     find_root_file,
     use_pre_commit,
     popen,
-    Path
+    Path,
 )
 
 LOG = logging.getLogger(PACKAGE_NAME)
@@ -329,38 +329,29 @@ class Black:
 
         import tempfile
 
-        tmp_file = tempfile.NamedTemporaryFile(
-            # prefix=".sublack", suffix=".py", dir=cwd, delete=False
-            suffix=".py", delete=False
-        )
+        tmp_file = tempfile.NamedTemporaryFile(suffix=".py", delete=False)
 
         tmp = Path(tmp_file.name)
         tmp_file.close()
         tmp.write_text(content)
-        # import time
-        # time.sleep(10)
 
         cmd.extend([str(tmp.resolve()), "--config", str(self.pre_commit_config)])
         LOG.error(self.view.window().folders())
         LOG.error(cmd)
         try:
-            # a = subprocess.Popen(
-            a = subprocess.check_output(
+            subprocess.check_output(
                 cmd,
                 cwd=self.get_good_working_dir(),
                 env=env,
                 startupinfo=self.windows_popen_prepare(),
                 stderr=subprocess.STDOUT,
-                # stdout=subprocess.STDOUT,
             )
-            # LOG.error(a.stdout.read())
         except subprocess.CalledProcessError as err:
             LOG.error(err)
             return err
         except Exception as err:
             tmp.unlink()
             raise err
-
 
         self.view.replace(edit, self.all, tmp.read_text())
         sublime.set_timeout_async(lambda: tmp.unlink())

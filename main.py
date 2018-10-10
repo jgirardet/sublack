@@ -25,7 +25,7 @@ from .sublack import (
 
 LOG = logging.getLogger(PACKAGE_NAME)
 
-if not os.environ.get('CI', None):
+if not os.environ.get("CI", None):
     LOG.propagate = False
 
 
