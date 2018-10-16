@@ -13,19 +13,11 @@ test_port = str(s.get_open_port())
 
 
 def setUpModule():
-    print("tup")
     global test_proc
-
     global test_port
 
-    # test_proc = subprocess.s.popen(["blackd", "--bind-port", test_port])
     test_proc = s.popen(["blackd", "--bind-port", test_port])
     time.sleep(0.5)  # wait balckd on
-    print("tup fin", test_proc.poll(), test_proc.pid, test_port)
-    # import requests
-
-    # r = requests.post("http://localhost:" + test_port)
-    # print(r)
 
 
 def tearDownModule():
@@ -112,3 +104,11 @@ class TestBlackdServer(TestCase):
         self.serv = BlackdServer(sleep_time=0, checker_interval=0)
         running = self.serv.run()
         self.assertTrue(running)
+
+    def test_blackd_path(self):
+        self.serv = BlackdServer(
+            sleep_time=0,
+            checker_interval=0,
+            settings=({"black_command": "/bla/ble/black"}),
+        )
+        self.assertEqual(self.serv.blackd_cmd, "/bla/ble/blackd")

@@ -336,8 +336,8 @@ class Black:
         tmp.write_text(content)
 
         cmd.extend([str(tmp.resolve()), "--config", str(self.pre_commit_config)])
-        LOG.error(self.view.window().folders())
-        LOG.error(cmd)
+        LOG.debug(self.view.window().folders())
+        LOG.debug(cmd)
         try:
             subprocess.check_output(
                 cmd,
