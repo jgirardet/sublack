@@ -259,10 +259,6 @@ class Black:
         if filename:
             return os.path.dirname(filename)
 
-        prog = self.variables.get("project_path", "")
-        if prog:
-            return prog
-
         window = self.view.window()
         if not window:
             return None
@@ -336,16 +332,19 @@ class Black:
         tmp.write_text(content)
 
         cmd.extend([str(tmp.resolve()), "--config", str(self.pre_commit_config)])
+        LOG.debug("cwd : %s", cwd)
         LOG.debug(self.view.window().folders())
         LOG.debug(cmd)
         try:
-            subprocess.check_output(
+            a = subprocess.Popen(
                 cmd,
-                cwd=self.get_good_working_dir(),
+                cwd=cwd,
                 env=env,
                 startupinfo=self.windows_popen_prepare(),
                 stderr=subprocess.STDOUT,
+                stdout=subprocess.PIPE,
             )
+            print(a.stdout.read())
         except subprocess.CalledProcessError as err:
             LOG.error(err)
             return err

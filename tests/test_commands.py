@@ -224,7 +224,7 @@ class TestPrecommit(TestCaseBlack):
     def test_black_file(self, s, c, p):
         project = {"folders": [{"path": str(Path(Path(__file__).parents[1]))}]}
         self.window.set_project_data(project)
-        with tempfile.TemporaryDirectory() as T:
-            self.setText(unblacked)
-            self.view.run_command("black_file")
-            self.assertEqual(blacked, self.all())
+        # with tempfile.TemporaryDirectory() as T:
+        self.setText(unblacked)
+        self.view.run_command("black_file")
+        self.assertEqual(blacked, self.all())

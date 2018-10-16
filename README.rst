@@ -76,6 +76,11 @@ Blackd is faster than Black.
 
 Diff is always run with black.
 
+Pre-commit integration
+------------------------
+
+You can choose tu run Black via pre-commit by setting `black_use_precommit` to `true`. Sublack settings will be ignored.
+
 Settings
 ---------
 
@@ -154,8 +159,8 @@ Just add sublack as prefix (recommended):
 
     {
     "settings":{
-    	"sublack.black_on_save": true
-    	}
+        "sublack.black_on_save": true
+        }
     }
 
 A sublack subsettings is still possible:
@@ -164,10 +169,10 @@ A sublack subsettings is still possible:
 
     {
     "settings":{
-    	"sublack":{
-    		"black_on_save": true
-    		}
-    	}
+        "sublack":{
+            "black_on_save": true
+            }
+        }
     }
 
 pyproject.toml settings
@@ -183,11 +188,6 @@ Sublime Linter integration
 
 You can install `SublimeLinter-addon-black-for-flake <https://github.com/kaste/SublimeLinter-addon-black-for-flake>`_. The plugin will auto configure flake8 and mute all warnings black can actually fix.
 
-
-Pre-commit integration
-------------------------
-
-You can choose tu run Black via pre-commit by setting `black_use_precommit` to `true`. Sublack settings will be ignored.
 
 Issues
 ---------
