@@ -103,11 +103,11 @@ class BlackdServer:
                 "BlackdServer started on port %s with pid %s", self.port, proc.pid
             )
         else:
-            proc.communicate(timeout=1)
-            error = proc.stderr.read()
+            out, err = proc.communicate(timeout=1)
+            # error = proc.stderr.read()
 
             # LOG.error(b"blackd start error %s", error)  # show stderr
-            LOG.error(b"blackd start error %s", error)  # show stderr
+            LOG.error(b"blackd start error %s", err)  # show stderr
 
         return proc, running
 
