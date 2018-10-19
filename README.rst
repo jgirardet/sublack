@@ -128,8 +128,8 @@ Sublack specifics options
 * black_on_save:
     Black is always run before saving file. Default = false.
 
-* black_debug_on:
-    Show non error messages in console. Default = false. Error messages are always shown in console.
+* black_log:
+    Show non error messages in console. Default = info.
 
 * black_default_encoding:
     Should not be changed. Only needed on some OSX platforms.

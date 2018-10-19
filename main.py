@@ -9,9 +9,11 @@ import os
 
 from .sublack import (
     PACKAGE_NAME,
+    SETTINGS_FILE_NAME,
     get_settings,
     cache_path,
     clear_cache,
+    Path,
     BlackFileCommand,
     BlackDiffCommand,
     BlackToggleBlackOnSaveCommand,
@@ -64,3 +66,7 @@ def plugin_loaded():
     # # check blackd autostart
     if config["black_blackd_autostart"]:
         sublime.set_timeout_async(lambda: current_view.run_command("blackd_start"), 0)
+
+    # watch for loglevel change
+    sublime.load_settings(SETTINGS_FILE_NAME).add_on_change('black_log', lambda: Path(__file__).touch())
+

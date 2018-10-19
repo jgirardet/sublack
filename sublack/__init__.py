@@ -8,6 +8,7 @@ from .utils import (
     popen,
     check_blackd_on_http,
     kill_with_pid,
+    Path
 )
 from .server import BlackdServer
 from .blacker import Blackd, Black
@@ -29,8 +30,10 @@ __all__ = [
     "get_settings",
     "get_open_port",
     "cache_path",
+    "clear_cache",
     "startup_info",
     "popen",
+    "Path",
     "kill_with_pid",
     "check_blackd_on_http",
     "BlackdServer",
