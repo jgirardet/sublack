@@ -13,6 +13,7 @@ import pathlib
 import subprocess
 import signal
 import os
+import locale
 from functools import partial
 import socket
 import requests
@@ -164,7 +165,16 @@ def kill_with_pid(pid: int):
         os.kill(pid, signal.SIGTERM)
 
 
-popen = partial(subprocess.Popen, startupinfo=startup_info())
+def get_env():
+    # modifying the locale is necessary to keep the click library happy on OSX
+    env = os.environ.copy()
+    if locale.getdefaultlocale() == (None, None):
+        if sublime.platform() == "osx":
+            env["LC_CTYPE"] = "UTF-8"
+    return env
+
+
+popen = partial(subprocess.Popen, startupinfo=startup_info(), env=get_env())
 
 
 def check_blackd_on_http(port, host="localhost"):

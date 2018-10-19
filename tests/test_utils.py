@@ -5,6 +5,7 @@ from fixtures import sublack, pre_commit_config
 import sublime
 import re
 import tempfile
+import os
 
 Path = sublack.utils.Path
 
@@ -209,3 +210,22 @@ class TestUtils(TestCase):
 
             # test read
             self.assertEqual(f.read_text(), "hello")
+
+    def test_get_env(self):
+        ge = sublack.utils.get_env
+        env = os.environ.copy()
+
+        with patch.object(sublack.utils.locale, "getdefaultlocale", return_value=1):
+            self.assertEqual(env, ge())
+
+        with patch.object(
+            sublack.utils.locale, "getdefaultlocale", return_value=(None, None)
+        ):
+            with patch.object(sublack.utils, "sublime") as m:
+                m.platform.return_value = "linux"
+                self.assertDictEqual(env, ge())
+
+            with patch.object(sublack.utils, "sublime") as m:
+                m.platform.return_value = "osx"
+                env["LC_CTYPE"] = "UTF-8"
+                self.assertEqual(env, ge())

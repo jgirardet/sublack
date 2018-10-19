@@ -3,7 +3,6 @@
 Sublime Text 3 Plugin to invoke Black on a Python file.
 """
 import os.path
-import locale
 import os
 import subprocess
 
@@ -23,12 +22,11 @@ from .consts import (
 from .utils import (
     get_settings,
     get_encoding_from_file,
-    timed,
     cache_path,
     find_root_file,
     use_pre_commit,
-    popen,
     Path,
+    get_env,
 )
 
 LOG = logging.getLogger(PACKAGE_NAME)
@@ -192,14 +190,6 @@ class Black:
             startup_info = None
         return startup_info
 
-    def get_env(self):
-        # modifying the locale is necessary to keep the click library happy on OSX
-        env = os.environ.copy()
-        if locale.getdefaultlocale() == (None, None):
-            if sublime.platform() == "osx":
-                env["LC_CTYPE"] = "UTF-8"
-        return env
-
     def get_content(self):
         # get encoding of current file
         encoding = self.view.encoding()
@@ -361,7 +351,7 @@ class Black:
         content, encoding = self.get_content()
         cwd = self.get_good_working_dir()
         LOG.debug("working dir: %s", cwd)
-        env = self.get_env()
+        env = get_env()
 
         if self.pre_commit_config:
             LOG.debug("Using pre-commit with %s", self.pre_commit_config)

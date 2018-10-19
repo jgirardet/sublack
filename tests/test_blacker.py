@@ -72,25 +72,6 @@ class TestBlackMethod(TestCase):
                 wop = sublack.blacker.Black.windows_popen_prepare
                 self.assertTrue(wop("r"))
 
-    def test_get_env(self):
-        ge = sublack.blacker.Black.get_env
-        env = os.environ.copy()
-
-        with patch.object(sublack.blacker.locale, "getdefaultlocale", return_value=1):
-            self.assertEqual(env, ge(True))
-
-        with patch.object(
-            sublack.blacker.locale, "getdefaultlocale", return_value=(None, None)
-        ):
-            with patch.object(sublack.blacker, "sublime") as m:
-                m.platform.return_value = "linux"
-                self.assertDictEqual(env, ge(True))
-
-            with patch.object(sublack.blacker, "sublime") as m:
-                m.platform.return_value = "osx"
-                env["LC_CTYPE"] = "UTF-8"
-                self.assertEqual(env, ge(True))
-
     def test_get_content_encoding(self):
         gc = sublack.blacker.Black.get_content
         s = MagicMock()

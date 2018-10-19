@@ -5,7 +5,6 @@ import sublime
 from fixtures import sublack, blacked, unblacked, diff, TestCaseBlack
 
 import requests
-import tempfile
 
 Path = sublack.utils.Path
 
@@ -87,6 +86,17 @@ class TestBlack(TestCaseBlack):
         self.view = backup
         v.set_scratch(True)
         v.close()
+
+    # def test_black_file_bas_env(self, s, c):
+    #     self.setText(unblacked)
+    #     import os
+    #     env = os.environ.copy()
+    #     env["LANG"] = "None"
+    #     with patch.object(
+    #         sublack.blacker, "get_env", return_value=env
+    #     ):
+    #         self.view.run_command("black_file")
+    #     self.assertEqual(blacked, self.all())
 
 
 class TestBlackdServer(TestCase):
