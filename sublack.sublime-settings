@@ -33,7 +33,7 @@
       // run black before saving document
       "black_on_save": false,
 
-      // set debug mode. default is info
+      // set debug mode. default is info.
       // choices : debug > info > error
       "black_log": "info",
 

@@ -68,5 +68,6 @@ def plugin_loaded():
         sublime.set_timeout_async(lambda: current_view.run_command("blackd_start"), 0)
 
     # watch for loglevel change
-    sublime.load_settings(SETTINGS_FILE_NAME).add_on_change('black_log', lambda: Path(__file__).touch())
-
+    sublime.load_settings(SETTINGS_FILE_NAME).add_on_change(
+        "black_log", lambda: Path(__file__).touch()
+    )

@@ -8,7 +8,7 @@ from .utils import (
     popen,
     check_blackd_on_http,
     kill_with_pid,
-    Path
+    Path,
 )
 from .server import BlackdServer
 from .blacker import Blackd, Black
