@@ -151,7 +151,7 @@ class TestRunUnix(TestCase):
 class TestRunWindows(TestCase):
     def setUp(self):
         self.w = popen(["timeout", "/t", "3"])
-        self.t = popen(["CHOICE", "/C:AB", "/T:A,10"])
+        self.t = popen(["CHOICE", "/C:AB", "/T:10", "/D:A"])
 
         print(sublack_dir)
         self.p = popen(
