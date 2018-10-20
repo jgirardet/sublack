@@ -30,10 +30,11 @@ Now the global/project settings are OVERRIDEN by pyproject.toml's settings
 Changelog
 -----------
 
-2.1:
+2.1.0 not released:
 	add a cache system to bypass black check for already formatted file.
-	remove inclue/exclude : useless
+	remove include/exclude : useless
 	add pre-commit support
+	add get_python3_executable to launch checker
 2.0:
 	add command Black_format_all to format project
 	add blackd support
