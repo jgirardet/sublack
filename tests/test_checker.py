@@ -155,7 +155,7 @@ class TestRunWindows(TestCase):
 
         print(sublack_dir)
         self.p = popen(
-            [sys.executable, "checker.py", "timeout", str(self.t.pid), "0"],
+            [s.utils.get_python3_executable(), "checker.py", "timeout", str(self.t.pid), "0"],
             cwd=str(sublack_dir),
         )
 
@@ -183,7 +183,7 @@ class TestRunWindows(TestCase):
     def test_checker_stops_if_target_stops(self):
         """target stops  -> checker stops -> watched running"""
         self.t.terminate()
-        self.t.wait(timeout=2)
+        self.t.wait(timeout=2   )
         self.assertIsNotNone(self.t.wait(timeout=2))
         self.assertIsNotNone(self.p.wait(timeout=2))
         self.assertIsNone(self.w.poll())

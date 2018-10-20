@@ -352,11 +352,12 @@ class TestPythonExecutable(TestCase):
             with patch.object(
                 sublack.utils, "find_python3_executable", return_value=False
             ):
+                path = Path('/path', "to", "black")
                 self.assertEqual(
                     sublack.utils.get_python3_executable(
-                        {"black_command": "/path/to/black"}
+                        {"black_command": str(path)}
                     ),
-                    "/path/to/python",
+                    str(path.parent / "python"),
                 )
 
         # not python3
