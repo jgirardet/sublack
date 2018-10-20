@@ -5,7 +5,14 @@ import time
 import os
 import sys
 import logging
-from .utils import cache_path, kill_with_pid, popen, get_open_port, check_blackd_on_http
+from .utils import (
+    cache_path,
+    kill_with_pid,
+    popen,
+    get_open_port,
+    check_blackd_on_http,
+    get_python3_executable,
+)
 from .consts import PACKAGE_NAME
 
 LOG = logging.getLogger(PACKAGE_NAME)
@@ -128,20 +135,29 @@ class BlackdServer:
 
         if self.deamon:
             cwd = os.path.dirname(os.path.abspath(__file__))
+            python_executable = get_python3_executable(self.settings)
             checker_cmd = [
-                sys.executable,
+                python_executable,
                 "checker.py",
                 self.watched,
                 str(self.proc.pid),
             ]
+
+            # set timeout of interval
             checker_cmd = (
                 checker_cmd
                 if not self.checker_interval
                 else checker_cmd + [str(self.checker_interval)]
             )
-            LOG.debug("Running checker with args %s", checker_cmd)
-            self.checker = popen(checker_cmd, cwd=cwd)
-            LOG.info("Blackd Checker running with pid %s", self.checker.pid)
+            if python_executable:
+                LOG.debug("Running checker with args %s", checker_cmd)
+                self.checker = popen(checker_cmd, cwd=cwd)
+                LOG.info("Blackd Checker running with pid %s", self.checker.pid)
+            else:
+                sublime.error_message(
+                    "Checker didn't start successfull. You will have to run manually stop blackd before leaving sublime_text to stop blackd."
+                    "you can set 'black_log' to 'debug', and add an issue to sublack to help fix it"
+                )
 
             self.write_cache(self.proc.pid)
 

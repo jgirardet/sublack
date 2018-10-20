@@ -1,4 +1,4 @@
-from unittest import TestCase, skip  # noqa
+from unittest import TestCase, skip, skipIf  # noqa
 from unittest.mock import MagicMock, patch
 
 from fixtures import sublack, pre_commit_config
@@ -6,6 +6,7 @@ import sublime
 import re
 import tempfile
 import os
+import platform
 
 Path = sublack.utils.Path
 
@@ -229,3 +230,145 @@ class TestUtils(TestCase):
                 m.platform.return_value = "osx"
                 env["LC_CTYPE"] = "UTF-8"
                 self.assertEqual(env, ge())
+
+
+class TestPythonExecutable(TestCase):
+    def test_is_python3_executable(self):
+
+        # binary doesn't exist
+        self.assertFalse(sublack.utils.is_python3_executable("rien"))
+
+        # binary error
+        self.assertFalse(sublack.utils.is_python3_executable("python --errorarg"))
+
+        # version shw nothing
+        with patch.object(sublack.utils.subprocess, "check_output", return_value=b""):
+            self.assertFalse(sublack.utils.is_python3_executable("python3"))
+
+        # version is not 3
+        with patch.object(
+            sublack.utils.subprocess, "check_output", return_value=b"Python 2.7.6"
+        ):
+            self.assertFalse(sublack.utils.is_python3_executable("python3"))
+
+        # version is  3
+        with patch.object(
+            sublack.utils.subprocess, "check_output", return_value=b"Python 3.6.4"
+        ):
+            self.assertTrue(sublack.utils.is_python3_executable("python3"))
+
+    @skipIf(platform.system() == "Windows", "unix tests")
+    def test_find_python3_executable_unix(self):
+
+        # standard case
+        self.assertTrue(sublack.utils.find_python3_executable().endswith("python3"))
+
+        # if no python3 and python returns nothing
+        with patch.object(
+            sublack.utils.subprocess, "check_output", side_effect=[b"", b""]
+        ):
+            self.assertFalse(sublack.utils.find_python3_executable())
+
+        # if no python3 and python returns a python2 interpreter
+        with patch.object(
+            sublack.utils.subprocess, "check_output", side_effect=[b"", b"python2"]
+        ):
+            with patch.object(
+                sublack.utils, "is_python3_executable", return_value=False
+            ):
+                self.assertFalse(sublack.utils.find_python3_executable())
+
+        # if no python3 and python returns a python3 interpreter
+        with patch.object(
+            sublack.utils.subprocess,
+            "check_output",
+            side_effect=[b"", b"/bla/python3\n"],
+        ):
+            with patch.object(
+                sublack.utils, "is_python3_executable", return_value=True
+            ):
+                self.assertEqual(
+                    sublack.utils.find_python3_executable(), "/bla/python3"
+                )
+
+    @skipIf(platform.system() != "Windows", "Windows tests")
+    def test_find_python3_executable_windows(self):
+
+        # standard case
+        self.assertTrue(sublack.utils.find_python3_executable().endswith("python.exe"))
+
+        # if no python3 and python returns a python2 interpreter
+        with patch.object(
+            sublack.utils.subprocess, "check_output", return_value=b"bla\r\npython2\r\n"
+        ):
+            with patch.object(
+                sublack.utils, "is_python3_executable", side_effect=[False, False]
+            ):
+                self.assertFalse(sublack.utils.find_python3_executable())
+
+        # if python3 is the first
+        with patch.object(
+            sublack.utils.subprocess, "check_output", return_value=b"bla\r\npython2\r\n"
+        ):
+            with patch.object(
+                sublack.utils, "is_python3_executable", side_effect=[True, False]
+            ):
+                self.assertEqual(sublack.utils.find_python3_executable(), "bla")
+
+        # if python3 is the last
+        with patch.object(
+            sublack.utils.subprocess,
+            "check_output",
+            return_value=b"bla\r\nC:\\Users\\bla\\AppData\\Local\\Programs\\Python\\Python37-32\\python.exe\r\n",
+        ):
+            with patch.object(
+                sublack.utils, "is_python3_executable", side_effect=[False, True]
+            ):
+                self.assertEqual(
+                    sublack.utils.find_python3_executable(),
+                    "C:\\Users\\bla\\AppData\\Local\\Programs\\Python\\Python37-32\\python.exe",
+                )
+
+    def test_get_python3_executable_by_word(self):
+        if platform.system() == "Windows":
+            self.assertEqual(sublack.utils.get_python3_executable({}), "python")
+
+        else:
+            self.assertEqual(sublack.utils.get_python3_executable({}), "python3")
+
+    def test_get_python3_executable_by_find(self):
+
+        with patch.object(sublack.utils, "is_python3_executable", return_value=False):
+            with patch.object(
+                sublack.utils, "find_python3_executable", return_value="/bla/bla"
+            ):
+                self.assertEqual(sublack.utils.get_python3_executable({}), "/bla/bla")
+
+    def test_get_python3_executable_by_black_command(self):
+
+        with patch.object(
+            sublack.utils, "is_python3_executable", side_effect=[False, False, True]
+        ):
+            with patch.object(
+                sublack.utils, "find_python3_executable", return_value=False
+            ):
+                self.assertEqual(
+                    sublack.utils.get_python3_executable(
+                        {"black_command": "/path/to/black"}
+                    ),
+                    "/path/to/python",
+                )
+
+        # not python3
+        with patch.object(
+            sublack.utils, "is_python3_executable", side_effect=[False, False, False]
+        ):
+            with patch.object(
+                sublack.utils, "find_python3_executable", return_value=False
+            ):
+                self.assertEqual(
+                    sublack.utils.get_python3_executable(
+                        {"black_command": "/path/to/black"}
+                    ),
+                    False,
+                )

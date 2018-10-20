@@ -299,3 +299,86 @@ def use_pre_commit(precommit: Path) -> bool:
 def clear_cache():
     with (cache_path() / "formatted").open("wt") as file:
         file.write("")
+
+
+def is_python3_executable(python_excutable, default_shell=None):
+    find_version = "{} --version".format(python_excutable)
+
+    try:
+        version_out = subprocess.check_output(
+            find_version, shell=True, executable=default_shell
+        ).decode()
+
+    except FileNotFoundError:
+        return False
+
+    except subprocess.CalledProcessError as err:
+        return False
+
+    if not version_out or version_out[7] != "3":
+        return False
+
+    else:
+        return True
+
+
+def find_python3_executable():
+    if sublime.platform() == "windows":
+        # where could return many lines
+        try:
+            pythons = subprocess.check_output("where python", shell=True).decode()
+        except subprocess.CalledProcessError:
+            return False
+
+        for python_excutable in pythons.splitlines():
+            if is_python3_executable(python_excutable):
+                return python_excutable.strip()
+        return False
+
+    else:
+        default_shell = os.environ.get("SHELL", None)
+
+        # first find with python3
+        python_excutable = subprocess.check_output(
+            "which python3", shell=True, executable=default_shell
+        )
+        if python_excutable:
+            return python_excutable.decode().strip()
+
+        # then find with python
+        else:
+            python_excutable = subprocess.check_output(
+                "which python", shell=True, executable=default_shell
+            )
+
+            if not python_excutable:
+                return False
+
+            python_excutable = python_excutable.decode().strip()
+
+            if is_python3_executable(python_excutable, default_shell):
+                return python_excutable
+
+
+def get_python3_executable(config=None):
+
+    # First check for python3/python in path
+    for version in ["python3", "python"]:
+        if is_python3_executable(version):
+            return version
+
+    # Then find  one via shell
+    python_exec = find_python3_executable()
+    if python_exec:
+        return python_exec
+
+    # Third: guess from black_command
+    if config:
+        if config["black_command"] != "black":
+            python_exec = str(Path(config["black_command"]).parent / "python")
+            print(python_exec)
+
+            if is_python3_executable(python_exec):
+                return python_exec
+
+    return False
