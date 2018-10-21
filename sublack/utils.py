@@ -324,6 +324,7 @@ def is_python3_executable(python_excutable, default_shell=None):
 
 def find_python3_executable():
     if sublime.platform() == "windows":
+        pythons = []
         # where could return many lines
         try:
             pythons = subprocess.check_output("where python", shell=True).decode()
@@ -337,27 +338,30 @@ def find_python3_executable():
 
     else:
         default_shell = os.environ.get("SHELL", None)
-
+        python_executable = None
         # first find with python3
-        python_excutable = subprocess.check_output(
-            "which python3", shell=True, executable=default_shell
-        )
-        if python_excutable:
-            return python_excutable.decode().strip()
+        try:
+            python_executable = subprocess.check_output(
+                "which python3", shell=True, executable=default_shell
+            )
+        except subprocess.CalledProcessError as err:
+            LOG.debug("%s", str(err))
+        if python_executable:
+            return python_executable.decode().strip()
 
         # then find with python
         else:
-            python_excutable = subprocess.check_output(
+            python_executable = subprocess.check_output(
                 "which python", shell=True, executable=default_shell
             )
 
-            if not python_excutable:
+            if not python_executable:
                 return False
 
-            python_excutable = python_excutable.decode().strip()
+            python_executable = python_executable.decode().strip()
 
-            if is_python3_executable(python_excutable, default_shell):
-                return python_excutable
+            if is_python3_executable(python_executable, default_shell):
+                return python_executable
 
 
 def get_python3_executable(config=None):
@@ -367,12 +371,7 @@ def get_python3_executable(config=None):
         if is_python3_executable(version):
             return version
 
-    # Then find  one via shell
-    python_exec = find_python3_executable()
-    if python_exec:
-        return python_exec
-
-    # Third: guess from black_command
+    # then: guess from black_command
     if config:
         if config["black_command"] != "black":
             python_exec = str(Path(config["black_command"]).parent / "python")
@@ -381,4 +380,9 @@ def get_python3_executable(config=None):
             if is_python3_executable(python_exec):
                 return python_exec
 
-    return False
+    # third find  one via shell
+    python_exec = find_python3_executable()
+    if python_exec:
+        return python_exec
+
+    return False  # nothing found

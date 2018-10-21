@@ -7,6 +7,7 @@ import re
 import tempfile
 import os
 import platform
+import subprocess
 
 Path = sublack.utils.Path
 
@@ -265,13 +266,20 @@ class TestPythonExecutable(TestCase):
 
         # if no python3 and python returns nothing
         with patch.object(
-            sublack.utils.subprocess, "check_output", side_effect=[b"", b""]
+            sublack.utils.subprocess,
+            "check_output",
+            side_effect=[subprocess.CalledProcessError(returncode=1, cmd="mok"), b""],
         ):
             self.assertFalse(sublack.utils.find_python3_executable())
 
         # if no python3 and python returns a python2 interpreter
         with patch.object(
-            sublack.utils.subprocess, "check_output", side_effect=[b"", b"python2"]
+            sublack.utils.subprocess,
+            "check_output",
+            side_effect=[
+                subprocess.CalledProcessError(returncode=1, cmd="mok"),
+                b"python2",
+            ],
         ):
             with patch.object(
                 sublack.utils, "is_python3_executable", return_value=False
@@ -282,7 +290,10 @@ class TestPythonExecutable(TestCase):
         with patch.object(
             sublack.utils.subprocess,
             "check_output",
-            side_effect=[b"", b"/bla/python3\n"],
+            side_effect=[
+                subprocess.CalledProcessError(returncode=1, cmd="mok"),
+                b"/bla/python3\n",
+            ],
         ):
             with patch.object(
                 sublack.utils, "is_python3_executable", return_value=True
@@ -352,11 +363,9 @@ class TestPythonExecutable(TestCase):
             with patch.object(
                 sublack.utils, "find_python3_executable", return_value=False
             ):
-                path = Path('/path', "to", "black")
+                path = Path("/path", "to", "black")
                 self.assertEqual(
-                    sublack.utils.get_python3_executable(
-                        {"black_command": str(path)}
-                    ),
+                    sublack.utils.get_python3_executable({"black_command": str(path)}),
                     str(path.parent / "python"),
                 )
 

@@ -134,8 +134,12 @@ class BlackdServer:
             return False
 
         if self.deamon:
+
+            self.write_cache(self.proc.pid)
+
             cwd = os.path.dirname(os.path.abspath(__file__))
             python_executable = get_python3_executable(self.settings)
+            LOG.debug("python_executable found : %s", python_executable)
             checker_cmd = [
                 python_executable,
                 "checker.py",
@@ -149,17 +153,18 @@ class BlackdServer:
                 if not self.checker_interval
                 else checker_cmd + [str(self.checker_interval)]
             )
+
             if python_executable:
                 LOG.debug("Running checker with args %s", checker_cmd)
                 self.checker = popen(checker_cmd, cwd=cwd)
                 LOG.info("Blackd Checker running with pid %s", self.checker.pid)
             else:
                 sublime.error_message(
-                    "Checker didn't start successfull. You will have to run manually stop blackd before leaving sublime_text to stop blackd."
+                    "Sublack: Checker didn't start successfull."
+                    "You will have to run manually Stop Blackd before leaving sublime_text to stop blackd. "
                     "you can set 'black_log' to 'debug', and add an issue to sublack to help fix it"
+                    "This maybe related to https://github.com/jgirardet/sublack/issues/35"
                 )
-
-            self.write_cache(self.proc.pid)
 
         return True
 
