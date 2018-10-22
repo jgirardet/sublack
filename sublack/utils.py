@@ -302,6 +302,9 @@ def clear_cache():
 
 
 # def get_real_path():
+
+#    l = re.findall(r'(?m)^PATH=(.*)', subprocess.check_output('bash -ilc env', shell=True, executable="/bin/bash").decode())[0].split(':')
+
 #     default_shell = os.environ.get("SHELL","/bin/bash")
 #     the_path = None
 
@@ -319,20 +322,20 @@ def clear_cache():
 #         if k == "PATH":
 #             return v
 
-    
+
 #     LOG.debug('no path found in env, using default')
 #     return os.environ['PATH']
-
 
 
 #     eal_path = []{
 #             x.split("=")[0]: x.split("=")[1]
 #         }["PATH"]
 
+
 def is_python3_executable(python_excutable, default_shell=None):
     find_version = "{} --version".format(python_excutable)
-    default_shell = os.environ.get("SHELL","/bin/bash")
-    
+    default_shell = os.environ.get("SHELL", "/bin/bash")
+
     try:
         version_out = subprocess.check_output(
             find_version, shell=True, executable=default_shell
@@ -363,47 +366,46 @@ def find_python3_executable():
         for python_excutable in pythons.splitlines():
             if is_python3_executable(python_excutable):
                 return python_excutable.strip()
-        return False
 
     else:
         default_shell = os.environ.get("SHELL", None)
-
-        
-
-        python_executable = None
-        # first find with python3
-        try:
-            python_executable = subprocess.check_output(
-                "which python3", shell=True, executable=default_shell
+        paths = (
+            re.search(
+                r"(?m)^PATH=(.*)",
+                subprocess.check_output("bash -ilc env", shell=True).decode(),
             )
-        except subprocess.CalledProcessError as err:
-            LOG.debug("%s", str(err))
-        if python_executable:
-            return python_executable.decode().strip()
+            .group(1)
+            .split(":")
+        )
 
-        # then find with python
-        else:
-            python_executable = subprocess.check_output(
-                "which python", shell=True, executable=default_shell
-            )
+        for path in paths:
+            to_check = Path(path, "python3")
+            if to_check.exists():
+                return str(to_check)
 
-            if not python_executable:
-                return False
+        for path in paths:
+            to_check = Path(path, "python")
+            if to_check.exists() and is_python3_executable(to_check, default_shell):
+                return str(to_check)
 
-            python_executable = python_executable.decode().strip()
-
-            if is_python3_executable(python_executable, default_shell):
-                return python_executable
+    return False
 
 
 def get_python3_executable(config=None):
 
     # First check for python3/python in path
-    for version in ["pytholn3", "python"]:
+    for version in ["python3", "python"]:
         if is_python3_executable(version):
+            print(version)
             return version
 
-    # then: guess from black_command
+    # then find  one via shell
+    python_exec = find_python3_executable()
+    if python_exec:
+        print(python_exec)
+        return python_exec
+
+    # third: guess from black_command
     if config:
         if config["black_command"] != "black":
             python_exec = str(Path(config["black_command"]).parent / "python")
@@ -411,10 +413,5 @@ def get_python3_executable(config=None):
 
             if is_python3_executable(python_exec):
                 return python_exec
-
-    # third find  one via shell
-    # python_exec = find_python3_executable()
-    # if python_exec:
-    #     return python_exec
 
     return False  # nothing found
