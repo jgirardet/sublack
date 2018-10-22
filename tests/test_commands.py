@@ -173,6 +173,8 @@ class TestBlackdServer(TestCase):
         #     "sould tell it starts",
         # )
         import subprocess
+        import os
+        print.os.environ['PATH']
         self.assertEqual(subprocess.check_output('env python3 -V', shell=True, executable="/bin/bash", subprocess.check_output('env -ilc', shell=True, executable="/bin/bash"))
 
 
