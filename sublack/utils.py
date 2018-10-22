@@ -378,6 +378,7 @@ def find_python3_executable():
             .split(":")
         )
 
+        # first look at python 3
         for path in paths:
             to_check = Path(path, "python3")
             if to_check.exists():
