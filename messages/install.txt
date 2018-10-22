@@ -34,7 +34,7 @@ Changelog
 	add a cache system to bypass black check for already formatted file.
 	remove include/exclude : useless
 	add pre-commit support
-	add get_python3_executable to launch checker
+	add get_python3_executable to launch checker fi x : # issue
 2.0:
 	add command Black_format_all to format project
 	add blackd support
