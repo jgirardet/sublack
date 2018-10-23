@@ -28,7 +28,7 @@ install:
     # bootstrap the testing environment
     - sh travis.sh bootstrap
     - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-            brew update;
+            brew update
             # brew install python;
       fi
     # || brew upgrade python;
