@@ -261,6 +261,7 @@ class TestPythonExecutable(TestCase):
     @skipIf(platform.system() == "Windows", "unix tests")
     def test_find_python3_executable_unix(self):
 
+
         # standard case
         self.assertTrue(sublack.utils.find_python3_executable().endswith("python3"))
 
