@@ -394,8 +394,8 @@ def find_python3_executable():
 
 def get_python3_executable(config=None):
 
-
     import sys
+
     print(sys.version)
 
     # First check for python3/python in path
