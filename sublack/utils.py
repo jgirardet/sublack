@@ -369,6 +369,7 @@ def find_python3_executable():
 
     else:
         default_shell = os.environ.get("SHELL", None)
+        print(default_shell)
         paths = (
             re.search(
                 r"(?m)^PATH=(.*)",
@@ -377,6 +378,7 @@ def find_python3_executable():
             .group(1)
             .split(":")
         )
+        print(paths)
 
         # first look at python 3
         for path in paths:

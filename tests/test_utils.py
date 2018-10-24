@@ -258,11 +258,11 @@ class TestPythonExecutable(TestCase):
         ):
             self.assertTrue(sublack.utils.is_python3_executable("python3"))
 
-    # @skipIf(platform.system() == "Windows", "unix tests")
-    # def test_find_python3_executable_unix(self):
+    @skipIf(platform.system() == "Windows", "unix tests")
+    def test_find_python3_executable_unix(self):
 
         # standard case
-        # self.assertTrue(sublack.utils.find_python3_executable().endswith("python3"))
+        self.assertTrue(sublack.utils.find_python3_executable().endswith("python3"))
 
         # # if no python3 and python returns nothing
         # with patch.object(
