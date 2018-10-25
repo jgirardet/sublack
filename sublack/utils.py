@@ -373,7 +373,8 @@ def find_python3_executable():
         paths = (
             re.search(
                 r"(?m)^PATH=(.*)",
-                subprocess.check_output("bash -ilc env", shell=True).decode(),
+                subprocess.check_output("env", shell=True).decode(),
+                # subprocess.check_output("bash -ilc env", shell=True).decode(),
             )
             .group(1)
             .split(":")
