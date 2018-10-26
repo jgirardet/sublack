@@ -262,7 +262,7 @@ class TestPythonExecutable(TestCase):
     def test_find_python3_executable_unix(self):
 
         # standard case
-        if platform.system() ==  "Darwin":
+        if platform.system() == "Darwin":
             self.assertTrue(sublack.utils.find_python3_executable().endswith("python3"))
 
         # if no python3 and python returns nothing
@@ -274,15 +274,17 @@ class TestPythonExecutable(TestCase):
             self.assertFalse(sublack.utils.find_python3_executable())
 
         # if  python3 in a path
-        good_path = b"/usr/local/bin/" if platform.system() ==  "Darwin" else b"/usr/bin/"
+        good_path = (
+            b"/usr/local/bin/" if platform.system() == "Darwin" else b"/usr/bin/"
+        )
         with patch.object(
             sublack.utils.subprocess,
             "check_output",
-            return_value=b"BLA=fzefzefef\nPATH=/pythonxx:"+good_path+b":",
+            return_value=b"BLA=fzefzefef\nPATH=/pythonxx:" + good_path + b":",
         ):
 
             self.assertEqual(
-                sublack.utils.find_python3_executable(), "/usr/bin/python3"
+                sublack.utils.find_python3_executable(), good_path.decode + "python3"
             )
 
         # # if no python3 but  python returns a python3 interpreter
