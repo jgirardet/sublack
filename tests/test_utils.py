@@ -274,10 +274,11 @@ class TestPythonExecutable(TestCase):
             self.assertFalse(sublack.utils.find_python3_executable())
 
         # if  python3 in a path
+        good_path = b"/usr/local/bin/" if platform.system() ==  "Darwin" else b"/usr/bin/"
         with patch.object(
             sublack.utils.subprocess,
             "check_output",
-            return_value=b"BLA=fzefzefef\nPATH=/pythonxx:/usr/bin/:",
+            return_value=b"BLA=fzefzefef\nPATH=/pythonxx:"+good_path+b":",
         ):
 
             self.assertEqual(

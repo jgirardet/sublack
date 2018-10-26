@@ -153,7 +153,6 @@ class TestRunWindows(TestCase):
         self.w = popen(["timeout", "/t", "3"])
         self.t = popen(["CHOICE", "/C:AB", "/T:10", "/D:A"])
 
-        print(sublack_dir)
         self.p = popen(
             [
                 s.utils.get_python3_executable(),
