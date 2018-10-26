@@ -284,7 +284,7 @@ class TestPythonExecutable(TestCase):
         ):
 
             self.assertEqual(
-                sublack.utils.find_python3_executable(), good_path.decode + "python3"
+                sublack.utils.find_python3_executable(), good_path.decode() + "python3"
             )
 
         # # if no python3 but  python returns a python3 interpreter
