@@ -334,7 +334,11 @@ def clear_cache():
 
 def is_python3_executable(python_excutable, default_shell=None):
     find_version = "{} --version".format(python_excutable)
-    default_shell = os.environ.get("SHELL", "/bin/bash")
+    default_shell = None
+
+    if sublime.platform() != "windows":
+        default_shell = os.environ.get("SHELL", "/bin/bash")
+
 
     try:
         version_out = subprocess.check_output(
@@ -397,9 +401,6 @@ def find_python3_executable():
 
 def get_python3_executable(config=None):
 
-    import sys
-
-    print(sys.version)
 
     # First check for python3/python in path
     for version in ["python3", "python"]:
