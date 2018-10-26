@@ -339,7 +339,6 @@ def is_python3_executable(python_excutable, default_shell=None):
     if sublime.platform() != "windows":
         default_shell = os.environ.get("SHELL", "/bin/bash")
 
-
     try:
         version_out = subprocess.check_output(
             find_version, shell=True, executable=default_shell
@@ -373,7 +372,6 @@ def find_python3_executable():
 
     else:
         default_shell = os.environ.get("SHELL", None)
-        print(default_shell)
         paths = (
             re.search(
                 r"(?m)^PATH=(.*)",
@@ -383,7 +381,6 @@ def find_python3_executable():
             .group(1)
             .split(":")
         )
-        print(paths)
 
         # first look at python 3
         for path in paths:
@@ -401,26 +398,31 @@ def find_python3_executable():
 
 def get_python3_executable(config=None):
 
-
     # First check for python3/python in path
     for version in ["python3", "python"]:
         if is_python3_executable(version):
-            print(version)
+            LOG.debug("using %s as python interpreter", version)
             return version
 
     # then find  one via shell
     python_exec = find_python3_executable()
     if python_exec:
-        print(python_exec)
+        LOG.debug("using %s as python3 interpreter found", python_exec)
         return python_exec
 
     # third: guess from black_command
     if config:
         if config["black_command"] != "black":
             python_exec = str(Path(config["black_command"]).parent / "python")
-            print(python_exec)
 
             if is_python3_executable(python_exec):
+                LOG.debug(
+                    "using %s as python3 interpreter guess from black_command",
+                    python_exec,
+                )
+
                 return python_exec
+
+    LOG.debug("no valid python3 interpreter was found")
 
     return False  # nothing found
