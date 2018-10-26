@@ -332,8 +332,8 @@ def clear_cache():
 #         }["PATH"]
 
 
-def is_python3_executable(python_excutable, default_shell=None):
-    find_version = "{} --version".format(python_excutable)
+def is_python3_executable(python_executable, default_shell=None):
+    find_version = "{} --version".format(python_executable)
     default_shell = None
 
     if sublime.platform() != "windows":
@@ -345,12 +345,15 @@ def is_python3_executable(python_excutable, default_shell=None):
         ).decode()
 
     except FileNotFoundError:
+        LOG.debug("is_python3_executable : FileNotFoundError")
         return False
 
     except subprocess.CalledProcessError as err:
+        LOG.error("is_python3_executable : FileNotFoundError %s", err)
         return False
 
     if not version_out or version_out[7] != "3":
+        LOG.debug("%s is not a python3 executable", python_executable)
         return False
 
     else:
@@ -366,9 +369,9 @@ def find_python3_executable():
         except subprocess.CalledProcessError:
             return False
 
-        for python_excutable in pythons.splitlines():
-            if is_python3_executable(python_excutable):
-                return python_excutable.strip()
+        for python_executable in pythons.splitlines():
+            if is_python3_executable(python_executable):
+                return python_executable.strip()
 
     else:
         default_shell = os.environ.get("SHELL", None)

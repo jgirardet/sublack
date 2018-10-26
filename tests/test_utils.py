@@ -7,7 +7,6 @@ import re
 import tempfile
 import os
 import platform
-import subprocess
 
 Path = sublack.utils.Path
 
