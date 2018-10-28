@@ -247,13 +247,14 @@ class TestPythonExecutable(TestCase):
 
         # version is not 3
         with patch.object(
-            sublack.utils.subprocess, "check_output", return_value=b"Python 2.7.6"
+            sublack.utils.subprocess, "check_output", return_value=b"2\n"
         ):
             self.assertFalse(sublack.utils.is_python3_executable("python3"))
 
+    def test_is_python3_executable_is_python3(self):
         # version is  3
         with patch.object(
-            sublack.utils.subprocess, "check_output", return_value=b"Python 3.6.4"
+            sublack.utils.subprocess, "check_output", return_value=b"3\n"
         ):
             self.assertTrue(sublack.utils.is_python3_executable("python3"))
 

@@ -301,39 +301,10 @@ def clear_cache():
         file.write("")
 
 
-# def get_real_path():
-
-#    l = re.findall(r'(?m)^PATH=(.*)', subprocess.check_output('bash -ilc env', shell=True, executable="/bin/bash").decode())[0].split(':')
-
-#     default_shell = os.environ.get("SHELL","/bin/bash")
-#     the_path = None
-
-#     try:
-#         lines = subprocess.check_output(
-#                 "{} -ilc env".format(default_shell), shell=True
-#             )
-#     except subprocess.CalledProcessError as err :
-#         LOG.error(err)
-#         LOG.error('get_real_path_error, using default')
-#         return os.environ['PATH']
-
-#     for x in line.decode().splitlines():
-#         k, v = x.split('=')
-#         if k == "PATH":
-#             return v
-
-
-#     LOG.debug('no path found in env, using default')
-#     return os.environ['PATH']
-
-
-#     eal_path = []{
-#             x.split("=")[0]: x.split("=")[1]
-#         }["PATH"]
-
-
 def is_python3_executable(python_executable, default_shell=None):
-    find_version = "{} --version".format(python_executable)
+    find_version = '{} -c "import sys;print(sys.version_info.major)"'.format(
+        python_executable
+    )
     default_shell = None
 
     if sublime.platform() != "windows":
@@ -349,10 +320,11 @@ def is_python3_executable(python_executable, default_shell=None):
         return False
 
     except subprocess.CalledProcessError as err:
-        LOG.error("is_python3_executable : FileNotFoundError %s", err)
+        LOG.debug("is_python3_executable : CalledProcessError %s", err)
         return False
 
-    if not version_out or version_out[7] != "3":
+    LOG.debug("version returned %s", version_out)
+    if not version_out or version_out.strip() != "3":
         LOG.debug("%s is not a python3 executable", python_executable)
         return False
 
@@ -384,6 +356,7 @@ def find_python3_executable():
             .group(1)
             .split(":")
         )
+        LOG.debug("paths found: %r", paths)
 
         # first look at python 3
         for path in paths:
@@ -396,6 +369,7 @@ def find_python3_executable():
             if to_check.exists() and is_python3_executable(to_check, default_shell):
                 return str(to_check)
 
+    LOG.debug("no valid interpreter found via find_python3_executable")
     return False
 
 
@@ -406,6 +380,7 @@ def get_python3_executable(config=None):
         if is_python3_executable(version):
             LOG.debug("using %s as python interpreter", version)
             return version
+        LOG.debug("No valid python found using only python3/python")
 
     # then find  one via shell
     python_exec = find_python3_executable()
@@ -417,7 +392,7 @@ def get_python3_executable(config=None):
     if config:
         if config["black_command"] != "black":
             python_exec = str(Path(config["black_command"]).parent / "python")
-
+            LOG.debug("guessing from black_command")
             if is_python3_executable(python_exec):
                 LOG.debug(
                     "using %s as python3 interpreter guess from black_command",
