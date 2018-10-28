@@ -30,6 +30,8 @@ Now the global/project settings are OVERRIDEN by pyproject.toml's settings
 Changelog
 -----------
 
+2.1.1:
+	fix python find for checker start
 2.1.0:
 	add a cache system to bypass black check for already formatted file.
 	remove include/exclude : useless
