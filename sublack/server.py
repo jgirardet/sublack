@@ -138,7 +138,6 @@ class BlackdServer:
 
             self.write_cache(self.proc.pid)
 
-            cwd = os.path.dirname(os.path.abspath(__file__))
             python_executable = get_python3_executable(self.settings)
             LOG.debug("python_executable found : %s", python_executable)
 

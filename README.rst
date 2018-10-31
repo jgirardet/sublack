@@ -229,6 +229,7 @@ contributions by:
 * `Thom1729  <https://github.com/Thom1729>`_
 * `Jacobi Petrucciani  <https://github.com/jpetrucciani>`_
 * `Herr Kaste <https://github.com/kaste>`_ 
+* `Martinj Peters <https://github.com/mjpieters>`_
 
 
 

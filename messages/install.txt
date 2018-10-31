@@ -30,6 +30,10 @@ Now the global/project settings are OVERRIDEN by pyproject.toml's settings
 Changelog
 -----------
 
+2.1.2:
+	fix popen/Path issue on OSX #35
+	fix checker start/load_ressource #34 thanks to martinj peters.
+
 2.1.1:
 	fix python find for checker start
 2.1.0:
