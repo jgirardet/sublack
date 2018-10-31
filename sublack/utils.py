@@ -174,7 +174,8 @@ def get_env():
     return env
 
 
-popen = partial(subprocess.Popen, startupinfo=startup_info(), env=get_env())
+def popen(*args, **kwargs):
+    return subprocess.Popen(*args, startupinfo=startup_info(), env=get_env(), **kwargs)
 
 
 def check_blackd_on_http(port, host="localhost"):
@@ -191,30 +192,6 @@ def check_blackd_on_http(port, host="localhost"):
             return True, False
         else:
             return False, False
-
-
-# def find_pyproject(view):
-#     """Only search in projects and folders since pyproject.toml should be nowhere else"""
-#     window = view.window()
-#     variables = window.extract_variables()
-#     # project path
-#     path = Path(variables.get("project_path", "")) / "pyproject.toml"
-#     LOG.debug("pyproject path %s", path)
-#     if path.exists():
-#         return path
-
-#     # folders
-#     folders = window.folders()
-
-#     for path in folders:
-#         LOG.debug("Folders : %s", path)
-#         path = Path(path) / "pyproject.toml"
-#         if path.exists():
-
-#             return path
-
-#     # nothing found
-#     return None
 
 
 def find_root_file(view, filename):
