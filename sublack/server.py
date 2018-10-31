@@ -4,6 +4,7 @@ import requests
 import time
 import os
 import sys
+import tempfile
 import logging
 from .utils import (
     cache_path,
@@ -140,9 +141,18 @@ class BlackdServer:
             cwd = os.path.dirname(os.path.abspath(__file__))
             python_executable = get_python3_executable(self.settings)
             LOG.debug("python_executable found : %s", python_executable)
+
+            checker = tempfile.NamedTemporaryFile(suffix="checker.py", delete=False)
+            with checker:
+                checker.write(
+                    sublime.load_resource("Packages/sublack/sublack/checker.py").encode(
+                        "utf8"
+                    )
+                )
+            LOG.debug('checker tempfile: %s', checker.name)
             checker_cmd = [
                 python_executable,
-                "checker.py",
+                checker.name,
                 self.watched,
                 str(self.proc.pid),
             ]
@@ -156,7 +166,7 @@ class BlackdServer:
 
             if python_executable:
                 LOG.debug("Running checker with args %s", checker_cmd)
-                self.checker = popen(checker_cmd, cwd=cwd)
+                self.checker = popen(checker_cmd)
                 LOG.info("Blackd Checker running with pid %s", self.checker.pid)
             else:
                 sublime.error_message(
