@@ -14,11 +14,11 @@ import subprocess
 import signal
 import os
 import locale
-from functools import partial
 import socket
 import requests
 import logging
 import yaml
+import toml
 
 LOG = logging.getLogger("sublack")
 
@@ -217,17 +217,6 @@ def find_root_file(view, filename):
 
     # nothing found
     return None
-
-
-############################
-# Let it like this wainting for toml depedency in package contrl
-# https://github.com/wbond/package_control_channel/pull/7298
-import sys
-
-sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-import toml
-
-###################""
 
 
 def read_pyproject_toml(pyproject: Path) -> dict:

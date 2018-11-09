@@ -3,7 +3,8 @@
       "*": [
          "requests",
          "pathlib",
-         "pyyaml"
+         "pyyaml",
+         "python-toml"
       ]
    }
 }
