@@ -36,6 +36,7 @@ class TestUtils(TestCase):
             "black_blackd_port": 4,
             "black_blackd_autostart": 4,
             "black_use_precommit": 4,
+            "black_confirm_formatall": 4,
         }
 
         res = {
@@ -53,6 +54,7 @@ class TestUtils(TestCase):
             "black_blackd_port": 4,
             "black_blackd_autostart": 4,
             "black_use_precommit": 4,
+            "black_confirm_formatall": 4,
         }
 
         class View(str):
