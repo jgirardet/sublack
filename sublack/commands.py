@@ -156,7 +156,16 @@ class BlackEventListener(sublime_plugin.EventListener):
 
 
 class BlackFormatAllCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return True
+
+    is_visible = is_enabled
+
     def run(self):
+        if get_settings(self.window.active_view())["black_confirm_formatall"]:
+            if not sublime.ok_cancel_dialog("Format all ?"):
+                return
+
         folders = self.window.folders()
 
         success = []

@@ -31,6 +31,7 @@ CONFIG_OPTIONS = [
     "black_blackd_port",
     "black_blackd_autostart",
     "black_use_precommit",
+    "black_confirm_formatall",
 ]
 
 

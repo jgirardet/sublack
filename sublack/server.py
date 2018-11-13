@@ -148,7 +148,7 @@ class BlackdServer:
                         "utf8"
                     )
                 )
-            LOG.debug('checker tempfile: %s', checker.name)
+            LOG.debug("checker tempfile: %s", checker.name)
             checker_cmd = [
                 python_executable,
                 checker.name,

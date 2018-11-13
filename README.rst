@@ -149,6 +149,9 @@ Sublack specifics options
 * black_use_precommit:
     run black via pre-commit hook.
 
+* black_confirm_formatall:
+    Popup confirmation dialog before format_all command.
+
 
 Project settings
 *******************

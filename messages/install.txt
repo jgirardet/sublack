@@ -32,6 +32,7 @@ Changelog
 
 comming:
     use python-toml dependency
+    add option confirm_format_all
 2.1.2:
 	fix popen/Path issue on OSX #35
 	fix checker start/load_ressource #34 thanks to martinj peters.

@@ -54,6 +54,9 @@
       "black_blackd_autostart": false,
 
       // Use pre-commit if possible
-      "black_use_precommit": false
+      "black_use_precommit": false,
+
+      // Disable formatll command
+      "black_confirm_formatall": false
  
 }
