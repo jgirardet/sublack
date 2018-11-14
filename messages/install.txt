@@ -30,7 +30,7 @@ Now the global/project settings are OVERRIDEN by pyproject.toml's settings
 Changelog
 -----------
 
-comming:
+2.2.0:
     use python-toml dependency
     add option confirm_format_all
 2.1.2:
