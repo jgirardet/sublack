@@ -77,7 +77,7 @@ def get_settings(view):
     flat_settings = view.settings()
     nested_settings = flat_settings.get(PACKAGE_NAME, {})
     global_settings = sublime.load_settings(SETTINGS_FILE_NAME)
-    pyproject_settings = read_pyproject_toml(find_root_file(view, "pyproject.toml"))
+    pyproject_settings = read_pyproject_toml(find_pyproject(view))
     settings = {}
 
     for k in CONFIG_OPTIONS:
@@ -217,6 +217,36 @@ def find_root_file(view, filename):
 
     # nothing found
     return None
+
+
+def find_pyproject(view):
+    pyproject = find_root_file(view, "pyproject.toml")
+    if pyproject:
+        return pyproject
+
+    folders = [Path(f).resolve() for f in view.window().folders()]
+
+    try:
+        fname = view.file_name()
+        if not fname:
+            return
+        cur_fil = Path(fname)
+    except AttributeError:
+        return
+
+    for folder in cur_fil.parents:
+        print(folder)
+        if (folder / "pyproject.toml").is_file():
+            return folder / "pyproject.toml"
+
+        if (folder / ".git").is_dir():
+            return None
+
+        if (folder / ".hg").is_dir():
+            return None
+
+        if folder.resolve() in folders:
+            return None
 
 
 def read_pyproject_toml(pyproject: Path) -> dict:
