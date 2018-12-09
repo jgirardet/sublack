@@ -30,6 +30,9 @@ Now the global/project settings are OVERRIDEN by pyproject.toml's settings
 Changelog
 -----------
 
+next:
+	fix pyproject search in parent folder
+
 2.2.0:
     use python-toml dependency
     add option confirm_format_all
