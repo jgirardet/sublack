@@ -235,6 +235,13 @@ contributions by:
 * `Martinj Peters <https://github.com/mjpieters>`_
 
 
+Todo
+---------
+
+- target version
+- cors
+
+
 
 
 .. _Black : https://github.com/ambv/black 
