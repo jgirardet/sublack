@@ -63,9 +63,9 @@ class Blackd:
 
         returncode(int), out(byte), err(byte)
         """
-        LOG.debug("Respone status code : %s", response.status_code)
+        LOG.debug("Response status code : %s", response.status_code)
         if response.status_code == 200:
-            return 0, response.content, b"1 file reformated"
+            return 0, response.content, b"1 file reformatted"
 
         elif response.status_code == 204:
             return 0, response.content, b"1 file left unchanged"
