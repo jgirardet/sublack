@@ -30,7 +30,8 @@ Now the global/project settings are OVERRIDEN by pyproject.toml's settings
 Changelog
 -----------
 
-next:
+2.2.1:
+	disable black_on_save for excluded file in pyproject
 	fix pyproject search in parent folder
 
 2.2.0:
