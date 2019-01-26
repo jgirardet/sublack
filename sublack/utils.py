@@ -58,8 +58,30 @@ def timed(fn):
     return to_time
 
 
+def match_exclude(view):
+    pyproject = find_pyproject(view)
+    if pyproject:
+        excluded = read_pyproject_toml(pyproject).get("exclude", None)
+        if excluded:
+            cur_fil = Path(view.file_name())
+            try:
+                rel_path = cur_fil.relative_to(pyproject.parent)
+            except ValueError:
+                LOG.debug("%s not in %s", cur_fil, pyproject.parent)
+                return
+
+            else:
+                if re.match(excluded, "/" + str(rel_path), re.VERBOSE):
+                    LOG.info("%s excluded from pyproject, aborting", rel_path)
+                    return True
+
+
 def get_on_save_fast(view):
     """Fast checker for black_on_save setting"""
+
+    if match_exclude(view):
+        return False
+
     flat_settings = view.settings()
     if flat_settings.get("sublack.black_on_save"):
         return True
@@ -201,14 +223,14 @@ def find_root_file(view, filename):
     # project path
     path = Path(variables.get("project_path", "")) / filename
     if path.exists():
-        LOG.debug("%s path %s", filename, path)
+        # LOG.debug("%s path %s", filename, path)
         return path
 
     # folders
     folders = window.folders()
 
     for path in folders:
-        LOG.debug("Folders : %s", path)
+        # LOG.debug("Folders : %s", path)
         path = Path(path) / filename
         if path.exists():
 
@@ -263,7 +285,7 @@ def read_pyproject_toml(pyproject: Path) -> dict:
         LOG.error("Error reading configuration file: %s", pyproject)
         # pass
 
-    LOG.debug("config values extracted from %s : %r", pyproject, config)
+    # LOG.debug("config values extracted from %s : %r", pyproject, config)
     return config
 
 
