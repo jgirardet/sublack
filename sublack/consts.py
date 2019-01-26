@@ -10,8 +10,8 @@ BLACK_ON_SAVE_VIEW_SETTING = "sublack.black_on_save"
 
 ENCODING_PATTERN = r"^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)"
 
-ALREADY_FORMATTED_MESSAGE = "Sublack: already well formated !"
-ALREADY_FORMATTED_MESSAGE_CACHE = "Sublack(cache): already well formated!"
+ALREADY_FORMATTED_MESSAGE = "Sublack: already well formatted !"
+ALREADY_FORMATTED_MESSAGE_CACHE = "Sublack(cache): already well formatted!"
 
 REFORMATTED_MESSAGE = "Sublack: reformatted !"
 REFORMAT_ERRORS = "Sublack: Reformatting error, check console for logs"
