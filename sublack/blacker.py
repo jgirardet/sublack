@@ -162,10 +162,6 @@ class Black:
         if self.config.get("black_skip_string_normalization"):
             cmd.append("--skip-string-normalization")
 
-        # black_skip_string_normalization
-        if self.config.get("black_skip_numeric_underscore_normalization"):
-            cmd.append("--skip-numeric-underscore-normalization")
-
         # handle pyi
         filename = self.view.file_name()
         if filename and filename.endswith(".pyi"):

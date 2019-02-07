@@ -20,7 +20,6 @@ CONFIG_OPTIONS = [
     "black_line_length",
     "black_fast",
     "black_skip_string_normalization",
-    "black_skip_numeric_underscore_normalization",
     "black_command",
     "black_on_save",
     "black_log",
@@ -38,9 +37,6 @@ CONFIG_OPTIONS = [
 HEADERS_TABLE = {
     "--fast": {"X-Fast-Or-Safe": "fast"},
     "--skip-string-normalization": {"X-Skip-String-Normalization": "1"},
-    "--skip-numeric-underscore-normalization": {
-        "X-Skip-Numeric-Underscore-Normalization": "1"
-    },
     "--pyi": {"X-Python-Variant": "pyi"},
     "--py36": {"X-Python-Variant": "3.6"},
 }

@@ -228,7 +228,6 @@ def find_root_file(view, filename):
 
     # folders
     folders = window.folders()
-
     for path in folders:
         # LOG.debug("Folders : %s", path)
         path = Path(path) / filename

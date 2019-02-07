@@ -21,7 +21,7 @@ sublack
 Installation
 -------------
 
-#. Install `Black`_ (if you haven't already)::
+#. Install `Black`_ min (19.2b) (if you haven't already)::
    
 	   pip install black # Requires python 3.6
        or pip install blackd # for blackd support
@@ -106,9 +106,6 @@ Black specifics options
 
 * black_skip_string_normalization:
     Don't normalize string quotes or prefixes. Default = false.
-
-* black_skip_numeric_underscore_normalization:
-    Don't normalize underscores in numeric literals.
 
 * black_exclude:
     Regex matching excluded path. Default is Black's default.

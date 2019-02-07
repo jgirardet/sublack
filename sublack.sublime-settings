@@ -17,9 +17,6 @@
       // add --black_skip_string_normalization
       "black_skip_string_normalization": false,
 
-      // Don't normalize underscores in numeric literals.   
-      "black_skip_numeric_underscore_normalization": false,
-
       // force py36 syntax mode
       "black_py36": null,
 

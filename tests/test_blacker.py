@@ -34,21 +34,9 @@ class TestBlackMethod(TestCase):
         self.assertEqual(a, ["black", "-", "--diff", "-l", "90", "--fast"])
 
         # test skipstring
-        s.config = {
-            "black_command": "black",
-            "black_skip_string_normalization": True,
-            "black_skip_numeric_underscore_normalization": True,
-        }
+        s.config = {"black_command": "black", "black_skip_string_normalization": True}
         a = gcl(s, v)
-        self.assertEqual(
-            a,
-            [
-                "black",
-                "-",
-                "--skip-string-normalization",
-                "--skip-numeric-underscore-normalization",
-            ],
-        )
+        self.assertEqual(a, ["black", "-", "--skip-string-normalization"])
 
         # test py36
         s.config = {"black_command": "black", "black_py36": True}
@@ -213,7 +201,7 @@ class TestCache(TestCase):
 class TestBlackdClass(TestCase):
     def test_format_header(self):
         self.maxDiff = None
-        cmd = "black - -l 25 --fast --skip-string-normalization --skip-numeric-underscore-normalization --py36".split()
+        cmd = "black - -l 25 --fast --skip-string-normalization --py36".split()
         h = sublack.blacker.Blackd.format_headers("self", cmd)
         self.assertEqual(
             h,
@@ -222,6 +210,5 @@ class TestBlackdClass(TestCase):
                 "X-Skip-String-Normalization": "1",
                 "X-Python-Variant": "3.6",
                 "X-Fast-Or-Safe": "fast",
-                "X-Skip-Numeric-Underscore-Normalization": "1",
             },
         )
