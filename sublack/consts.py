@@ -25,6 +25,7 @@ CONFIG_OPTIONS = [
     "black_log",
     "black_default_encoding",
     "black_py36",
+    "black_target_version",
     "black_use_blackd",
     "black_blackd_host",
     "black_blackd_port",
@@ -38,7 +39,8 @@ HEADERS_TABLE = {
     "--fast": {"X-Fast-Or-Safe": "fast"},
     "--skip-string-normalization": {"X-Skip-String-Normalization": "1"},
     "--pyi": {"X-Python-Variant": "pyi"},
-    "--py36": {"X-Python-Variant": "3.6"},
+    "--target-version": {"X-Python-Variant": "cpy36"},
+    "--py36": {"X-Python-Variant": "cpy36"},
 }
 
 BLACKD_STARTED = "Blackd server started on port {}"

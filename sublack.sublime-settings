@@ -20,6 +20,9 @@
       // force py36 syntax mode
       "black_py36": null,
 
+      // specify python variant version
+      "black_target_version": null,
+
       // ##########################
       // Sublack specific options #
       // ##########################

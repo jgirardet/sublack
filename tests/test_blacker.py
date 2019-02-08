@@ -201,6 +201,8 @@ class TestCache(TestCase):
 class TestBlackdClass(TestCase):
     def test_format_header(self):
         self.maxDiff = None
+
+        # standard
         cmd = "black - -l 25 --fast --skip-string-normalization --py36".split()
         h = sublack.blacker.Blackd.format_headers("self", cmd)
         self.assertEqual(
@@ -208,7 +210,20 @@ class TestBlackdClass(TestCase):
             {
                 "X-Line-Length": "25",
                 "X-Skip-String-Normalization": "1",
-                "X-Python-Variant": "3.6",
+                "X-Python-Variant": "cpy36",
+                "X-Fast-Or-Safe": "fast",
+            },
+        )
+
+        # target-version
+        cmd = "black - -l 25 --fast --skip-string-normalization --target-version cpy37".split()
+        h = sublack.blacker.Blackd.format_headers("self", cmd)
+        self.assertEqual(
+            h,
+            {
+                "X-Line-Length": "25",
+                "X-Skip-String-Normalization": "1",
+                "X-Python-Variant": "cpy37",
                 "X-Fast-Or-Safe": "fast",
             },
         )

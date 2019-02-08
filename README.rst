@@ -107,14 +107,11 @@ Black specifics options
 * black_skip_string_normalization:
     Don't normalize string quotes or prefixes. Default = false.
 
-* black_exclude:
-    Regex matching excluded path. Default is Black's default.
-
-* black_include:
-    Regex matching included path. Default is Black's default.
-
 * black_py36:
     Force use of python 3.6 only syntax. Default is Black-s default.
+
+* black_target_version:
+    Python versions that should be supported by Black's output.
 
 Sublack specifics options
 ++++++++++++++++++++++++++
