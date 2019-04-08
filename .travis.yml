@@ -31,8 +31,7 @@ install:
       fi
     # brew install python;
     # || brew upgrade python;
-    - pip3 install aiohttp
-    - pip3 install black
+    - pip3 install black[d]
     - pip3 install requests
     - pip3 install pre-commit
     # - pip3 install black requests

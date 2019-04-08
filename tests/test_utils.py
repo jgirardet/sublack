@@ -29,8 +29,8 @@ class TestUtils(TestCase):
             "black_log": 4,
             "black_default_encoding": 4,
             "black_skip_string_normalization": 4,
-            "black_skip_numeric_underscore_normalization": 4,
             "black_py36": 4,
+            "black_target_version": 4,
             "black_use_blackd": 4,
             "black_blackd_host": 4,
             "black_blackd_port": 4,
@@ -47,8 +47,8 @@ class TestUtils(TestCase):
             "black_log": 4,
             "black_default_encoding": 4,
             "black_skip_string_normalization": 2,
-            "black_skip_numeric_underscore_normalization": 4,
             "black_py36": 3,
+            "black_target_version": 4,
             "black_use_blackd": 4,
             "black_blackd_host": 4,
             "black_blackd_port": 4,
@@ -114,41 +114,48 @@ class TestUtils(TestCase):
         self.assertEqual(e, "deuxieme ligne")
 
     def test_find_pyproject(self):
+        class View(str):
+            @staticmethod
+            def window():
+                return View
+
+            @staticmethod
+            def extract_variables():
+                return {"project_path": T}
+
+            @staticmethod
+            def folders():
+                return []
 
         with tempfile.TemporaryDirectory() as T:
             # T = tempfile.TemporaryDirectory()
             root = Path(T)
 
-            class View(str):
-                def window():
-                    return View
-
-                def extract_variables():
-                    return {"project_path": T}
-
-                def folders():
-                    return []
+            view = View()
 
             # nothing
-            self.assertIsNone(sublack.utils.find_root_file(View, "pyproject.toml"))
+            self.assertIsNone(sublack.utils.find_root_file(view, "pyproject.toml"))
             pp = root / "pyproject.toml"
             pp.touch()
             self.assertTrue(pp.exists())
             # pyproject in project
             self.assertEqual(
-                sublack.utils.find_root_file(View, "pyproject.toml"),
+                sublack.utils.find_root_file(view, "pyproject.toml"),
                 root / "pyproject.toml",
             )
 
-            View.extract_variables = lambda: {}
+        with tempfile.TemporaryDirectory() as T:
+            view = View()
+            deux = View()
+            deux.folders = lambda: [T]
+            view.extract_variables = lambda: {}
+            view.window = lambda: deux
             # re nothing
-            self.assertIsNone(sublack.utils.find_root_file(View, "pyproject.toml"))
+            self.assertIsNone(sublack.utils.find_root_file(view, "pyproject.toml"))
             # pyproject in folders
-            View.folders = lambda: ["", T]
-            self.assertEqual(
-                sublack.utils.find_root_file(View, "pyproject.toml"),
-                root / "pyproject.toml",
-            )
+            root = Path(T) / "pyproject.toml"
+            root.touch()
+            self.assertEqual(sublack.utils.find_root_file(view, "pyproject.toml"), root)
 
     def test_read_pyproject(self):
         normal = '[other]\nbla = "bla"\n\n[tool.black]\nfast = true\nline-length = 1'

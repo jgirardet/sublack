@@ -55,6 +55,9 @@ class Blackd:
         if "-l" in cmd:
             headers["X-Line-Length"] = cmd[cmd.index("-l") + 1]
 
+        if "--target-version" in cmd:
+            headers["X-Python-Variant"] = cmd[cmd.index("--target-version") + 1]
+
         LOG.debug("headers : %s", headers)
         return headers
 
@@ -162,10 +165,6 @@ class Black:
         if self.config.get("black_skip_string_normalization"):
             cmd.append("--skip-string-normalization")
 
-        # black_skip_string_normalization
-        if self.config.get("black_skip_numeric_underscore_normalization"):
-            cmd.append("--skip-numeric-underscore-normalization")
-
         # handle pyi
         filename = self.view.file_name()
         if filename and filename.endswith(".pyi"):
@@ -174,6 +173,10 @@ class Black:
         # black_py36
         if self.config.get("black_py36"):
             cmd.append("--py36")
+
+        # black target-vversion
+        if self.config.get("black_target_version"):
+            cmd.extend(["--target-version", self.config.black_target_version])
 
         LOG.debug("command line: %s", cmd)
         return cmd

@@ -12,7 +12,7 @@
 Installation
 -------------
 
-Install Black. Minimal version : stable
+Install Black. Minimal version : 19.2b
    
 	  pip install black # Requires python 3.6
 	  and
@@ -20,15 +20,17 @@ Install Black. Minimal version : stable
 
 
 
-### BREAKING CHANGES in 2.0 ###
-
-Now the global/project settings are OVERRIDEN by pyproject.toml's settings
-##############          ###########
-
+##  NEW 2.2.2 needs black 19.2b ######
 
 
 Changelog
 -----------
+
+2.3.0:
+	remove skeep numeric normlization
+	fix a test
+	add target_version flag
+	fix black_on_save_fast
 
 2.2.1:
 	disable black_on_save for excluded file in pyproject

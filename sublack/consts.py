@@ -20,12 +20,12 @@ CONFIG_OPTIONS = [
     "black_line_length",
     "black_fast",
     "black_skip_string_normalization",
-    "black_skip_numeric_underscore_normalization",
     "black_command",
     "black_on_save",
     "black_log",
     "black_default_encoding",
     "black_py36",
+    "black_target_version",
     "black_use_blackd",
     "black_blackd_host",
     "black_blackd_port",
@@ -38,11 +38,8 @@ CONFIG_OPTIONS = [
 HEADERS_TABLE = {
     "--fast": {"X-Fast-Or-Safe": "fast"},
     "--skip-string-normalization": {"X-Skip-String-Normalization": "1"},
-    "--skip-numeric-underscore-normalization": {
-        "X-Skip-Numeric-Underscore-Normalization": "1"
-    },
     "--pyi": {"X-Python-Variant": "pyi"},
-    "--py36": {"X-Python-Variant": "3.6"},
+    "--py36": {"X-Python-Variant": "py36"},
 }
 
 BLACKD_STARTED = "Blackd server started on port {}"

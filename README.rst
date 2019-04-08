@@ -21,10 +21,10 @@ sublack
 Installation
 -------------
 
-#. Install `Black`_ (if you haven't already)::
+#. Install `Black`_ min (19.3b0) (if you haven't already)::
    
 	   pip install black # Requires python 3.6
-       or pip install blackd # for blackd support
+       or pip install black[d] # for blackd support
 
 #. In PackageControl just find ``sublack``, and that's it !
 
@@ -107,17 +107,11 @@ Black specifics options
 * black_skip_string_normalization:
     Don't normalize string quotes or prefixes. Default = false.
 
-* black_skip_numeric_underscore_normalization:
-    Don't normalize underscores in numeric literals.
-
-* black_exclude:
-    Regex matching excluded path. Default is Black's default.
-
-* black_include:
-    Regex matching included path. Default is Black's default.
-
-* black_py36:
+* black_py36[Deprecated]:
     Force use of python 3.6 only syntax. Default is Black-s default.
+
+* black_target_version:
+    Python versions that should be supported by Black's output.
 
 Sublack specifics options
 ++++++++++++++++++++++++++
