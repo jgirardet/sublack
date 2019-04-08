@@ -24,7 +24,7 @@ Installation
 #. Install `Black`_ min (19.2b) (if you haven't already)::
    
 	   pip install black # Requires python 3.6
-       or pip install blackd # for blackd support
+       or pip install black[d] # for blackd support
 
 #. In PackageControl just find ``sublack``, and that's it !
 
@@ -107,7 +107,7 @@ Black specifics options
 * black_skip_string_normalization:
     Don't normalize string quotes or prefixes. Default = false.
 
-* black_py36:
+* black_py36[Deprecated]:
     Force use of python 3.6 only syntax. Default is Black-s default.
 
 * black_target_version:
