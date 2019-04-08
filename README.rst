@@ -21,7 +21,7 @@ sublack
 Installation
 -------------
 
-#. Install `Black`_ min (19.2b) (if you haven't already)::
+#. Install `Black`_ min (19.3b0) (if you haven't already)::
    
 	   pip install black # Requires python 3.6
        or pip install black[d] # for blackd support
