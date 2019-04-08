@@ -39,8 +39,7 @@ HEADERS_TABLE = {
     "--fast": {"X-Fast-Or-Safe": "fast"},
     "--skip-string-normalization": {"X-Skip-String-Normalization": "1"},
     "--pyi": {"X-Python-Variant": "pyi"},
-    "--target-version": {"X-Python-Variant": "cpy36"},
-    "--py36": {"X-Python-Variant": "cpy36"},
+    "--py36": {"X-Python-Variant": "py36"},
 }
 
 BLACKD_STARTED = "Blackd server started on port {}"

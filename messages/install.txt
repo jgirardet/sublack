@@ -26,10 +26,12 @@ Install Black. Minimal version : 19.2b
 Changelog
 -----------
 
-2.2.2 todo:
+2.3.0:
 	remove skeep numeric normlization
 	fix a test
 	add target_version flag
+	fix black_on_save_fast
+
 2.2.1:
 	disable black_on_save for excluded file in pyproject
 	fix pyproject search in parent folder
