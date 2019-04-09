@@ -56,7 +56,9 @@ class Blackd:
             headers["X-Line-Length"] = cmd[cmd.index("-l") + 1]
 
         if "--target-version" in cmd:
-            headers["X-Python-Variant"] = cmd[cmd.index("--target-version") + 1]
+            version = cmd[cmd.index("--target-version") + 1]
+            variant = version[:-1] + "." + version[-1]
+            headers["X-Python-Variant"] = variant
 
         LOG.debug("headers : %s", headers)
         return headers
@@ -176,7 +178,7 @@ class Black:
 
         # black target-vversion
         if self.config.get("black_target_version"):
-            cmd.extend(["--target-version", self.config.black_target_version])
+            cmd.extend(["--target-version", self.config["black_target_version"]])
 
         LOG.debug("command line: %s", cmd)
         return cmd

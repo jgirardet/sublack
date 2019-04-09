@@ -43,6 +43,11 @@ class TestBlackMethod(TestCase):
         a = gcl(s, v)
         self.assertEqual(a, ["black", "-", "--py36"])
 
+        # test tearget target-version
+        s.config = {"black_command": "black", "black_target_version": "py36"}
+        a = gcl(s, v)
+        self.assertEqual(a, ["black", "-", "--target-version", "py36"])
+
         # test pyi
         s.config = {"black_command": "black"}
         s.view.file_name.return_value = "blabla.pyi"
@@ -223,7 +228,7 @@ class TestBlackdClass(TestCase):
             {
                 "X-Line-Length": "25",
                 "X-Skip-String-Normalization": "1",
-                "X-Python-Variant": "py37",
+                "X-Python-Variant": "py3.7",
                 "X-Fast-Or-Safe": "fast",
             },
         )

@@ -12,20 +12,22 @@
 Installation
 -------------
 
-Install Black. Minimal version : 19.2b
+Install Black. Minimal version : 19.3b
    
 	  pip install black # Requires python 3.6
 	  and
-	  pip install aiohttp # for blackd support
+	  pip install black[d] # for blackd support
 
 
 
-##  NEW 2.2.2 needs black 19.2b ######
+##  NEW 2.3.0 needs black 19.3b ######
 
 
 Changelog
 -----------
 
+2.3.1:
+	Fix target version for black and blackd
 2.3.0:
 	remove skeep numeric normlization
 	fix a test
