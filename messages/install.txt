@@ -26,6 +26,8 @@ Install Black. Minimal version : 19.3b
 Changelog
 -----------
 
+2.3.3:
+	Fix tests
 2.3.2:
 	Fix target version for black and blackd
 2.3.1:
