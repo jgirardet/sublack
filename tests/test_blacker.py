@@ -212,6 +212,19 @@ class TestBlackdClass(TestCase):
     def test_format_header(self):
         self.maxDiff = None
 
+        # dep
+        cmd = "black - -l 25 --fast --skip-string-normalization --py36 --target-version py37".split()
+        h = sublack.blacker.Blackd.format_headers("self", cmd)
+        self.assertEqual(
+            h,
+            {
+                "X-Line-Length": "25",
+                "X-Skip-String-Normalization": "1",
+                "X-Python-Variant": "py3.6,py3.7",
+                "X-Fast-Or-Safe": "fast",
+            },
+        )
+
         # standard
         cmd = "black - -l 25 --fast --skip-string-normalization --py36".split()
         h = sublack.blacker.Blackd.format_headers("self", cmd)
@@ -220,21 +233,21 @@ class TestBlackdClass(TestCase):
             {
                 "X-Line-Length": "25",
                 "X-Skip-String-Normalization": "1",
-                "X-Python-Variant": ["py36"],
+                "X-Python-Variant": "py3.6",
                 "X-Fast-Or-Safe": "fast",
             },
         )
 
-        # # target-version
-        # cmd = "black - -l 25 --fast --skip-string-normalization --target-version py36 --target-version py37".split()
-        # h = sublack.blacker.Blackd.format_headers("self", cmd)
-        # self.assertEqual(
-        #     h,
-        #     {
-        #         "X-Line-Length": "25",
-        #         "X-Skip-String-Normalization": "1",
-        #         "X-Python-Variant": ["py3.6","py3.7"],
-        #         "X-Fast-Or-Safe": "fast",
-        #     },
+        # target-version
+        cmd = "black - -l 25 --fast --skip-string-normalization --target-version py36 --target-version py37".split()
+        h = sublack.blacker.Blackd.format_headers("self", cmd)
+        self.assertEqual(
+            h,
+            {
+                "X-Line-Length": "25",
+                "X-Skip-String-Normalization": "1",
+                "X-Python-Variant": "py3.6,py3.7",
+                "X-Fast-Or-Safe": "fast",
+            },
 
-        # )
+        )
