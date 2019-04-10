@@ -217,12 +217,13 @@ class TestBlackdClass(TestCase):
         # dep
         cmd = "black - -l 25 --fast --skip-string-normalization --py36 --target-version py37".split()
         h = sublack.blacker.Blackd.format_headers("self", cmd)
+        h["X-Python-Variant"] = set(h["X-Python-Variant"].split(","))
         self.assertEqual(
             h,
             {
                 "X-Line-Length": "25",
                 "X-Skip-String-Normalization": "1",
-                "X-Python-Variant": "py3.6,py3.7",
+                "X-Python-Variant": set(["py3.6", "py3.7"]),
                 "X-Fast-Or-Safe": "fast",
             },
         )
@@ -243,12 +244,13 @@ class TestBlackdClass(TestCase):
         # target-version
         cmd = "black - -l 25 --fast --skip-string-normalization --target-version py36 --target-version py37".split()
         h = sublack.blacker.Blackd.format_headers("self", cmd)
+        h["X-Python-Variant"] = set(h["X-Python-Variant"].split(","))
         self.assertEqual(
             h,
             {
                 "X-Line-Length": "25",
                 "X-Skip-String-Normalization": "1",
-                "X-Python-Variant": "py3.6,py3.7",
+                "X-Python-Variant": set(["py3.6", "py3.7"]),
                 "X-Fast-Or-Safe": "fast",
             },
         )
