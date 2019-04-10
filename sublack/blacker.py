@@ -56,9 +56,9 @@ class Blackd:
             headers["X-Line-Length"] = cmd[cmd.index("-l") + 1]
 
         # target version
-        targets=set()
+        targets = set()
         for index, item in enumerate(cmd):
-            if item ==  "--target-version":
+            if item == "--target-version":
                 version = cmd[index + 1]
                 variant = version[:-1] + "." + version[-1]
                 targets.add(variant)
@@ -66,7 +66,8 @@ class Blackd:
         if "--py36" in cmd:
             targets.add("py3.6")
 
-        headers["X-Python-Variant"]= ",".join(targets)
+        if targets:
+            headers["X-Python-Variant"] = ",".join(targets)
 
         LOG.debug("headers : %s", headers)
         return headers
@@ -189,7 +190,6 @@ class Black:
             versions = []
             for v in self.config["black_target_version"]:
                 cmd.extend(["--target-version", v])
-
 
         LOG.debug("command line: %s", cmd)
         return cmd
