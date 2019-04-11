@@ -202,7 +202,8 @@ class TestFormatAll(TestCaseBlack):
         # s.set("close_windows_when_empty", False)
         # self.maxDiff = None
 
-        self.window.run_command("black_format_all")
+        with patch("sublime.ok_cancel_dialog", return_value=True):
+            self.window.run_command("black_format_all")
         self.assertEqual(
             self.window.active_view().get_status(sublack.STATUS_KEY),
             sublack.REFORMATTED_MESSAGE,
@@ -215,7 +216,8 @@ class TestFormatAll(TestCaseBlack):
         with open(str(self.wrong), "w") as ww:
             ww.write("ab ac = 2")
 
-        self.window.run_command("black_format_all")
+        with patch("sublime.ok_cancel_dialog", return_value=True):
+            self.window.run_command("black_format_all")
         self.assertEqual(
             self.window.active_view().get_status(sublack.STATUS_KEY),
             sublack.REFORMAT_ERRORS,

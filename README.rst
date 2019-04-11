@@ -144,7 +144,7 @@ Sublack specifics options
     run black via pre-commit hook.
 
 * black_confirm_formatall:
-    Popup confirmation dialog before format_all command.
+    Popup confirmation dialog before format_all command. default = true.
 
 
 Project settings

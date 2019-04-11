@@ -57,6 +57,6 @@
       "black_use_precommit": false,
 
       // Disable formatll command
-      "black_confirm_formatall": false
+      "black_confirm_formatall": true
  
 }

@@ -26,6 +26,8 @@ Install Black. Minimal version : 19.3b
 Changelog
 -----------
 
+comming:
+	Confirmation dialog  to `format all` is now by default.
 2.3.3:
 	Fix tests
 2.3.2:
