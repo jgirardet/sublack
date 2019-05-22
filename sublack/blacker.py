@@ -29,6 +29,9 @@ from .utils import (
     get_env,
 )
 
+from .folding import get_folded_lines, get_ast_index, refold_all
+
+
 LOG = logging.getLogger(PACKAGE_NAME)
 
 
@@ -321,8 +324,23 @@ class Black:
 
         # standard mode
         else:
+            # setup folding
+            old_sel = self.view.sel()[0]
+            folded_lines = get_folded_lines(self.view)
+
+            # result of formatting
             new_content = out.decode(encoding)
             self.view.replace(edit, self.all, new_content)
+
+            # reapply folding
+            old = get_ast_index(self.view, content, encoding)
+            new = get_ast_index(self.view, out, encoding)
+            if old and new:
+                refold_all(old, new, self.view, folded_lines)
+            self.view.sel().clear()
+            self.view.sel().add(old_sel)
+
+            # status and caching
             self.view.set_status(STATUS_KEY, REFORMATTED_MESSAGE)
             sublime.set_timeout_async(lambda: self.add_to_cache(new_content, cmd))
 
