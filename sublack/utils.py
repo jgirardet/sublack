@@ -165,10 +165,10 @@ def startup_info():
     "running windows process in background"
     if sublime.platform() == "windows":
         st = subprocess.STARTUPINFO()
-        st.dwFlags = (
-            subprocess.STARTF_USESHOWWINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
-        )
-        st.wShowWindow = subprocess.SW_HIDE
+        # st.dwFlags = (
+        #     subprocess.STARTF_USESHOWWINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
+        # )
+        # st.wShowWindow = subprocess.SW_HIDE
         return st
     else:
         return None
