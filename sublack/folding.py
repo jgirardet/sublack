@@ -13,9 +13,10 @@ class FoldingError(Exception):
 
 
 def get_folded_lines(view):
-    """ return line number corresponding to each folded statement"""
+    """ return line number corresponding to each folded statement.
+    Turned to 1-based to fit ast numbers."""
     return [
-        view.rowcol(f.begin() + 1)[0]
+        view.rowcol(f.begin())[0] + 1
         for f in view.unfold(sublime.Region(0, view.size()))
     ]
 
@@ -42,7 +43,11 @@ def get_refolds(view, to_folds):
 def get_index_with_interpreter(view, body, encoding):
     """ extract an index for each ast node using the specified interpreter"""
     python = view.settings().get("python_interpreter")
-    cmd = """import ast;b={};print([getattr(node, "lineno", 0) for node in ast.walk(ast.parse(b.decode(encoding="{}")))])""".format(
+    cmd = """import ast;b={};print([
+        getattr(node, "lineno", 0)
+        for node in ast.walk(ast.parse(b.decode(encoding="{}")))
+        if hasattr(node, "lineno")
+    ])""".format(
         body, encoding
     )
     proc = popen([python, "-c", cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -58,7 +63,11 @@ def get_index_with_python33(body):
     import ast
 
     try:
-        return [getattr(node, "lineno", 0) for node in ast.walk(ast.parse(body))]
+        return [
+            getattr(node, "lineno")
+            for node in ast.walk(ast.parse(body))
+            if hasattr(node, "lineno")
+        ]
     except SyntaxError as err:
         LOG.error(
             """Sublack can't parse this python version to apply folding.
@@ -70,7 +79,7 @@ def get_index_with_python33(body):
 
 
 def get_ast_index(view, body, encoding):
-    """extract an index for each ast node"""
+    """extract an index/lineno for each ast node. lineno is 1 based."""
 
     try:
         if view.settings().has("python_interpreter"):
@@ -82,6 +91,8 @@ def get_ast_index(view, body, encoding):
 
 
 def get_new_lines(old, new, folded_lines):
+    """get new lines comparing index. minus one a the end to 
+    fit turn back to 0-based sublime line numbers"""
     old_index = {}  # dict to not add a line twice
     for index, line in enumerate(old):
         if line not in old_index and line in folded_lines:
@@ -89,9 +100,13 @@ def get_new_lines(old, new, folded_lines):
         if len(old_index) == len(folded_lines):
             break
 
-    return [new[x] for x in old_index.values()]
+    return [new[x] - 1 for x in old_index.values()]
 
 
 def refold_all(old, new, view, folded_lines):
+    LOG.info("folded lines : %s", folded_lines)
+    LOG.info("old folding index/lines: %s", old)
+    LOG.info("new new folding index/lines : %s", new)
     refolds = get_refolds(view, get_new_lines(old, new, folded_lines))
+    LOG.info("new folding region: %s ", refolds)
     view.fold(refolds)
