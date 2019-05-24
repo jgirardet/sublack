@@ -103,7 +103,7 @@ class BlackdServer:
         if not self.blackd_is_runnable():
             return proc, False
 
-        proc = popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        proc = popen(cmd)
 
         if self.is_running(timeout=5):
             running = True
