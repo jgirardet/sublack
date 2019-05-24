@@ -15,7 +15,10 @@ sublack
 * License : GNU General Public License v3 or later (GPLv3+) 
 * Source: https://github.com/jgirardet/sublack
 
+Table Of content
+-----------------
 
+`Installation`_ | `Usage`_ | `Blackd mode`_ | `Pre-commit integration`_ | `Settings`_ | `Code folding`_ | `Sublime Linter integration`_ | `Issues`_ | `Thanks`_ | `Changelog`_ | `Contributing`_ | `Authors`_
 
 
 Installation
@@ -179,6 +182,20 @@ Sublack support use of black configuration in pyproject.toml. Be aware that glob
 Sublack will look for this file in your `project directory` then in your root folder(s).
 See `black about pyproject.toml <https://github.com/ambv/black/#pyprojecttoml>`_ .
 
+Code folding
+---------------
+
+Sublack tries to keep code folding as before reformatting. SublimeText only support python3.3 syntax. For newer syntax (ex await/async), you have to set
+the `python_interpreter` setting.
+
+.. code-block:: json
+
+    {
+    "settings"{
+        "python_interpreter: /path/to/my/python/virtualenv/bin/python"
+    }
+    }
+
 
 Sublime Linter integration
 ----------------------------
@@ -232,9 +249,8 @@ contributions by:
 Todo
 ---------
 
-- target version
 - cors
-
+- refactor popen
 
 
 

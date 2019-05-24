@@ -1,2 +1,0 @@
-documentation
-use precommit with blackd if available
