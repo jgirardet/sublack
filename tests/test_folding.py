@@ -7,6 +7,7 @@ import re
 import tempfile
 import os
 import platform
+import os
 
 Path = sublack.utils.Path
 
@@ -121,7 +122,11 @@ class TestFolding(TestCase):
     def test_get_index_with_interpreter(self):
         body = b"a=1"
         v = View(SAMPLE)
-        v.settings = lambda: {"python_interpreter": "python"}
+        suffix = ""
+        if os.environ.get("APPVEYOR", None):
+            suffix="36"
+        v.settings = lambda: {"python_interpreter": "python"+suffix}
+
         self.assertEquals(
             sublack.folding.get_index_with_interpreter(v, body, "utf-8"), A_EQUAL_INDEX
         )
