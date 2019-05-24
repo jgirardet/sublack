@@ -53,6 +53,7 @@ def get_index_with_interpreter(view, body, encoding):
     proc = popen([python, "-c", cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
     if proc.returncode == 0:
+        print(out)
         return json.loads(out.decode())
     else:
         raise FoldingError(err.decode())
@@ -110,3 +111,10 @@ def refold_all(old, new, view, folded_lines):
     refolds = get_refolds(view, get_new_lines(old, new, folded_lines))
     LOG.info("new folding region: %s ", refolds)
     view.fold(refolds)
+
+"""
+sommmaire
+README
+messages
+ci ?
+"""
