@@ -122,7 +122,8 @@ class TestFolding(TestCase):
     def test_get_index_with_interpreter(self):
         body = b"a=1"
         v = View(SAMPLE)
-        inter = os.environ.get("PYTHON")+"\\Scripts\\python.exe" if os.environ.get("APPVEYOR", None) else "python"
+        # inter = os.environ.get("PYTHON")+"\\Scripts\\python.exe" if os.environ.get("APPVEYOR", None) else "python"
+        inter = "python"
     
         v.settings = lambda: {"python_interpreter": inter}
 
