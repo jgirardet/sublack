@@ -33,9 +33,7 @@ class Checker:
 
     def windows_prepare(self):
         st = subprocess.STARTUPINFO()
-        st.dwFlags = (
-            subprocess.STARTF_USESHOWWINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
-        )
+        st.dwFlags = subprocess.STARTF_USESHOWWINDOW
         st.wShowWindow = subprocess.SW_HIDE
         return st
 
@@ -51,24 +49,33 @@ class Checker:
             .stdout.read()
             .splitlines()
         )
+        tasklist = [i.split(b",") for i in tasklist]
+
+        # app_names, pids = [(i[0], int(i[1])) for i in tasklist]
 
         # r_watched = re.compile(rb'"%b\.exe"' % self.watched)
-        r_watched = re.compile(rb'"' + self.watched + rb'\.exe"')
+        # r_watched = re.compile(rb'"' + self.watched + rb'\.exe"')
         # r_target = re.compile(rb'".+","%b"' % str(self.target).encode())
-        r_target = re.compile(rb'".+","' + str(self.target).encode() + rb'"')
+        # r_target = re.compile(rb'".+","' + str(self.target).encode() + rb'"')
 
         watched_found = False
         target_found = False
 
-        for task in tasklist:
+        for task in tasklist[1:]:
 
-            if r_watched.match(task):
+            if task[0].strip(b'"') == self.watched:
                 watched_found = True
-                LOG.debug("watched found at line %s", task)
 
-            if r_target.match(task):
+            if int(task[1].strip(b'"')) == self.target:
                 target_found = True
-                LOG.debug("target found at line %s", task)
+
+            # if r_watched.match(task):
+            #     watched_found = True
+            #     LOG.debug("watched found at line %s", task)
+
+            # if r_target.match(task):
+            #     target_found = True
+            #     LOG.debug("target found at line %s", task)
 
             if watched_found and target_found:
                 LOG.info(
@@ -132,10 +139,20 @@ class Checker:
             if not self.is_running():
                 return
 
+    def kill_with_pid(self):
+        if platform.system() == "Windows":
+            # need to properly kill precess traa
+            subprocess.call(
+                ["taskkill", "/F", "/T", "/PID", str(self.target)],
+                startupinfo=self.windows_prepare(),
+            )
+        else:
+            os.kill(self.target, signal.SIGTERM)
+
     def terminate_target(self):
         try:
             LOG.info("killing target %d", self.target)
-            os.kill(self.target, signal.SIGTERM)
+            self.kill_with_pid()
         except ProcessLookupError:
             LOG.info("Process %d already terminated", self.target)
 

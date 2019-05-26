@@ -124,7 +124,7 @@ class TestFolding(TestCase):
         v = View(SAMPLE)
         # inter = os.environ.get("PYTHON")+"\\Scripts\\python.exe" if os.environ.get("APPVEYOR", None) else "python"
         inter = "python"
-    
+
         v.settings = lambda: {"python_interpreter": inter}
 
         self.assertEquals(

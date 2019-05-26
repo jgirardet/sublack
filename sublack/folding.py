@@ -105,12 +105,13 @@ def get_new_lines(old, new, folded_lines):
 
 
 def refold_all(old, new, view, folded_lines):
-    LOG.info("folded lines : %s", folded_lines)
-    LOG.info("old folding index/lines: %s", old)
-    LOG.info("new new folding index/lines : %s", new)
+    # LOG.info("folded lines : %s", folded_lines)
+    # LOG.info("old folding index/lines: %s", old)
+    # LOG.info("new new folding index/lines : %s", new)
     refolds = get_refolds(view, get_new_lines(old, new, folded_lines))
-    LOG.info("new folding region: %s ", refolds)
+    # LOG.info("new folding region: %s ", refolds)
     view.fold(refolds)
+
 
 """
 sommmaire

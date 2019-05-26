@@ -31,7 +31,10 @@ class BlackdServer:
         self.pid_path = cache_path() / "pid"
         self.timeout = kwargs.get("timeout", 5)
         self.sleep_time = kwargs.get("sleep_time", 0.1)
-        self.watched = kwargs.get("watched", "plugin_host")
+        default_watched = (
+            "plugin_host.exe" if sublime.platform() == "windows" else "plugin_host"
+        )
+        self.watched = kwargs.get("watched", default_watched)
         self.checker_interval = kwargs.get("checker_interval", None)
         self.settings = kwargs.get("settings", None)
 
@@ -104,6 +107,7 @@ class BlackdServer:
             return proc, False
 
         proc = popen(cmd)
+        LOG.debug("popen reutrn %s", vars(proc))
 
         if self.is_running(timeout=5):
             running = True
@@ -179,8 +183,11 @@ class BlackdServer:
 
     def stop(self, pid=None):
         if self.proc:
-            self.proc.terminate()
-            self.proc.wait(timeout=10)
+            if sublime.platform() == "windows":
+                kill_with_pid(self.proc.pid)
+            else:
+                self.proc.terminate()
+                self.proc.wait(timeout=10)
         else:
             kill_with_pid(pid)
 
