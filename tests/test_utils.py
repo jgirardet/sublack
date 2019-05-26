@@ -1,4 +1,4 @@
-from unittest import TestCase, skip, skipIf  # noqa
+from unittest import TestCase, skipIf
 from unittest.mock import MagicMock, patch
 
 from fixtures import sublack, pre_commit_config

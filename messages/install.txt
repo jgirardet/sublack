@@ -28,7 +28,9 @@ Changelog
 
 comming(2.4.0):
 	Confirmation dialog  to `format all` is now by default.
-	add folding support
+	Add folding support
+	Fix windows popen usage.
+
 2.3.3:
 	Fix tests
 2.3.2:

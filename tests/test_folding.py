@@ -1,13 +1,8 @@
-from unittest import TestCase, skip, skipIf  # noqa
-from unittest.mock import MagicMock, patch
+from unittest import TestCase
+from unittest.mock import MagicMock
 
-from fixtures import sublack, pre_commit_config
+from fixtures import sublack
 import sublime
-import re
-import tempfile
-import os
-import platform
-import os
 
 Path = sublack.utils.Path
 
