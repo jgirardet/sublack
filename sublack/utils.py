@@ -165,13 +165,22 @@ def startup_info():
     "running windows process in background"
     if sublime.platform() == "windows":
         st = subprocess.STARTUPINFO()
-        st.dwFlags = (
-            subprocess.STARTF_USESHOWWINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
-        )
+        # st.dwFlags = (
+        #     subprocess.STARTF_USESHOWWINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
+        # )
+        st.dwFlags = subprocess.STARTF_USESHOWWINDOW
         st.wShowWindow = subprocess.SW_HIDE
         return st
     else:
         return None
+
+
+def shell():
+    """set shell to True on windows"""
+    if sublime.platform() == "windows":
+        return True
+    else:
+        False
 
 
 def kill_with_pid(pid: int):
@@ -195,6 +204,7 @@ def get_env():
 
 def popen(*args, **kwargs):
     return subprocess.Popen(*args, startupinfo=startup_info(), env=get_env(), **kwargs)
+    # return subprocess.Popen(*args,shell=shell(), env=get_env(), **kwargs)
 
 
 def check_blackd_on_http(port, host="localhost"):

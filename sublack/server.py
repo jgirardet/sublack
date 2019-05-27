@@ -31,7 +31,10 @@ class BlackdServer:
         self.pid_path = cache_path() / "pid"
         self.timeout = kwargs.get("timeout", 5)
         self.sleep_time = kwargs.get("sleep_time", 0.1)
-        self.watched = kwargs.get("watched", "plugin_host")
+        default_watched = (
+            "plugin_host.exe" if sublime.platform() == "windows" else "plugin_host"
+        )
+        self.watched = kwargs.get("watched", default_watched)
         self.checker_interval = kwargs.get("checker_interval", None)
         self.settings = kwargs.get("settings", None)
 
@@ -95,29 +98,23 @@ class BlackdServer:
         return False
 
     def _run_blackd(self, cmd):
-        proc = None
         running = None
 
         LOG.debug("Starting blackd with args %s", cmd)
 
         if not self.blackd_is_runnable():
-            return proc, False
+            return self.proc, False
 
-        proc = popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.proc = popen(cmd)
 
         if self.is_running(timeout=5):
             running = True
-            LOG.debug(
-                "BlackdServer started on port %s with pid %s", self.port, proc.pid
-            )
         else:
-            out, err = proc.communicate(timeout=1)
-            # error = proc.stderr.read()
+            out, err = self.proc.communicate(timeout=1)
 
-            # LOG.error(b"blackd start error %s", error)  # show stderr
             LOG.error(b"blackd start error %s", err)  # show stderr
 
-        return proc, running
+        return self.proc, running
 
     @property
     def blackd_cmd(self):
@@ -179,8 +176,11 @@ class BlackdServer:
 
     def stop(self, pid=None):
         if self.proc:
-            self.proc.terminate()
-            self.proc.wait(timeout=10)
+            if sublime.platform() == "windows":
+                kill_with_pid(self.proc.pid)
+            else:
+                self.proc.terminate()
+                self.proc.wait(timeout=10)
         else:
             kill_with_pid(pid)
 

@@ -1,3 +1,7 @@
+image:
+- Visual Studio 2015
+- Visual Studio 2017
+
 environment:
     # The package name
     PACKAGE: "sublack"
@@ -6,7 +10,7 @@ environment:
 install:
     - "SET PYTHON=C:\\Python36"
     - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
-    # - pip install black
+    - python --version
     - pip install black[d]
     - pip install pre-commit
     - ps: appveyor DownloadFile "https://raw.githubusercontent.com/SublimeText/UnitTesting/master/sbin/appveyor.ps1"

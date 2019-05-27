@@ -7,7 +7,6 @@ import subprocess
 import os
 import platform
 import pathlib
-import sys
 
 Checker = s.Checker
 popen = s.popen

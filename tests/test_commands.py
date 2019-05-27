@@ -1,4 +1,4 @@
-from unittest import TestCase, skip  # noqa
+from unittest import TestCase
 from unittest.mock import patch
 
 import sublime
@@ -86,6 +86,56 @@ class TestBlack(TestCaseBlack):
         self.view = backup
         v.set_scratch(True)
         v.close()
+
+    def test_folding1(self, s, c):
+        self.setText(
+            """class A:
+    def a():
+
+
+        def b():
+            pass
+"""
+        )
+        self.view.fold(sublime.Region(21, 65))
+        self.view.run_command("black_file")
+        self.assertEqual(
+            """class A:
+    def a():
+        def b():
+            pass
+""",
+            self.all(),
+        )
+        self.assertEquals(
+            self.view.unfold(sublime.Region(0, self.view.size())),
+            [sublime.Region(21, 55)],
+        )
+
+    def test_folding2(self, s, c):
+        self.setText(
+            """
+
+class A:
+    def a():
+        def b():
+            pass
+"""
+        )
+        self.view.fold(sublime.Region(10, 57))
+        self.view.run_command("black_file")
+        self.assertEqual(
+            """class A:
+    def a():
+        def b():
+            pass
+""",
+            self.all(),
+        )
+        self.assertEquals(
+            self.view.unfold(sublime.Region(0, self.view.size())),
+            [sublime.Region(8, 55)],
+        )
 
 
 class TestBlackdServer(TestCase):
