@@ -98,30 +98,23 @@ class BlackdServer:
         return False
 
     def _run_blackd(self, cmd):
-        proc = None
         running = None
 
         LOG.debug("Starting blackd with args %s", cmd)
 
         if not self.blackd_is_runnable():
-            return proc, False
+            return self.proc, False
 
-        proc = popen(cmd)
-        LOG.debug("popen reutrn %s", vars(proc))
+        self.proc = popen(cmd)
 
         if self.is_running(timeout=5):
             running = True
-            LOG.debug(
-                "BlackdServer started on port %s with pid %s", self.port, proc.pid
-            )
         else:
-            out, err = proc.communicate(timeout=1)
-            # error = proc.stderr.read()
+            out, err = self.proc.communicate(timeout=1)
 
-            # LOG.error(b"blackd start error %s", error)  # show stderr
             LOG.error(b"blackd start error %s", err)  # show stderr
 
-        return proc, running
+        return self.proc, running
 
     @property
     def blackd_cmd(self):

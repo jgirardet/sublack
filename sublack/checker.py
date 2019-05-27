@@ -38,8 +38,6 @@ class Checker:
         return st
 
     def is_running_windows(self):
-        # tasklist = subprocess.check_output(["tasklist", "/FO", "CSV"]).splitlines()
-
         tasklist = (
             subprocess.Popen(
                 ["tasklist", "/FO", "CSV"],
@@ -51,13 +49,6 @@ class Checker:
         )
         tasklist = [i.split(b",") for i in tasklist]
 
-        # app_names, pids = [(i[0], int(i[1])) for i in tasklist]
-
-        # r_watched = re.compile(rb'"%b\.exe"' % self.watched)
-        # r_watched = re.compile(rb'"' + self.watched + rb'\.exe"')
-        # r_target = re.compile(rb'".+","%b"' % str(self.target).encode())
-        # r_target = re.compile(rb'".+","' + str(self.target).encode() + rb'"')
-
         watched_found = False
         target_found = False
 
@@ -68,14 +59,6 @@ class Checker:
 
             if int(task[1].strip(b'"')) == self.target:
                 target_found = True
-
-            # if r_watched.match(task):
-            #     watched_found = True
-            #     LOG.debug("watched found at line %s", task)
-
-            # if r_target.match(task):
-            #     target_found = True
-            #     LOG.debug("target found at line %s", task)
 
             if watched_found and target_found:
                 LOG.info(
