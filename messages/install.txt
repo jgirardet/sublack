@@ -26,7 +26,7 @@ Install Black. Minimal version : 19.3b
 Changelog
 -----------
 
-comming(2.4.0):
+2.4.0:
 	Confirmation dialog  to `format all` is now by default.
 	Add folding support
 	Fix windows popen usage.
