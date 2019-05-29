@@ -6,7 +6,6 @@ Order of imports should not be changed
 import logging
 import sublime
 import os
-
 from .sublack import (
     PACKAGE_NAME,
     SETTINGS_FILE_NAME,
@@ -23,8 +22,6 @@ from .sublack import (
     BlackFormatAllCommand,
 )  # flake8: noqa
 
-# LOG = logging.getLogger("sublack")
-
 LOG = logging.getLogger(PACKAGE_NAME)
 
 if not os.environ.get("CI", None):
@@ -35,7 +32,10 @@ def plugin_loaded():
     # load config
     current_view = sublime.active_window().active_view()
     config = get_settings(current_view)
-
+    print(config)
+    if config["black_log"] == None:
+        config["black_log"] = "info"
+    print(config)
     # Setup  logging
     if not LOG.handlers:
         debug_formatter = logging.Formatter(
@@ -47,8 +47,8 @@ def plugin_loaded():
         LOG.addHandler(dh)
 
     try:
-        LOG.setLevel(config.get("black_log", "").upper())
-    except ValueError as err:
+        LOG.setLevel(config.get("black_log").upper())
+    except ValueError as err:  # https://forum.sublimetext.com/t/an-odd-problem-about-sublime-load-settings/30335/6
         LOG.error(err)
         LOG.setLevel("ERROR")
         LOG.error("fallback to loglevel ERROR")
