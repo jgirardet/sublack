@@ -8,12 +8,11 @@
 sublack
 ===============================
 
-
 `Black`_ integration for SublimeText
-
 
 * License : GNU General Public License v3 or later (GPLv3+) 
 * Source: https://github.com/jgirardet/sublack
+
 
 Table Of content
 -----------------
@@ -22,11 +21,11 @@ Table Of content
 
 
 Installation
--------------
+------------
 
 #. Install `Black`_ min (19.3b0) (if you haven't already)::
    
-	   pip install black # Requires python 3.6
+       pip install black # Requires python 3.6
        or pip install black[d] # for blackd support
 
 #. In PackageControl just find ``sublack``, and that's it !
@@ -37,8 +36,9 @@ Without PackageControl  install manually by navigating to Sublime's `Packages` f
 
       git clone https://github.com/jgirardet/sublack.git
 
+
 Usage
---------
+-----
 
 * Run Black on current file:
     Press `Ctrl-Alt-B` to format the entire file.
@@ -63,7 +63,7 @@ Usage
 
 
 Blackd Mode
-------------
+-----------
 
 Sublack supports blackd. If option `black_use_blackd` is to true, Sublack will use blackd (and not black) according the 'host' and 'port' configuration.
 
@@ -79,13 +79,15 @@ Blackd is faster than Black.
 
 Diff is always run with black.
 
+
 Pre-commit integration
-------------------------
+----------------------
 
 You can choose tu run Black via pre-commit by setting `black_use_precommit` to `true`. Sublack settings will be ignored.
 
+
 Settings
----------
+--------
 
 Sublack will always look for settings in the following order:
  - First in a pyproject.toml file
@@ -93,13 +95,14 @@ Sublack will always look for settings in the following order:
  - Then in Users global settings
  - finally in sublack's default settings
 
+
 Global settings
-*****************
+***************
 Preferences -> Package Settings -> sublack -> settings : 
 
-Black specifics options
-++++++++++++++++++++++++
 
+Black specifics options
++++++++++++++++++++++++
 
 * black_line_length:
     Set custom line length option used by `Black`_. Default = null which lets black default.
@@ -116,8 +119,9 @@ Black specifics options
 * black_target_version:
     Python versions that should be supported by Black's output.
 
+
 Sublack specifics options
-++++++++++++++++++++++++++
++++++++++++++++++++++++++
 
 * black_command:
     Set custom location. Default = "black".
@@ -151,15 +155,15 @@ Sublack specifics options
 
 
 Project settings
-*******************
+****************
 
 Just add sublack as prefix (recommended):
 
 .. code-block:: json
 
     {
-    "settings":{
-        "sublack.black_on_save": true
+        "settings": {
+            "sublack.black_on_save": true
         }
     }
 
@@ -168,22 +172,24 @@ A sublack subsettings is still possible:
 .. code-block:: json
 
     {
-    "settings":{
-        "sublack":{
-            "black_on_save": true
+        "settings": {
+            "sublack": {
+                "black_on_save": true
             }
         }
     }
 
+
 pyproject.toml settings
-***************************
+***********************
 
 Sublack support use of black configuration in pyproject.toml. Be aware that global/project settings will BE OVERRIDEN by pyproject.toml's settings.
 Sublack will look for this file in your `project directory` then in your root folder(s).
 See `black about pyproject.toml <https://github.com/ambv/black/#pyprojecttoml>`_ .
 
+
 Code folding
----------------
+------------
 
 Sublack tries to keep code folding as before reformatting. SublimeText only support python3.3 syntax. For newer syntax (ex await/async), you have to set
 the `python_interpreter` setting.
@@ -191,47 +197,50 @@ the `python_interpreter` setting.
 .. code-block:: json
 
     {
-    "settings"{
-        "python_interpreter: /path/to/my/python/virtualenv/bin/python"
-    }
+        "settings": {
+            "python_interpreter": "/path/to/my/python/virtualenv/bin/python"
+        }
     }
 
 
 Sublime Linter integration
-----------------------------
+--------------------------
 
 You can install `SublimeLinter-addon-black-for-flake <https://github.com/kaste/SublimeLinter-addon-black-for-flake>`_. The plugin will auto configure flake8 and mute all warnings black can actually fix.
 
 
 Issues
----------
+------
 
 If there is something wrong with this plugin, `add an issue <https://github.com/jgirardet/sublack/issues>`_ on GitHub and I'll try to address it.
 
 
 Thanks
-----------
+------
 
 This plugin is very inspired by the very good `PyYapf <https://github.com/jason-kane/PyYapf>`_ Plugin. Thanks to Jason Kane.
 
+
 Changelog
------------
+---------
 
 see `install.txt <messages/install.txt>`_ 
 
+
 Contributing
---------------
+------------
 
 * remove sublack via Package Control.
 * fork sublack
 * clone your sublack fork  to your Packages folder (Preferences -->  Browse Packages...).
 * Package Control: Satisfy Dependencies (install requests)
 * install UnitTesting in Package Control
-* adding a test for new features or bugfix is really nice	 if you can.
+* adding a test for new features or bugfix is really nice if you can.
 * add your name to Authors in readme.
 
+
 Authors
----------
+-------
 
 Laboriously coded by Jimmy Girardet
 
@@ -247,11 +256,9 @@ contributions by:
 
 
 Todo
----------
+----
 
 - cors
 - refactor popen
-
-
 
 .. _Black : https://github.com/ambv/black 
