@@ -5,6 +5,11 @@ env:
         # use UNITTESTING_TAG to specific tag of UnitTesting
         # - UNITTESTING_TAG="master"
 
+
+services:
+    # Starts a graphical environment
+    - xvfb
+
 # mutliple os matrix
 # https://docs.travis-ci.com/user/multi-os/#Python-example-(unsupported-languages)
 matrix:
