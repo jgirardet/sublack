@@ -35,10 +35,20 @@ class BlackFileCommand(sublime_plugin.TextCommand):
 
     is_visible = is_enabled
 
-    @timed
+    # @timed
     def run(self, edit):
         LOG.debug("running black_file")
+        # backup view position:
+        old_view_port = self.view.viewport_position()
+
         Black(self.view)(edit)
+
+        # re apply view position 
+        # fix : https://github.com/jgirardet/sublack/issues/52
+        # not tested : view.run_command doesn't reproduce bug in tests...
+        sublime.set_timeout_async(
+            lambda: self.view.set_viewport_position(old_view_port)
+        )
 
 
 class BlackDiffCommand(sublime_plugin.TextCommand):

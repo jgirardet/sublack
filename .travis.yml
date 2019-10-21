@@ -26,15 +26,12 @@ before_install:
 install:
     # bootstrap the testing environment
     - sh travis.sh bootstrap
-    # - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-    #         brew update;
-    #   fi
-    # brew install python;
-    # || brew upgrade python;
+
+    # install specific packages
     - pip3 install black[d]
     - pip3 install requests
     - pip3 install pre-commit
-    # - pip3 install black requests
+
     # install Package Control and package dependencies
     - sh travis.sh install_package_control
 

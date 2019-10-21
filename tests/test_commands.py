@@ -2,7 +2,14 @@ from unittest import TestCase
 from unittest.mock import patch
 
 import sublime
-from fixtures import sublack, blacked, unblacked, diff, TestCaseBlack
+from fixtures import (
+    sublack,
+    blacked,
+    unblacked,
+    diff,
+    TestCaseBlack,
+    TestCaseBlackAsync,
+)
 
 import requests
 
@@ -306,3 +313,39 @@ class TestPrecommit(TestCaseBlack):
         self.setText(unblacked)
         self.view.run_command("black_file")
         self.assertEqual(blacked, self.all())
+
+
+# @patch.object(sublack.commands, "is_python", return_value=True)
+# @patch.object(sublack.blacker, "get_settings", return_value=TEST_BLACK_SETTINGS)
+# class TestCommandsAsync(TestCaseBlackAsync):
+#     def test_black_file_keeps_view_port_position(self, s, c):
+            
+
+#            ***** to enable if oneday it works with unittesting ******
+
+            
+#         content = (
+#             'a="'
+#             + "a" * int(self.view.viewport_extent()[0]) * 2
+#             + " "
+#             + "a" * int(self.view.viewport_extent()[0]) * 2
+#             + '"'
+#         )
+#         import time
+
+#         print(content)
+#         # Packages/Python/Python.sublime-syntax
+#         #'Packages/MagicPython/grammars/MagicPython.tmLanguage'
+#         self.view.set_syntax_file(
+#             "Packages/MagicPython/grammars/MagicPython.tmLanguage"
+#         )
+#         self.setText(content)
+
+#         viewport = self.view.viewport_position()
+#         print(self.view.viewport_extent())
+#         print(viewport)
+#         self.view.run_command("black_file")
+
+#         yield 2000
+#         print(self.view.viewport_position())
+#         self.assertEqual(viewport, self.view.viewport_position())

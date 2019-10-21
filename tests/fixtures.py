@@ -1,6 +1,7 @@
 import sys
 import sublime
 from unittest import TestCase
+from unittesting import DeferrableTestCase
 
 sublack = sys.modules["sublack.sublack"]
 
@@ -87,6 +88,34 @@ pre_commit_config = {
 
 
 class TestCaseBlack(TestCase):
+    def setUp(self):
+        self.window = sublime.active_window()
+        self.view = self.window.new_file()
+        # make sure we have a window to work with
+        s = sublime.load_settings("Preferences.sublime-settings")
+        s.set("close_windows_when_empty", False)
+        self.maxDiff = None
+
+        self.folder = sublack.utils.Path(__file__).parents[1]
+        self.old_data = self.window.project_data()
+
+    def tearDown(self):
+        if self.view:
+            self.view.set_scratch(True)
+            self.view.window().focus_view(self.view)
+            self.view.window().run_command("close_file")
+
+        self.window.set_project_data(self.old_data)
+
+    def all(self):
+        all_file = sublime.Region(0, self.view.size())
+        return self.view.substr(all_file)
+
+    def setText(self, string):
+        self.view.run_command("append", {"characters": string})
+
+
+class TestCaseBlackAsync(DeferrableTestCase):
     def setUp(self):
         self.window = sublime.active_window()
         self.view = self.window.new_file()
