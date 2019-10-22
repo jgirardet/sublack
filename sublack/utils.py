@@ -311,10 +311,10 @@ def use_pre_commit(precommit: Path) -> bool:
     """Returns True if black in .pre-commit-config.yaml"""
 
     if not precommit:
-        LOG.debug("No .pre-commit-config.yaml file found")
+        LOG.debug("No .pre-commit-config.yaml f ile found")
         return False
 
-    config = yaml.load(precommit.read_text())
+    config = yaml.load(precommit.read_text(), Loader=yaml.FullLoader)
     if not config:
         return False
 
