@@ -319,11 +319,11 @@ class TestPrecommit(TestCaseBlack):
 # @patch.object(sublack.blacker, "get_settings", return_value=TEST_BLACK_SETTINGS)
 # class TestCommandsAsync(TestCaseBlackAsync):
 #     def test_black_file_keeps_view_port_position(self, s, c):
-            
+
 
 #            ***** to enable if oneday it works with unittesting ******
 
-            
+
 #         content = (
 #             'a="'
 #             + "a" * int(self.view.viewport_extent()[0]) * 2

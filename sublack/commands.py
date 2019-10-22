@@ -43,7 +43,7 @@ class BlackFileCommand(sublime_plugin.TextCommand):
 
         Black(self.view)(edit)
 
-        # re apply view position 
+        # re apply view position
         # fix : https://github.com/jgirardet/sublack/issues/52
         # not tested : view.run_command doesn't reproduce bug in tests...
         sublime.set_timeout_async(

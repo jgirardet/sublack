@@ -28,6 +28,7 @@ Changelog
 
 comming:
 	fix scroll #52
+	fix getting good pyproject #57
 2.4.0:
 	Confirmation dialog  to `format all` is now by default.
 	Add folding support

@@ -11,6 +11,26 @@ import platform
 Path = sublack.utils.Path
 
 
+class View(str):
+    def __init__(self, window):
+        self._window = window
+
+    def window(self):
+        return self._window
+
+
+class Window:
+    def __init__(self, variables={}, folders=[]):
+        self._variables = variables
+        self._folders = folders
+
+    def extract_variables(self):
+        return self._variables  # {"project_path": T}
+
+    def folders(self):
+        return self._folders
+
+
 class TestUtils(TestCase):
     def test_settings(self):
         self.maxDiff = None
@@ -113,49 +133,84 @@ class TestUtils(TestCase):
         e = sublack.utils.get_encoding_from_file(MagicMock())
         self.assertEqual(e, "deuxieme ligne")
 
-    def test_find_pyproject(self):
-        class View(str):
-            @staticmethod
-            def window():
-                return View
-
-            @staticmethod
-            def extract_variables():
-                return {"project_path": T}
-
-            @staticmethod
-            def folders():
-                return []
-
+    def test_find_root_file_no_filename(self):
         with tempfile.TemporaryDirectory() as T:
-            # T = tempfile.TemporaryDirectory()
             root = Path(T)
+            view = View(Window())  # no file path
+            self.assertIsNone(sublack.utils.find_root_file(view, "some.file"))
 
-            view = View()
-
-            # nothing
-            self.assertIsNone(sublack.utils.find_root_file(view, "pyproject.toml"))
-            pp = root / "pyproject.toml"
-            pp.touch()
-            self.assertTrue(pp.exists())
-            # pyproject in project
-            self.assertEqual(
-                sublack.utils.find_root_file(view, "pyproject.toml"),
-                root / "pyproject.toml",
-            )
-
+    def test_find_root_file_no_folder(self):
         with tempfile.TemporaryDirectory() as T:
-            view = View()
-            deux = View()
-            deux.folders = lambda: [T]
-            view.extract_variables = lambda: {}
-            view.window = lambda: deux
-            # re nothing
-            self.assertIsNone(sublack.utils.find_root_file(view, "pyproject.toml"))
-            # pyproject in folders
-            root = Path(T) / "pyproject.toml"
-            root.touch()
-            self.assertEqual(sublack.utils.find_root_file(view, "pyproject.toml"), root)
+            root = Path(T)
+            view = View(Window({"file_path": "/bla/bla"}, []))  # no folder
+            self.assertIsNone(sublack.utils.find_root_file(view, "some.file"))
+
+    def test_find_root_file_no_folder_in_filepath(self):
+        with tempfile.TemporaryDirectory() as T:
+            root = Path(T)
+            view = View(
+                Window({"file_path": "/bla/bla"}, ["/ble"])
+            )  # root folder not in filepath
+            self.assertIsNone(sublack.utils.find_root_file(view, "some.file"))
+
+    def test_find_root_file_no_root_file(self):
+        with tempfile.TemporaryDirectory() as T:
+            root = Path(T)
+            view = View(Window({"file_path": str(Path(T, "working.py"))}, [T]))
+            self.assertIsNone(sublack.utils.find_root_file(view, "some.file"))
+
+    def test_find_root_file_all_in_root_folder(self):
+        with tempfile.TemporaryDirectory() as T:
+            root = Path(T)
+            pp = root / "some.file"
+            pp.touch()
+
+            view = View(Window({"file_path": str(Path(T, "working.py"))}, [T]))
+            self.assertEqual(sublack.utils.find_root_file(view, "some.file"), pp)
+
+    def test_find_root_file_filepath_in_subdirs(self):
+        with tempfile.TemporaryDirectory() as T:
+            root = Path(T)
+            pp = root / "some.file"
+            pp.touch()
+
+            view = View(
+                Window(
+                    {"file_path": str(Path(T, "some", "sub", "dirs", "working.py"))},
+                    [T],
+                )
+            )
+            self.assertEqual(sublack.utils.find_root_file(view, "some.file"), pp)
+
+    def test_find_root_file_filepath_in_subdirs_with_root_file(self):
+        with tempfile.TemporaryDirectory() as T:
+            common = Path(T, "some", "sub", "dirs")
+            common.mkdir(parents=True)
+            pp = common / "some.file"
+            pp.touch()
+
+            view = View(Window({"file_path": str(common / "working.py")}, [T]))
+            self.assertEqual(sublack.utils.find_root_file(view, "some.file"), pp)
+
+    def test_find_root_file_find_closest(self):
+        with tempfile.TemporaryDirectory() as T:
+
+            root = Path(T)
+            pp = root / "some.file"
+            pp.touch()
+
+            sub = root / "some" / "sub"
+            sub.mkdir(parents=True)
+            subpp = sub / "some.file"
+            subpp.touch()
+
+            view = View(
+                Window(
+                    {"file_path": str(Path(T, "some", "sub", "dirs", "working.py"))},
+                    [T],
+                )
+            )
+            self.assertEqual(sublack.utils.find_root_file(view, "some.file"), subpp)
 
     def test_read_pyproject(self):
         normal = '[other]\nbla = "bla"\n\n[tool.black]\nfast = true\nline-length = 1'

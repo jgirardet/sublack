@@ -226,18 +226,29 @@ def check_blackd_on_http(port, host="localhost"):
 def find_root_file(view, filename):
     """Only search in projects and folders since pyproject.toml/precommit, ... should be nowhere else"""
     window = view.window()
-    variables = window.extract_variables()
-    # project path
-    path = Path(variables.get("project_path", "")) / filename
-    if path.exists():
-        # LOG.debug("%s path %s", filename, path)
-        return path
+
+    filepath = window.extract_variables().get("file_path", None)
+    if not filepath:
+        return
+    filepath = Path(filepath)
 
     # folders
-    folders = window.folders()
-    for path in folders:
+    folders = []
+    for f in window.folders():
+        p = Path(f)
+        if p in filepath.parents:
+            folders.append(p)
+
+    if folders:
+        root = min(folders)
+    else:
+        return
+
+    for parent in filepath.parents:
         # LOG.debug("Folders : %s", path)
-        path = Path(path) / filename
+        if parent < root:
+            break
+        path = Path(parent) / filename
         if path.exists():
 
             LOG.debug("%s path %s", filename, path)
@@ -261,6 +272,8 @@ def find_pyproject(view):
         cur_fil = Path(fname)
     except AttributeError:
         return
+
+    # La suite fait probablement doublon avec find_root_file
 
     for folder in cur_fil.parents:
         if (folder / "pyproject.toml").is_file():
