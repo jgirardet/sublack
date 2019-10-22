@@ -32,10 +32,8 @@ def plugin_loaded():
     # load config
     current_view = sublime.active_window().active_view()
     config = get_settings(current_view)
-    print(config)
     if config["black_log"] == None:
         config["black_log"] = "info"
-    print(config)
     # Setup  logging
     if not LOG.handlers:
         debug_formatter = logging.Formatter(
