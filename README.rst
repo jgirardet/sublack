@@ -117,7 +117,7 @@ Black specifics options
     Force use of python 3.6 only syntax. Default is Black-s default.
 
 * black_target_version:
-    Python versions that should be supported by Black's output.
+    Python versions that should be supported by Black's output. You should enter it as a list ex : ["py37"]
 
 
 Sublack specifics options
