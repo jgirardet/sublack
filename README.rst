@@ -141,7 +141,7 @@ Sublack specifics options
 * black_blackd_server_host:
     default = "localhost",
 
-* black_blackd_server_port:
+* black_blackd_port:
     default = "45484"
 
 * black_blackd_autostart:
