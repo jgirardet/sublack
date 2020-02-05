@@ -28,7 +28,7 @@ Installation
        pip install black # Requires python 3.6
        or pip install black[d] # for blackd support
 
-#. In PackageControl just find ``sublack``, and that's it !
+#. In PackageControl just find ``sublack``, and that's it!
 
 or
 
@@ -40,7 +40,7 @@ Without PackageControl  install manually by navigating to Sublime's `Packages` f
 Usage
 -----
 
-* Run Black on current file:
+* Run Black on the current file:
     Press `Ctrl-Alt-B` to format the entire file.
     You can also `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Format file`.
 
@@ -53,7 +53,7 @@ Usage
     Press `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Toggle black on save for current view`.
 
 * run Black Format All :
-    Press `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Format All`. Run black against each root folder  in a standard way (without taking care of sublack options and configuration). Same thing as running `black .` being in the folder.
+    Press `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Format All`. Run black against each root folder in a standard way (without taking care of sublack options and configuration). Same thing as running `black .` being in the folder.
 
 * Start Blackd Server :
     Press `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Start BlackdServer`.
@@ -65,9 +65,9 @@ Usage
 Blackd Mode
 -----------
 
-Sublack supports blackd. If option `black_use_blackd` is to true, Sublack will use blackd (and not black) according the 'host' and 'port' configuration.
+Sublack supports blackd. If option `black_use_blackd` is to true, Sublack will use blackd (and not black) according to the 'host' and 'port' configuration.
 
-You can run blackd from SublimeText manually via `Start Blackd Server` command or automatically at sublimetext start via setting `black_blackd_autostart` to true.
+You can run blackd from SublimeText manually via `Start Blackd Server` command or automatically at SublimeText start via setting `black_blackd_autostart` to true.
 
 Blackd server started via SublimeText can be stopped manually via the `Stop Blackd Server` command or automatically at sublime's exit.
 
@@ -83,7 +83,7 @@ Diff is always run with black.
 Pre-commit integration
 ----------------------
 
-You can choose tu run Black via pre-commit by setting `black_use_precommit` to `true`. Sublack settings will be ignored.
+You can choose to run Black via pre-commit by setting `black_use_precommit` to `true`. Sublack settings will be ignored.
 
 
 Settings
@@ -91,9 +91,9 @@ Settings
 
 Sublack will always look for settings in the following order:
  - First in a pyproject.toml file
- - Second in project file : first with sublack prefix then in a subsetting (see Project settings).
+ - Second in the project file: first with sublack prefix then in a subsetting (see Project settings).
  - Then in Users global settings
- - finally in sublack's default settings
+ - Finally in Sublack's default settings
 
 
 Global settings
@@ -114,7 +114,7 @@ Black specifics options
     Don't normalize string quotes or prefixes. Default = false.
 
 * black_py36[Deprecated]:
-    Force use of python 3.6 only syntax. Default is Black-s default.
+    Force use of python 3.6 only syntax. The default is Black-s default.
 
 * black_target_version:
     Python versions that should be supported by Black's output. You should enter it as a list ex : ["py37"]
@@ -127,7 +127,7 @@ Sublack specifics options
     Set custom location. Default = "black".
 
 * black_on_save:
-    Black is always run before saving file. Default = false.
+    Black is always run before saving the file. Default = false.
 
 * black_log:
     Show non error messages in console. Default = info.
@@ -136,7 +136,7 @@ Sublack specifics options
     Should not be changed. Only needed on some OSX platforms.
 
 * black_use_blackd:
-    Use blackd instead of black. Default is false.
+    Use blackd instead of black. Default = false.
 
 * black_blackd_server_host:
     default = "localhost",
@@ -145,7 +145,7 @@ Sublack specifics options
     default = "45484"
 
 * black_blackd_autostart:
-    Automaticaly run blackd in the background wen sublime starts. default is false.
+    Automatically run blackd in the background wen sublime starts. default is false.
 
 * black_use_precommit:
     run black via pre-commit hook.
@@ -183,7 +183,7 @@ A sublack subsettings is still possible:
 pyproject.toml settings
 ***********************
 
-Sublack support use of black configuration in pyproject.toml. Be aware that global/project settings will BE OVERRIDEN by pyproject.toml's settings.
+Sublack supports the use of black configuration in pyproject.toml. Be aware that global/project settings will BE OVERRIDDEN by pyproject.toml's settings.
 Sublack will look for this file in your `project directory` then in your root folder(s).
 See `black about pyproject.toml <https://github.com/ambv/black/#pyprojecttoml>`_ .
 
@@ -191,7 +191,7 @@ See `black about pyproject.toml <https://github.com/ambv/black/#pyprojecttoml>`_
 Code folding
 ------------
 
-Sublack tries to keep code folding as before reformatting. SublimeText only support python3.3 syntax. For newer syntax (ex await/async), you have to set
+Sublack tries to keep code folding as before reformatting. SublimeText only supports python3.3 syntax. For newer syntax (ex await/async), you have to set
 the `python_interpreter` setting.
 
 .. code-block:: json
@@ -206,7 +206,7 @@ the `python_interpreter` setting.
 Sublime Linter integration
 --------------------------
 
-You can install `SublimeLinter-addon-black-for-flake <https://github.com/kaste/SublimeLinter-addon-black-for-flake>`_. The plugin will auto configure flake8 and mute all warnings black can actually fix.
+You can install `SublimeLinter-addon-black-for-flake <https://github.com/kaste/SublimeLinter-addon-black-for-flake>`_. The plugin will auto-configure flake8 and mute all warnings black can actually fix.
 
 
 Issues
@@ -232,11 +232,11 @@ Contributing
 
 * remove sublack via Package Control.
 * fork sublack
-* clone your sublack fork  to your Packages folder (Preferences -->  Browse Packages...).
+* clone your sublack fork to your Packages folder (Preferences -->  Browse Packages...).
 * Package Control: Satisfy Dependencies (install requests)
 * install UnitTesting in Package Control
 * adding a test for new features or bugfix is really nice if you can.
-* add your name to Authors in readme.
+* add your name to Authors in the readme.
 
 
 Authors
@@ -244,7 +244,7 @@ Authors
 
 Laboriously coded by Jimmy Girardet
 
-contributions by:
+Contributions by:
 
 * `nicokist <https://github.com/nicokist>`_
 * `mschneiderwind <https://github.com/mschneiderwind>`_
