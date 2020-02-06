@@ -167,7 +167,7 @@ class BlackEventListener(sublime_plugin.EventListener):
 
 class BlackFormatAllCommand(sublime_plugin.WindowCommand):
     def is_enabled(self):
-        return is_python(self.view)
+        return is_python(self.window.active_view())
 
     is_visible = is_enabled
 
