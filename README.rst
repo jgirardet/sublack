@@ -253,6 +253,7 @@ Contributions by:
 * `Jacobi Petrucciani  <https://github.com/jpetrucciani>`_
 * `Herr Kaste <https://github.com/kaste>`_ 
 * `Martinj Peters <https://github.com/mjpieters>`_
+* `Cyrus Yip <https://github.com/realcyguy>`_
 
 
 Todo
