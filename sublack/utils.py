@@ -86,8 +86,9 @@ def get_on_save_fast(view):
     if flat_settings.has("sublack.black_on_save"):
         return flat_settings.get("sublack.black_on_save")
 
-    if "black_on_save" in flat_settings.get(PACKAGE_NAME, {}):
-        return flat_settings.has("sublack.black_on_save")
+    as_subsetting = flat_settings.get(PACKAGE_NAME, {})
+    if "black_on_save" in as_subsetting:
+        return as_subsetting["black_on_save"]
 
     return sublime.load_settings(SETTINGS_FILE_NAME).get("black_on_save")
 
