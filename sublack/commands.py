@@ -173,7 +173,10 @@ class BlackFormatAllCommand(sublime_plugin.WindowCommand):
 
     def run(self):
         if get_settings(self.window.active_view())["black_confirm_formatall"]:
-            if not sublime.ok_cancel_dialog("Sublack : Format all ?"):
+            if not sublime.ok_cancel_dialog(
+                "Sublack: Format all?\nInfo: It runs black without sublack "
+                "(ignoring sublack Options and Configuration)."
+            ):
                 return
 
         folders = self.window.folders()
