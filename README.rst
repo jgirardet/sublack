@@ -10,7 +10,7 @@ sublack
 
 `Black`_ integration for SublimeText
 
-* License : GNU General Public License v3 or later (GPLv3+) 
+* License : GNU General Public License v3 or later (GPLv3+)
 * Source: https://github.com/jgirardet/sublack
 
 
@@ -24,7 +24,7 @@ Installation
 ------------
 
 #. Install `Black`_ min (19.3b0) (if you haven't already)::
-   
+
        pip install black # Requires python 3.6
        or pip install black[d] # for blackd support
 
@@ -98,7 +98,7 @@ Sublack will always look for settings in the following order:
 
 Global settings
 ***************
-Preferences -> Package Settings -> sublack -> settings : 
+Preferences -> Package Settings -> sublack -> settings :
 
 
 Black specifics options
@@ -224,19 +224,19 @@ This plugin is very inspired by the very good `PyYapf <https://github.com/jason-
 Changelog
 ---------
 
-see `install.txt <messages/install.txt>`_ 
+see `install.txt <messages/install.txt>`_
 
 
 Contributing
 ------------
 
-* remove sublack via Package Control.
-* fork sublack
-* clone your sublack fork to your Packages folder (Preferences -->  Browse Packages...).
-* Package Control: Satisfy Dependencies (install requests)
-* install UnitTesting in Package Control
-* adding a test for new features or bugfix is really nice if you can.
-* add your name to Authors in the readme.
+* Remove sublack via Package Control.
+* Fork sublack
+* Clone your sublack fork to your Packages folder (Preferences -->  Browse Packages...).
+* Preferences --> Package Control: Satisfy Dependencies (install requests)
+* Install UnitTesting in Package Control
+* Adding a test for new features or bugfix is really nice if you can.
+* Add your name to Authors in the readme.
 
 
 Authors
@@ -251,9 +251,10 @@ Contributions by:
 * `catch22 <https://github.com/catch22>`_
 * `Thom1729  <https://github.com/Thom1729>`_
 * `Jacobi Petrucciani  <https://github.com/jpetrucciani>`_
-* `Herr Kaste <https://github.com/kaste>`_ 
+* `Herr Kaste <https://github.com/kaste>`_
 * `Martinj Peters <https://github.com/mjpieters>`_
 * `Cyrus Yip <https://github.com/realcyguy>`_
+* `Georgios Samaras <https://github.com/gsamaras>`_
 
 
 Todo
@@ -262,4 +263,4 @@ Todo
 - cors
 - refactor popen
 
-.. _Black : https://github.com/ambv/black 
+.. _Black : https://github.com/ambv/black
