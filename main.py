@@ -3,6 +3,7 @@ Sublack
 
 Order of imports should not be changed
 """
+
 import logging
 import sublime
 import os
@@ -20,6 +21,7 @@ from .sublack import (
     BlackdStartCommand,
     BlackdStopCommand,
     BlackFormatAllCommand,
+    utils
 )  # flake8: noqa
 
 LOG = logging.getLogger(PACKAGE_NAME)
@@ -32,6 +34,9 @@ def plugin_loaded():
     # load config
     current_view = sublime.active_window().active_view()
     config = get_settings(current_view)
+    if not config:
+        LOG.error("Settings were not loaded")
+        return
     if config["black_log"] == None:
         config["black_log"] = "info"
     # Setup  logging
@@ -61,9 +66,14 @@ def plugin_loaded():
     # clear cache
     clear_cache()
 
-    # # check blackd autostart
+    # check blackd autostart
     if config["black_blackd_autostart"]:
-        sublime.set_timeout_async(lambda: current_view.run_command("blackd_start"), 0)
+
+        def _blackd_start():
+            from .sublack import utils
+            utils.start_blackd_server(current_view)
+
+        sublime.set_timeout_async(_blackd_start, 0)
 
     # watch for loglevel change
     sublime.load_settings(SETTINGS_FILE_NAME).add_on_change(

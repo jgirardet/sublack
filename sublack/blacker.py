@@ -88,7 +88,9 @@ class Blackd:
             return 0, response.content, b"1 file left unchanged"
 
         elif response.status_code in [400, 500]:
-            return -1, b"", response.content
+            return -1, response.content, b"unknown error"
+
+        return -1, response.content, b"no valid response"
 
     def process_errros(self, msg):
         response = requests.Response()
@@ -102,19 +104,18 @@ class Blackd:
         self.headers.update(
             {"Content-Type": "application/octet-stream; charset=" + self.encoding}
         )
-        url = (
-            "http://"
-            + self.config["black_blackd_host"]
-            + ":"
-            + self.config["black_blackd_port"]
-            + "/"
+        url = "http://{h}:{p}/".format(
+            h=self.config['black_blackd_host'],
+            p=self.config['black_blackd_port']
         )
         try:
+            LOG.info("Requesting url: {url}".format(url=url))
             response = requests.post(url, data=self.content, headers=self.headers)
         except requests.ConnectionError as err:
 
-            msg = "blackd not running on port {}".format(
-                self.config["black_blackd_port"]
+            LOG.critical("Connection error:\n {err}".format(err=err))
+            msg = "blackd not running on port {p}".format(
+                p=self.config["black_blackd_port"]
             )
             response = self.process_errros(msg)
             sublime.message_dialog(msg + ", you can start it with blackd_start command")

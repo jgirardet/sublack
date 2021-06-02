@@ -1,12 +1,16 @@
 import re
 import sublime
 from .consts import (
+    BLACKD_ALREADY_RUNNING,
+    BLACKD_START_FAILED,
+    BLACKD_STARTED,
     CONFIG_OPTIONS,
     ENCODING_PATTERN,
     KEY_ERROR_MARKER,
     PACKAGE_NAME,
     SETTINGS_FILE_NAME,
     SETTINGS_NS_PREFIX,
+    STATUS_KEY,
 )
 
 import pathlib
@@ -56,6 +60,43 @@ def timed(fn):
         return rev
 
     return to_time
+
+
+def start_blackd_server(view):
+    LOG.debug("start_blackd_server executed")
+    if view is None:
+        LOG.debug("No valid view found!")
+        return
+
+    from .server import BlackdServer
+
+    started = None
+    settings = get_settings(view)
+    port = settings["black_blackd_port"]
+    if not port:
+        LOG.critical("No valid port given: {p}".format(p=port))
+        return
+
+    running, port_free = check_blackd_on_http(port)
+    if running:
+        LOG.info(BLACKD_ALREADY_RUNNING.format(port))
+        view.set_status(STATUS_KEY, BLACKD_ALREADY_RUNNING.format(port))
+        return
+    elif port_free:
+
+        LOG.info("Creating new BlackdServer")
+        blackd_server = BlackdServer(
+            deamon=True, host="localhost", port=port, settings=settings
+        )
+        started = blackd_server.run()
+
+    if started:
+
+        LOG.info(BLACKD_STARTED.format(port))
+        view.set_status(STATUS_KEY, BLACKD_STARTED.format(port))
+    else:
+        LOG.info(BLACKD_START_FAILED.format(port))
+        view.set_status(STATUS_KEY, BLACKD_START_FAILED.format(port))
 
 
 def match_exclude(view):
@@ -369,8 +410,7 @@ def is_python3_executable(python_executable, default_shell=None):
 
 
 def find_python3_executable():
-    if sublime.platform() == "windows":
-        pythons = []
+    if sublime.platform().lower() == "windows":
         # where could return many lines
         try:
             pythons = subprocess.check_output("where python", shell=True).decode()
@@ -378,6 +418,7 @@ def find_python3_executable():
             return False
 
         for python_executable in pythons.splitlines():
+            LOG.debug("python_executable = {}".format(python_executable))
             if is_python3_executable(python_executable):
                 return python_executable.strip()
 

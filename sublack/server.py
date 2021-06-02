@@ -1,9 +1,9 @@
-import subprocess
+# import subprocess
 import sublime
 import requests
 import time
-import os
-import sys
+# import os
+# import sys
 import tempfile
 import logging
 from .utils import (
@@ -32,14 +32,36 @@ class BlackdServer:
         self.timeout = kwargs.get("timeout", 5)
         self.sleep_time = kwargs.get("sleep_time", 0.1)
         default_watched = (
-            "plugin_host.exe" if sublime.platform() == "windows" else "plugin_host"
+            "plugin_host-33.exe" if sublime.platform() == "windows" else "plugin_host-33"
         )
         self.watched = kwargs.get("watched", default_watched)
         self.checker_interval = kwargs.get("checker_interval", None)
         self.settings = kwargs.get("settings", None)
 
         self.platform = sublime.platform()
-        LOG.debug("New blackdServer instance with params : %s", vars(self))
+        _depth_count = 0
+        def _format_log_data(data):
+            nonlocal _depth_count
+            _depth_count += 1
+            message = ""
+            for key, value in data.items():
+
+                if isinstance(value, dict):
+                    message = "{msg}\n - {k}:{v}".format(
+                        msg=message, k=key, v=_format_log_data(value)
+                    )
+
+                else:
+
+                    dash_string = "-" * _depth_count
+                    message = "{msg}\n {ds} {k}: {v}".format(msg=message, ds=dash_string, k=key, v=value)
+
+            _depth_count -= 1
+
+            return message
+
+        log_message = "New blackdServer instance with params: {data}".format(data=_format_log_data(vars(self)))
+        LOG.debug(log_message)
 
     def is_running(self, timeout=None, sleep_time=None):
         # check server running
@@ -93,14 +115,17 @@ class BlackdServer:
                 LOG.debug("port checked, seems free")
                 return True  #  server not running, port free
             else:
-                msg("Fail to start blackd port %s seems busy", self.port)
+                msg = ("Fail to start blackd port %s seems busy", self.port)
                 LOG.debug(msg)
         return False
 
     def _run_blackd(self, cmd):
         running = None
 
-        LOG.debug("Starting blackd with args %s", cmd)
+        log_message = "Starting blackd with args:"
+        for value in cmd:
+            log_message = "{lm}\n - {v}".format(lm=log_message, v=value)
+        LOG.debug(log_message)
 
         if not self.blackd_is_runnable():
             return self.proc, False
@@ -110,9 +135,9 @@ class BlackdServer:
         if self.is_running(timeout=5):
             running = True
         else:
-            out, err = self.proc.communicate(timeout=1)
+            _, err = self.proc.communicate(timeout=1)
 
-            LOG.error(b"blackd start error %s", err)  # show stderr
+            LOG.error("blackd start error {err}".format(err))  # show stderr
 
         return self.proc, running
 
@@ -136,8 +161,7 @@ class BlackdServer:
             self.write_cache(self.proc.pid)
 
             python_executable = get_python3_executable(self.settings)
-            LOG.debug("python_executable found : %s", python_executable)
-
+            LOG.debug("Python executable found : {pyex}".format(pyex=python_executable))
             checker = tempfile.NamedTemporaryFile(suffix="checker.py", delete=False)
             with checker:
                 checker.write(
@@ -145,7 +169,7 @@ class BlackdServer:
                         "utf8"
                     )
                 )
-            LOG.debug("checker tempfile: %s", checker.name)
+            LOG.debug("Checker tempfile: {name}".format(name=checker.name))
             checker_cmd = [
                 python_executable,
                 checker.name,
@@ -157,7 +181,7 @@ class BlackdServer:
             checker_cmd = (
                 checker_cmd
                 if not self.checker_interval
-                else checker_cmd + [str(self.checker_interval)]
+                else checker_cmd.append(str(self.checker_interval))
             )
 
             if python_executable:
