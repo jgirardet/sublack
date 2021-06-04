@@ -2,37 +2,37 @@
 """
 Sublime Text 3 Plugin to invoke Black on a Python file.
 """
-import os.path
+
 import os
-import subprocess
-
-import sublime
-
 import requests
-import logging
+import sublime
+import subprocess
 
 from .consts import (
     HEADERS_TABLE,
     ALREADY_FORMATTED_MESSAGE,
     ALREADY_FORMATTED_MESSAGE_CACHE,
     STATUS_KEY,
-    PACKAGE_NAME,
     REFORMATTED_MESSAGE,
 )
 from .utils import (
-    get_settings,
-    get_encoding_from_file,
     cache_path,
     find_root_file,
-    use_pre_commit,
-    Path,
+    format_log_data,
+    get_encoding_from_file,
     get_env,
+    get_log,
+    get_settings,
+    has_blackd_started,
+    is_windows,
+    Path,
+    use_pre_commit,
 )
 
 from .folding import get_folded_lines, get_ast_index, refold_all
 
 
-LOG = logging.getLogger(PACKAGE_NAME)
+# self.log = logging.getLogger(PACKAGE_NAME)
 
 
 class Blackd:
@@ -44,6 +44,11 @@ class Blackd:
         self.content = content
         self.encoding = encoding
         self.config = config
+
+    @property
+    def log(self):
+
+        return get_log()
 
     def format_headers(self, cmd):
 
@@ -72,7 +77,7 @@ class Blackd:
         if targets:
             headers["X-Python-Variant"] = ",".join(targets)
 
-        LOG.debug("headers : %s", headers)
+        self.log.debug("headers : %s", headers)
         return headers
 
     def process_response(self, response):
@@ -80,7 +85,7 @@ class Blackd:
 
         returncode(int), out(byte), err(byte)
         """
-        LOG.debug("Response status code : %s", response.status_code)
+        self.log.debug("Response status code : %s", response.status_code)
         if response.status_code == 200:
             return 0, response.content, b"1 file reformatted"
 
@@ -92,36 +97,34 @@ class Blackd:
 
         return -1, response.content, b"no valid response"
 
-    def process_errros(self, msg):
+    def process_errors(self, msg):
         response = requests.Response()
         response.status_code = 500
-        LOG.error(msg)
+        self.log.error(msg)
         response._content = msg.encode()
         return response
 
     def __call__(self):
 
-        self.headers.update(
-            {"Content-Type": "application/octet-stream; charset=" + self.encoding}
-        )
-        url = "http://{h}:{p}/".format(
-            h=self.config['black_blackd_host'],
-            p=self.config['black_blackd_port']
-        )
-        try:
-            LOG.info("Requesting url: {url}".format(url=url))
-            response = requests.post(url, data=self.content, headers=self.headers)
-        except requests.ConnectionError as err:
+        if not has_blackd_started():
+            self.log.debug("Black server has not finished initializing!")
+            return None, None, None
 
-            LOG.critical("Connection error:\n {err}".format(err=err))
-            msg = "blackd not running on port {p}".format(
-                p=self.config["black_blackd_port"]
-            )
-            response = self.process_errros(msg)
-            sublime.message_dialog(msg + ", you can start it with blackd_start command")
+        self.headers.update({"Content-Type": "application/octet-stream; charset={}".format(self.encoding)})
+        url = "http://{h}:{p}/".format(h=self.config["black_blackd_host"], p=self.config["black_blackd_port"])
+        try:
+            self.log.info("Requesting url: {url}".format(url=url))
+            response = requests.post(url, data=self.content, headers=self.headers)
+
+        except requests.ConnectionError as err:
+            self.log.critical("Connection error:\n {err}".format(err=err))
+            msg = "blackd not running on port {p}".format(p=self.config["black_blackd_port"])
+            response = self.process_errors(msg)
+            sublime.message_dialog("{}, you can start it with blackd_start command".format(msg))
+
         except Exception as err:
-            response = self.process_errros(str(err))
-            LOG.error("Request to  Blackd failed")
+            response = self.process_errors(str(err))
+            self.log.error("Request to Blackd failed")
 
         return self.process_response(response)
 
@@ -138,13 +141,17 @@ class Black:
         self.variables = view.window().extract_variables()
         self.formatted_cache = cache_path() / "formatted"
 
-        LOG.debug("config: %s", self.config)
+        self.log.debug("Config:\n{}".format(format_log_data(self.config)))
         if self.config["black_use_precommit"]:
-            self.pre_commit_config = use_pre_commit(
-                find_root_file(self.view, ".pre-commit-config.yaml")
-            )
+            root_file = find_root_file(self.view, ".pre-commit-config.yaml")
+            self.pre_commit_config = use_pre_commit(root_file)
         else:
             self.pre_commit_config = False
+
+    @property
+    def log(self):
+
+        return get_log()
 
     def get_command_line(self, edit, extra=[]):
         # prepare popen arguments
@@ -191,20 +198,17 @@ class Black:
 
         # black target-vversion
         if self.config.get("black_target_version"):
-            versions = []
             for v in self.config["black_target_version"]:
                 cmd.extend(["--target-version", v])
 
-        LOG.debug("command line: %s", cmd)
+        self.log.debug("command line: %s", cmd)
         return cmd
 
     def windows_popen_prepare(self):
         # win32: hide console window
-        if sublime.platform() == "windows":
+        if is_windows():
             startup_info = subprocess.STARTUPINFO()
-            startup_info.dwFlags = (
-                subprocess.CREATE_NEW_CONSOLE | subprocess.STARTF_USESHOWWINDOW
-            )
+            startup_info.dwFlags = subprocess.CREATE_NEW_CONSOLE | subprocess.STARTF_USESHOWWINDOW
             startup_info.wShowWindow = subprocess.SW_HIDE
         else:
             startup_info = None
@@ -223,7 +227,7 @@ class Black:
         content = self.view.substr(self.all)
         content = content.encode(encoding)
 
-        LOG.debug("encoding: %s", encoding)
+        self.log.debug("encoding: %s", encoding)
         return content, encoding
 
     def run_black(self, cmd, env, cwd, content):
@@ -242,18 +246,14 @@ class Black:
         except UnboundLocalError as err:  # unboud pour p si popen echoue
             msg = "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
             sublime.error_message("OSError: %s\n\n%s" % (err, msg))
-            raise OSError(
-                "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
-            )
+            raise OSError("You may need to install Black and/or configure 'black_command' in Sublack's Settings.")
 
         except OSError as err:  # unboud pour p si popen echoue
             msg = "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
             sublime.error_message("OSError: %s\n\n%s" % (err, msg))
-            raise OSError(
-                "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
-            )
+            raise OSError("You may need to install Black and/or configure 'black_command' in Sublack's Settings.")
 
-        LOG.debug("run_black: returncode %s, err: %s", p.returncode, err)
+        self.log.debug("run_black: returncode %s, err: %s", p.returncode, err)
         return p.returncode, out, err
 
     def do_diff(self, edit, out, encoding):
@@ -299,7 +299,7 @@ class Black:
 
             cache.seek(0)
             new = [str(hash(content)) + "|||" + str(cmd)]
-            LOG.debug("write to cache %s", str(new))
+            self.log.debug("write to cache %s", str(new))
 
             new_file = "\n".join((new + old))
             cache.write(new_file)
@@ -308,7 +308,7 @@ class Black:
     def finalize(self, edit, extra, returncode, out, err, content, cmd, encoding):
         error_message = err.decode(encoding).replace("\r\n", "\n").replace("\r", "\n")
 
-        LOG.debug("black says : %s" % error_message)
+        self.log.debug("Black returned: {}".format(error_message))
         # failure
         if returncode != 0:
             self.view.set_status(STATUS_KEY, error_message)
@@ -357,9 +357,9 @@ class Black:
         tmp.write_text(content)
 
         cmd.extend([str(tmp.resolve()), "--config", str(self.pre_commit_config)])
-        LOG.debug("cwd : %s", cwd)
-        LOG.debug(self.view.window().folders())
-        LOG.debug(cmd)
+        self.log.debug("cwd : %s", cwd)
+        self.log.debug(self.view.window().folders())
+        self.log.debug(cmd)
         try:
             a = subprocess.Popen(
                 cmd,
@@ -371,7 +371,7 @@ class Black:
             )
             print(a.stdout.read())
         except subprocess.CalledProcessError as err:
-            LOG.error(err)
+            self.log.error(err)
             return err
         except Exception as err:
             tmp.unlink()
@@ -385,15 +385,18 @@ class Black:
         # get command_line  + args
         content, encoding = self.get_content()
         cwd = self.get_good_working_dir()
-        LOG.debug("working dir: %s", cwd)
+        self.log.debug("Working dir: {}".format(cwd))
         env = get_env()
+        # self.log.debug("env: {}".format(env))
 
         if self.pre_commit_config:
-            LOG.debug("Using pre-commit with %s", self.pre_commit_config)
+            self.log.debug("Using pre-commit with {}".format(self.pre_commit_config))
             self.format_via_precommit(edit, content.decode(encoding), cwd, env)
             return
         else:
             cmd = self.get_command_line(edit, extra)
+
+        self.log.debug("cmd: {}".format(cmd))
 
         # check the cache
         # cache may not be used with pre-commit
@@ -403,13 +406,17 @@ class Black:
 
         # call black or balckd
 
-        if (
-            self.config["black_use_blackd"] and "--diff" not in extra
-        ):  # no diff with server
-            LOG.debug("using blackd")
+        if self.config["black_use_blackd"] and "--diff" not in extra:  # no diff with server
+
+            if not has_blackd_started():
+                self.log.debug("Black server has not finished initializing!")
+                return
+
+            self.log.debug("using blackd")
             returncode, out, err = Blackd(cmd, content, encoding, self.config)()
+
         else:
-            LOG.debug("using black")
+            self.log.debug("using black")
             returncode, out, err = self.run_black(cmd, env, cwd, content)
 
         # format/diff in editor

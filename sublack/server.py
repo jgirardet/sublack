@@ -1,22 +1,19 @@
-# import subprocess
 import sublime
 import requests
 import time
-# import os
-# import sys
-import tempfile
-import logging
+
 from .utils import (
     cache_path,
+    format_log_data,
+    get_log,
+    get_open_port,
+    get_python3_executable,
+    is_blackd_running_on_port,
+    is_port_free,
+    is_windows,
     kill_with_pid,
     popen,
-    get_open_port,
-    check_blackd_on_http,
-    get_python3_executable,
 )
-from .consts import PACKAGE_NAME
-
-LOG = logging.getLogger(PACKAGE_NAME)
 
 
 class BlackdServer:
@@ -25,6 +22,8 @@ class BlackdServer:
             self.port = str(get_open_port())
         else:
             self.port = port
+
+        self._blackd_cmd = None
         self.host = host
         self.proc = None
         self.deamon = deamon
@@ -32,36 +31,35 @@ class BlackdServer:
         self.timeout = kwargs.get("timeout", 5)
         self.sleep_time = kwargs.get("sleep_time", 0.1)
         default_watched = (
-            "plugin_host-33.exe" if sublime.platform() == "windows" else "plugin_host-33"
+            "plugin_host-3.3.exe" if is_windows() else "plugin_host-3.3"
         )
+        self.log.debug("default_watched: {dw}".format(dw=default_watched))
         self.watched = kwargs.get("watched", default_watched)
         self.checker_interval = kwargs.get("checker_interval", None)
         self.settings = kwargs.get("settings", None)
 
         self.platform = sublime.platform()
-        _depth_count = 0
-        def _format_log_data(data):
-            nonlocal _depth_count
-            _depth_count += 1
-            message = ""
-            for key, value in data.items():
+        self._depth_count = 0
 
-                if isinstance(value, dict):
-                    message = "{msg}\n - {k}:{v}".format(
-                        msg=message, k=key, v=_format_log_data(value)
-                    )
+        log_message = "New blackdServer instance with params: {data}".format(
+            data=format_log_data(vars(self))
+        )
+        self.log.debug(log_message)
 
-                else:
+    @property
+    def log(self):
 
-                    dash_string = "-" * _depth_count
-                    message = "{msg}\n {ds} {k}: {v}".format(msg=message, ds=dash_string, k=key, v=value)
+        return get_log()
 
-            _depth_count -= 1
+    @property
+    def blackd_cmd(self):
 
-            return message
+        if self._blackd_cmd is None:
 
-        log_message = "New blackdServer instance with params: {data}".format(data=_format_log_data(vars(self)))
-        LOG.debug(log_message)
+            self._blackd_cmd = "{cmd}d".format(cmd=self.settings["black_command"]) if self.settings else "blackd"
+            self.log.debug("Setting {cmd} as blackd command".format(cmd=self._blackd_cmd))
+
+        return self._blackd_cmd
 
     def is_running(self, timeout=None, sleep_time=None):
         # check server running
@@ -71,136 +69,100 @@ class BlackdServer:
         while time.time() - started < timeout:  # timeout 5 s
 
             try:
-                requests.post("http://" + self.host + ":" + self.port)
+                requests.post("http://{h}:{p}/".format(h=self.host, p=self.port))
             except requests.ConnectionError:
                 time.sleep(sleep_time)
             else:
-                LOG.info(
-                    "blackd running at %s on port %s with pid %s",
-                    self.host,
-                    self.port,
-                    getattr(self.proc, "pid", None),
+                self.log.info(
+                    "blackd running at {h} on port {p} with pid {pid}".format(
+                        h=self.host,
+                        p=self.port,
+                        pid=getattr(self.proc, "pid", None),
+                    )
                 )
 
                 return True
-        LOG.error("blackd not running at %s on port %s", self.host, self.port)
+        self.log.error(
+            "blackd not running at {h} on port {p} with pid {pid}".format(
+                h=self.host,
+                p=self.port,
+            )
+        )
         return False
 
     def write_cache(self, pid):
         with self.pid_path.open("w") as f:
             f.write(str(pid))
-        LOG.debug('pid cache updated to "%s"', pid)
+        self.log.debug('pid cache updated to "%s"', pid)
 
     def get_cached_pid(self):
         try:
             pid = int(self.pid_path.open().read())
         except ValueError:
-            LOG.debug("get_cached_pid: No pid in cache")
+            self.log.debug("get_cached_pid: No pid in cache")
             return
         except FileNotFoundError:
-            LOG.debug("get_cached_pid: Cache file not found")
+            self.log.debug("get_cached_pid: Cache file not found")
             return
         else:
-            LOG.debug("get_cached_pid: %s", pid)
+            self.log.debug("get_cached_pid: %s", pid)
             return pid
 
     def blackd_is_runnable(self):
 
-        http_state = check_blackd_on_http(self.port)
-        if http_state[0]:
-            msg = "Blackd already running en port {}".format(self.port)
-            LOG.warning(msg + " aborting..")
+        if is_port_free(self.port):
+            self.log.debug("Port: {} checked, is free".format(self.port))
+            return True
+
+        if is_blackd_running_on_port(self.port):
+            self.log.warning("{} - aborting!".format("Blackd already running on port {}".format(self.port)))
+
         else:
-            if http_state[1]:
-                LOG.debug("port checked, seems free")
-                return True  #  server not running, port free
-            else:
-                msg = ("Fail to start blackd port %s seems busy", self.port)
-                LOG.debug(msg)
+            self.log.debug("Failed to start blackd - port: {} is busy".format(self.port))
+
         return False
 
     def _run_blackd(self, cmd):
         running = None
-
         log_message = "Starting blackd with args:"
         for value in cmd:
             log_message = "{lm}\n - {v}".format(lm=log_message, v=value)
-        LOG.debug(log_message)
+
+        self.log.debug(log_message)
 
         if not self.blackd_is_runnable():
             return self.proc, False
 
         self.proc = popen(cmd)
-
         if self.is_running(timeout=5):
             running = True
+
         else:
             _, err = self.proc.communicate(timeout=1)
-
-            LOG.error("blackd start error {err}".format(err))  # show stderr
+            self.log.error("blackd start error {err}".format(err))  # show stderr
 
         return self.proc, running
-
-    @property
-    def blackd_cmd(self):
-        blackd = self.settings["black_command"] + "d" if self.settings else "blackd"
-        LOG.debug("using %s as blackd command", blackd)
-        return blackd
 
     def run(self):
 
         cmd = [self.blackd_cmd, "--bind-port", self.port]
-
         self.proc, running = self._run_blackd(cmd)
 
         if not running:
+            self.log.error("Server not running!")
             return False
 
         if self.deamon:
 
             self.write_cache(self.proc.pid)
-
             python_executable = get_python3_executable(self.settings)
-            LOG.debug("Python executable found : {pyex}".format(pyex=python_executable))
-            checker = tempfile.NamedTemporaryFile(suffix="checker.py", delete=False)
-            with checker:
-                checker.write(
-                    sublime.load_resource("Packages/sublack/sublack/checker.py").encode(
-                        "utf8"
-                    )
-                )
-            LOG.debug("Checker tempfile: {name}".format(name=checker.name))
-            checker_cmd = [
-                python_executable,
-                checker.name,
-                self.watched,
-                str(self.proc.pid),
-            ]
-
-            # set timeout of interval
-            checker_cmd = (
-                checker_cmd
-                if not self.checker_interval
-                else checker_cmd.append(str(self.checker_interval))
-            )
-
-            if python_executable:
-                LOG.debug("Running checker with args %s", checker_cmd)
-                self.checker = popen(checker_cmd)
-                LOG.info("Blackd Checker running with pid %s", self.checker.pid)
-            else:
-                sublime.error_message(
-                    "Sublack: Checker didn't start successfull."
-                    "You will have to run manually Stop Blackd before leaving sublime_text to stop blackd. "
-                    "you can set 'black_log' to 'debug', and add an issue to sublack to help fix it"
-                    "This maybe related to https://github.com/jgirardet/sublack/issues/35"
-                )
+            self.log.debug("Python executable found : {pyex}".format(pyex=python_executable))
 
         return True
 
     def stop(self, pid=None):
         if self.proc:
-            if sublime.platform() == "windows":
+            if is_windows():
                 kill_with_pid(self.proc.pid)
             else:
                 self.proc.terminate()
@@ -208,14 +170,14 @@ class BlackdServer:
         else:
             kill_with_pid(pid)
 
-        LOG.info("blackd stopped")
+        self.log.info("blackd stopped")
 
     def stop_deamon(self):
-        LOG.debug("blackdServer stopping deamon")
+        self.log.debug("blackdServer stopping deamon")
         pid = self.get_cached_pid()
         if pid:
             self.stop(pid)
             self.write_cache("")
             return pid
         else:
-            LOG.error("No blackd deamon could be stop since no pid cached")
+            self.log.error("No blackd deamon could be stop since no pid cached")

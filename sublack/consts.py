@@ -23,6 +23,7 @@ CONFIG_OPTIONS = [
     "black_command",
     "black_on_save",
     "black_log",
+    "black_log_to_file",
     "black_default_encoding",
     "black_py36",
     "black_target_version",

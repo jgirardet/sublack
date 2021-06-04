@@ -6,76 +6,81 @@ Order of imports should not be changed
 
 import logging
 import sublime
-import os
+import sublime_plugin
+
+from . import sublack
 from .sublack import (
-    PACKAGE_NAME,
-    SETTINGS_FILE_NAME,
-    get_settings,
-    cache_path,
-    clear_cache,
-    Path,
-    BlackFileCommand,
     BlackDiffCommand,
-    BlackToggleBlackOnSaveCommand,
-    BlackEventListener,
     BlackdStartCommand,
     BlackdStopCommand,
+    BlackFileCommand,
     BlackFormatAllCommand,
-    utils
-)  # flake8: noqa
-
-LOG = logging.getLogger(PACKAGE_NAME)
-
-if not os.environ.get("CI", None):
-    LOG.propagate = False
+    BlackToggleBlackOnSaveCommand,
+)
 
 
 def plugin_loaded():
+
     # load config
     current_view = sublime.active_window().active_view()
-    config = get_settings(current_view)
-    if not config:
-        LOG.error("Settings were not loaded")
-        return
-    if config["black_log"] == None:
-        config["black_log"] = "info"
-    # Setup  logging
-    if not LOG.handlers:
-        debug_formatter = logging.Formatter(
-            "[{}:%(filename)s](%(levelname)s) %(message)s".format(PACKAGE_NAME)
-        )
-        dh = logging.StreamHandler()
-        dh.setLevel(logging.DEBUG)
-        dh.setFormatter(debug_formatter)
-        LOG.addHandler(dh)
+    settings = sublack.get_settings(current_view)
+    if not settings:
+        raise IOError("Settings were not loaded!")
 
-    try:
-        LOG.setLevel(config.get("black_log").upper())
-    except ValueError as err:  # https://forum.sublimetext.com/t/an-odd-problem-about-sublime-load-settings/30335/6
-        LOG.error(err)
-        LOG.setLevel("ERROR")
-        LOG.error("fallback to loglevel ERROR")
-
-    LOG.info("Loglevel set to %s", config["black_log"].upper())
-
-    # check cache_path
-    cp = cache_path()
+    sublack.get_log(settings=settings)
+    # check sublack.cache_path
+    cp = sublack.cache_path()
     if not cp.exists():
         cp.mkdir()
 
     # clear cache
-    clear_cache()
+    sublack.clear_cache()
 
     # check blackd autostart
-    if config["black_blackd_autostart"]:
-
+    if settings["black_blackd_autostart"]:
         def _blackd_start():
-            from .sublack import utils
-            utils.start_blackd_server(current_view)
+            sublack.start_blackd_server(current_view)
 
         sublime.set_timeout_async(_blackd_start, 0)
 
     # watch for loglevel change
-    sublime.load_settings(SETTINGS_FILE_NAME).add_on_change(
-        "black_log", lambda: Path(__file__).touch()
+    sublime.load_settings(sublack.SETTINGS_FILE_NAME).add_on_change(
+        "black_log", lambda: sublack.Path(__file__).touch()
     )
+
+
+def plugin_unloaded():
+
+    return sublack.shutdown_blackd()
+
+
+class BlackEventListener(sublime_plugin.EventListener):
+    def on_pre_save(self, view):
+        """use blackd at saving time
+
+        Cannot be async since black should be run before save"""
+        if sublack.get_on_save_fast(view):
+            view.run_command("black_file")
+
+    def on_post_text_command(self, view, command_name, args):
+        if command_name == "black_file":
+            view.show(view.line(view.sel()[0]))
+
+    def on_exit(self):
+
+        log = sublack.get_log()
+        log.debug("on_exit")
+        sublack.shutdown_blackd()
+
+
+# class TestEventListener(sublime_plugin.EventListener):
+
+#     def on_exit(self):
+
+#         log = sublack.get_log()
+#         log.debug("on_exit")
+
+#     def on_pre_close_window(self, window):
+
+#         log = sublack.get_log()
+#         log.debug("on_pre_close_window")

@@ -1,11 +1,9 @@
-import sublime
-import logging
-from .consts import PACKAGE_NAME
 
-LOG = logging.getLogger(PACKAGE_NAME)
 from .utils import popen
-import subprocess
+from .utils import get_log
 import json
+import sublime
+import subprocess
 
 
 class FoldingError(Exception):
@@ -69,7 +67,7 @@ def get_index_with_python33(body):
             if hasattr(node, "lineno")
         ]
     except SyntaxError as err:
-        LOG.error(
+        get_log().error(
             """Sublack can't parse this python version to apply folding.
             Maybe you should set "python_interpreter" to specify the desired python version"""
         )
@@ -104,9 +102,9 @@ def get_new_lines(old, new, folded_lines):
 
 
 def refold_all(old, new, view, folded_lines):
-    LOG.debug("folded lines : %s", folded_lines)
-    # LOG.debug("old folding index/lines: %s", old)
-    # LOG.debug("new new folding index/lines : %s", new)
+    get_log().debug("folded lines : %s", folded_lines)
+    # get_log().debug("old folding index/lines: %s", old)
+    # get_log().debug("new new folding index/lines : %s", new)
     refolds = get_refolds(view, get_new_lines(old, new, folded_lines))
-    LOG.debug("new folding region: %s ", refolds)
+    get_log().debug("new folding region: %s ", refolds)
     view.fold(refolds)

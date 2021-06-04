@@ -1,5 +1,18 @@
+import functools
+import locale
+import logging
+import os
+import pathlib
 import re
+import requests
+import signal
+import socket
 import sublime
+import subprocess
+import time
+import toml
+import yaml
+
 from .consts import (
     BLACKD_ALREADY_RUNNING,
     BLACKD_START_FAILED,
@@ -13,93 +26,158 @@ from .consts import (
     STATUS_KEY,
 )
 
-import pathlib
-import subprocess
-import signal
-import os
-import locale
-import socket
-import requests
-import logging
-import yaml
-import toml
 
-LOG = logging.getLogger("sublack")
+_has_blackd_started = False
+_depth_count = 0
+_LOG_ = None
+
+
+def get_log(settings=None) -> logging.Logger:
+
+    global _LOG_
+    if _LOG_ is None:
+        _LOG_ = logging.getLogger(PACKAGE_NAME)
+        # Prevent duplicate log items from being created if the module is reloaded:
+        if _LOG_.handlers:
+            return _LOG_
+
+        settings = get_settings(sublime.active_window().active_view()) if settings is None else settings
+        debug_formatter = logging.Formatter(
+            "[{pn}:%(filename)s.%(funcName)s-%(lineno)d](%(levelname)s) %(message)s".format(pn=PACKAGE_NAME)
+        )
+        sh = logging.StreamHandler()
+        sh.setFormatter(debug_formatter)
+        sh.setLevel(logging.DEBUG)
+        _LOG_.addHandler(sh)
+        if settings["black_log_to_file"]:
+
+            fh = logging.FileHandler("sublack.log")
+            fh.setFormatter(debug_formatter)
+            fh.setLevel(level=logging.DEBUG)
+            _LOG_.addHandler(fh)
+
+        if settings["black_log"] is None:
+            settings["black_log"] = "info"
+
+        try:
+            _LOG_.setLevel(settings.get("black_log").upper())
+        except ValueError as err:  # https://forum.sublimetext.com/t/an-odd-problem-about-sublime-load-settings/30335/6
+            _LOG_.error(err)
+            _LOG_.setLevel("ERROR")
+            _LOG_.error("fallback to loglevel ERROR")
+
+        _LOG_.info("Loglevel set to {l}".format(l=settings["black_log"].upper()))
+
+        if not os.environ.get("CI", None):
+            _LOG_.propagate = False
+
+    return _LOG_
 
 
 class Path(type(pathlib.Path())):
-    def write_text(
-        self, content, mode="w", buffering=-1, encoding=None, errors=None, newline=None
-    ):
+    def write_text(self, content, mode="w", buffering=-1, encoding=None, errors=None, newline=None):
 
-        with self.open(
-            mode="w", buffering=-1, encoding=None, errors=None, newline=None
-        ) as file:
+        with self.open(mode="w", buffering=-1, encoding=None, errors=None, newline=None) as file:
 
             return file.write(content)
 
-    def read_text(
-        self, mode="w", buffering=-1, encoding=None, errors=None, newline=None
-    ):
+    def read_text(self, mode="w", buffering=-1, encoding=None, errors=None, newline=None):
 
-        with self.open(
-            mode="r", buffering=-1, encoding=None, errors=None, newline=None
-        ) as file:
+        with self.open(mode="r", buffering=-1, encoding=None, errors=None, newline=None) as file:
 
             return file.read()
 
 
+@functools.lru_cache()
+def get_platform():
+
+    return sublime.platform().lower()
+
+
+@functools.lru_cache()
+def is_windows():
+
+    return get_platform() == "windows"
+
+
 def timed(fn):
+    @functools.wraps(fn)
     def to_time(*args, **kwargs):
-        import time
 
         st = time.time()
         rev = fn(*args, **kwargs)
         end = time.time()
-        LOG.debug("durée {} {:.2f} ms".format(fn.__name__, (end - st) * 1000))
+        get_log().debug("Time: {} {:.2f} ms".format(fn.__name__, (end - st) * 1000))
         return rev
 
     return to_time
 
 
+def has_blackd_started():
+    global _has_blackd_started
+    return _has_blackd_started
+
+
+def set_has_blackd_started(value):
+    global _has_blackd_started
+    _has_blackd_started = value
+    return value
+
+
 def start_blackd_server(view):
+    from . import server
+
+    if has_blackd_started():
+        return
+
+    LOG = get_log()
+    set_has_blackd_started(False)
     LOG.debug("start_blackd_server executed")
     if view is None:
         LOG.debug("No valid view found!")
+        set_has_blackd_started(False)
         return
-
-    from .server import BlackdServer
 
     started = None
     settings = get_settings(view)
     port = settings["black_blackd_port"]
     if not port:
-        LOG.critical("No valid port given: {p}".format(p=port))
-        return
+        LOG.info("No valid port given, defaulting to 45484")
+        port = "45484"
 
-    running, port_free = check_blackd_on_http(port)
-    if running:
-        LOG.info(BLACKD_ALREADY_RUNNING.format(port))
-        view.set_status(STATUS_KEY, BLACKD_ALREADY_RUNNING.format(port))
-        return
-    elif port_free:
+    port_free = is_port_free(port)
+    LOG.debug("port_free: {}".format(port_free))
+    if port_free:
+        LOG.info("Creating new BlackdServer")
+        blackd_server = server.BlackdServer(deamon=True, host="localhost", port=port, settings=settings)
+        started = blackd_server.run()
+
+    else:
+        running = is_blackd_running_on_port(port)
+        LOG.debug("running: {}".format(running))
+        if running:
+            LOG.info(BLACKD_ALREADY_RUNNING.format(port))
+            view.set_status(STATUS_KEY, BLACKD_ALREADY_RUNNING.format(port))
+            set_has_blackd_started(True)
+            return
 
         LOG.info("Creating new BlackdServer")
-        blackd_server = BlackdServer(
-            deamon=True, host="localhost", port=port, settings=settings
-        )
+        blackd_server = server.BlackdServer(deamon=True, host="localhost", port=port, settings=settings)
         started = blackd_server.run()
 
     if started:
-
         LOG.info(BLACKD_STARTED.format(port))
         view.set_status(STATUS_KEY, BLACKD_STARTED.format(port))
+        set_has_blackd_started(True)
+
     else:
         LOG.info(BLACKD_START_FAILED.format(port))
         view.set_status(STATUS_KEY, BLACKD_START_FAILED.format(port))
+        set_has_blackd_started(False)
 
 
 def match_exclude(view):
+    LOG = get_log()
     pyproject = find_pyproject(view)
     if pyproject:
         excluded = read_pyproject_toml(pyproject).get("exclude", None)
@@ -133,7 +211,7 @@ def get_on_save_fast(view):
     return sublime.load_settings(SETTINGS_FILE_NAME).get("black_on_save")
 
 
-def get_settings(view):
+def get_settings(view) -> dict:
     flat_settings = view.settings()
     nested_settings = flat_settings.get(PACKAGE_NAME, {})
     global_settings = sublime.load_settings(SETTINGS_FILE_NAME)
@@ -165,7 +243,12 @@ def get_settings(view):
     return settings
 
 
-def get_encoding_from_region(region, view):
+def is_python(view) -> bool:
+
+    return view.match_selector(0, "source.python")
+
+
+def get_encoding_from_region(region, view) -> str:
     """
     ENCODING_PATTERN is given by PEP 263
     """
@@ -173,13 +256,14 @@ def get_encoding_from_region(region, view):
     ligne = view.substr(region)
     encoding = re.findall(ENCODING_PATTERN, ligne)
 
-    return encoding[0] if encoding else None
+    return encoding[0] if encoding else ""
 
 
-def get_encoding_from_file(view):
+def get_encoding_from_file(view) -> str:
     """
-    get from 2nd line only If failed from 1st line.
+    Get from 2nd line only If failed from 1st line.
     """
+
     region = view.line(sublime.Region(0))
     encoding = get_encoding_from_region(region, view)
     if encoding:
@@ -187,10 +271,9 @@ def get_encoding_from_file(view):
     else:
         encoding = get_encoding_from_region(view.line(region.end() + 1), view)
         return encoding
-    return None
 
 
-def get_open_port():
+def get_open_port() -> str:
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind(("", 0))
     port = s.getsockname()[1]
@@ -198,47 +281,44 @@ def get_open_port():
     return port
 
 
-def cache_path():
+@functools.lru_cache()
+def cache_path() -> Path:
+
     return Path(sublime.cache_path(), PACKAGE_NAME)
 
 
+@functools.lru_cache()
 def startup_info():
-    "running windows process in background"
-    if sublime.platform() == "windows":
-        st = subprocess.STARTUPINFO()
-        # st.dwFlags = (
-        #     subprocess.STARTF_USESHOWWINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
-        # )
-        st.dwFlags = subprocess.STARTF_USESHOWWINDOW
-        st.wShowWindow = subprocess.SW_HIDE
-        return st
+    get_log().debug("Running windows process in background")
+    if is_windows():
+        startup_info = subprocess.STARTUPINFO()
+        startup_info.dwFlags = subprocess.STARTF_USESHOWWINDOW
+        startup_info.wShowWindow = subprocess.SW_HIDE
+        return startup_info
     else:
         return None
 
 
-def shell():
+def shell() -> bool:
     """set shell to True on windows"""
-    if sublime.platform() == "windows":
+    if is_windows():
         return True
-    else:
-        False
+    return False
 
 
-def kill_with_pid(pid: int):
-    if sublime.platform() == "windows":
+def kill_with_pid(pid: int) -> None:
+    if is_windows():
         # need to properly kill precess traa
-        subprocess.call(
-            ["taskkill", "/F", "/T", "/PID", str(pid)], startupinfo=startup_info()
-        )
+        subprocess.call(["taskkill", "/F", "/T", "/PID", str(pid)], startupinfo=startup_info())
     else:
         os.kill(pid, signal.SIGTERM)
 
 
-def get_env():
+def get_env() -> dict:
     # modifying the locale is necessary to keep the click library happy on OSX
     env = os.environ.copy()
     if locale.getdefaultlocale() == (None, None):
-        if sublime.platform() == "osx":
+        if get_platform() == "osx":
             env["LC_CTYPE"] = "UTF-8"
     return env
 
@@ -248,24 +328,41 @@ def popen(*args, **kwargs):
     # return subprocess.Popen(*args,shell=shell(), env=get_env(), **kwargs)
 
 
-def check_blackd_on_http(port, host="localhost"):
+@timed
+def is_port_free(port: str, host: str = "localhost") -> bool:
+
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        response = s.connect_ex((host, int(port)))
+        get_log().debug("response: {}".format(response))
+        return response == 10061
+
+
+@timed
+def is_blackd_running_on_port(port: str, host: str = "localhost") -> bool:
     """Check if blackd is running and if tested port is free
 
     Returns: is_Running, is_Port_is_Free"""
+
+    LOG = get_log()
     try:
-        resp = requests.post("http://" + host + ":" + port, data="a=1")
-    except requests.ConnectionError:
-        return False, True
+        resp = requests.post("http://{h}:{p}/".format(h=host, p=port), data="a=1")
+
+    except requests.ConnectionError as err:
+        LOG.error("Connection Error:\n - {}".format(err))
+        return False
+
     else:
 
+        LOG.debug("resp.content: {}".format(resp.content))
         if resp.content == b"a = 1\n":
-            return True, False
-        else:
-            return False, False
+            return True
+
+        return False
 
 
 def find_root_file(view, filename):
     """Only search in projects and folders since pyproject.toml/precommit, ... should be nowhere else"""
+    LOG = get_log()
     window = view.window()
 
     filepath = window.extract_variables().get("file_path", None)
@@ -292,7 +389,7 @@ def find_root_file(view, filename):
         path = Path(parent) / filename
         if path.exists():
 
-            LOG.debug("%s path %s", filename, path)
+            LOG.debug("filename:{f} path:{p}".format(f=filename, p=path))
             return path
 
     # nothing found
@@ -321,17 +418,18 @@ def find_pyproject(view):
             return folder / "pyproject.toml"
 
         if (folder / ".git").is_dir():
-            return None
+            return
 
         if (folder / ".hg").is_dir():
-            return None
+            return
 
         if folder.resolve() in folders:
-            return None
+            return
 
 
 def read_pyproject_toml(pyproject: Path) -> dict:
     """Return config options foud in pyproject"""
+    LOG = get_log()
     config = {}
     if not pyproject:
         LOG.debug("No pyproject.toml file found")
@@ -340,8 +438,8 @@ def read_pyproject_toml(pyproject: Path) -> dict:
     try:
         pyproject_toml = toml.load(str(pyproject))
         config = pyproject_toml.get("tool", {}).get("black", {})
-    except (toml.TomlDecodeError, OSError) as e:
-        LOG.error("Error reading configuration file: %s", pyproject)
+    except (toml.TomlDecodeError, OSError) as err:
+        LOG.error("Error reading configuration file: {pr}, {err}".format(pr=pyproject, err=err))
         # pass
 
     # LOG.debug("config values extracted from %s : %r", pyproject, config)
@@ -351,8 +449,9 @@ def read_pyproject_toml(pyproject: Path) -> dict:
 def use_pre_commit(precommit: Path) -> bool:
     """Returns True if black in .pre-commit-config.yaml"""
 
+    LOG = get_log()
     if not precommit:
-        LOG.debug("No .pre-commit-config.yaml f ile found")
+        LOG.debug("No .pre-commit-config.yaml file found")
         return False
 
     config = yaml.load(precommit.read_text(), Loader=yaml.FullLoader)
@@ -373,52 +472,53 @@ def use_pre_commit(precommit: Path) -> bool:
     return False
 
 
-def clear_cache():
+def clear_cache() -> None:
     with (cache_path() / "formatted").open("wt") as file:
         file.write("")
 
 
-def is_python3_executable(python_executable, default_shell=None):
-    find_version = '{} -c "import sys;print(sys.version_info.major)"'.format(
-        python_executable
-    )
+@functools.lru_cache()
+def is_python3_executable(python_executable: str, default_shell=None) -> bool:
+    LOG = get_log()
+    find_version = '{} -c "import sys;print(sys.version_info.major)"'.format(python_executable)
     default_shell = None
 
-    if sublime.platform() != "windows":
+    if get_platform() != "windows":
         default_shell = os.environ.get("SHELL", "/bin/bash")
 
     try:
-        version_out = subprocess.check_output(
-            find_version, shell=True, executable=default_shell
-        ).decode()
+        version_out = subprocess.check_output(find_version, shell=True, executable=default_shell).decode()
 
-    except FileNotFoundError:
-        LOG.debug("is_python3_executable : FileNotFoundError")
+    except FileNotFoundError as err:
+        LOG.debug("is_python3_executable - FileNotFoundError:\n - {e}".format(e=err))
         return False
 
     except subprocess.CalledProcessError as err:
-        LOG.debug("is_python3_executable : CalledProcessError %s", err)
+        LOG.debug("is_python3_executable - CalledProcessError:\n - {e}".format(e=err))
         return False
 
-    LOG.debug("version returned %s", version_out)
+    LOG.debug("Version returned {v}".format(v=version_out).strip())
     if not version_out or version_out.strip() != "3":
-        LOG.debug("%s is not a python3 executable", python_executable)
+        LOG.debug("{pe} is not a python3 executable!".format(pe=python_executable))
         return False
 
-    else:
-        return True
+    return True
 
 
-def find_python3_executable():
-    if sublime.platform().lower() == "windows":
+@functools.lru_cache()
+def find_python3_executable() -> str:
+    LOG = get_log()
+    LOG.debug("Platform: {p}".format(p=get_platform()))
+    if is_windows():
         # where could return many lines
         try:
             pythons = subprocess.check_output("where python", shell=True).decode()
-        except subprocess.CalledProcessError:
-            return False
+        except subprocess.CalledProcessError as err:
+            LOG.debug("find_python3_executable - CalledProcessError:\n - {e}".format(e=err))
+            return ""
 
         for python_executable in pythons.splitlines():
-            LOG.debug("python_executable = {}".format(python_executable))
+            LOG.debug("python_executable: {pe}".format(pe=python_executable))
             if is_python3_executable(python_executable):
                 return python_executable.strip()
 
@@ -433,7 +533,7 @@ def find_python3_executable():
             .group(1)
             .split(":")
         )
-        LOG.debug("paths found: %r", paths)
+        LOG.debug("paths found: {p}".format(p=paths))
 
         # first look at python 3
         for path in paths:
@@ -447,13 +547,14 @@ def find_python3_executable():
                 return str(to_check)
 
     LOG.debug("no valid interpreter found via find_python3_executable")
-    return False
+    return ""
 
 
-def get_python3_executable(config=None):
+def get_python3_executable(config: dict = None) -> str:
 
+    LOG = get_log()
     # First check for python3/python in path
-    for version in ["python3", "python"]:
+    for version in ["python3", "python", "py"]:
         if is_python3_executable(version):
             LOG.debug("using %s as python interpreter", version)
             return version
@@ -462,7 +563,7 @@ def get_python3_executable(config=None):
     # then find  one via shell
     python_exec = find_python3_executable()
     if python_exec:
-        LOG.debug("using %s as python3 interpreter found", python_exec)
+        LOG.debug("Using {pex} as python3 interpreter".format(pex=python_exec))
         return python_exec
 
     # third: guess from black_command
@@ -480,4 +581,50 @@ def get_python3_executable(config=None):
 
     LOG.debug("no valid python3 interpreter was found")
 
-    return False  # nothing found
+    return ""  # nothing found
+
+
+def format_log_data(in_data, in_key: str = None) -> str:
+    global _depth_count
+    message = ""
+    dash_string = "-" * _depth_count
+    if isinstance(in_data, dict):
+        if in_key:
+            message = "{msg}{ds} {k}:".format(msg=message, ds=dash_string, k=in_key)
+
+        _depth_count += 1
+        for key, value in in_data.items():
+            message = "{msg}\n{v}".format(msg=message, v=format_log_data(value, in_key=key))
+
+        _depth_count -= 1
+
+    elif isinstance(in_data, list):
+        if in_key:
+            message = "{msg}{ds} {k}:".format(msg=message, ds=dash_string, k=in_key)
+
+        _depth_count += 1
+        for value in in_data:
+            message = "{msg}\n{v}".format(msg=message, v=format_log_data(value))
+
+        _depth_count -= 1
+
+    else:
+        if in_key:
+            message = "{msg}{ds} {k}: {v}".format(msg=message, ds=dash_string, k=in_key, v=in_data)
+
+        else:
+            message = "{msg}{ds} {v}".format(msg=message, ds=dash_string, v=in_data)
+
+    return message
+
+
+def shutdown_blackd() -> None:
+    LOG = get_log()
+    from . import server
+
+    if not has_blackd_started():
+        LOG.debug("Blackd not started, nothing to shutdown")
+        return
+
+    black_server = server.BlackdServer()
+    black_server.stop_deamon()
