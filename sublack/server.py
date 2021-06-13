@@ -133,7 +133,13 @@ class BlackdServer:
         if not self.blackd_is_runnable():
             return self.proc, False
 
-        self.proc = popen(cmd)
+        try:
+            self.proc = popen(cmd)
+
+        except FileNotFoundError as err:
+            self.log.critical("The given blackd command or path could not run: {}".format(self.blackd_cmd))
+            return None, False
+
         if self.is_running(timeout=5):
             running = True
 

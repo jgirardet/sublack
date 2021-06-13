@@ -51,10 +51,14 @@ def get_log(settings=None) -> logging.Logger:
         _LOG_.addHandler(sh)
         if settings["black_log_to_file"]:
 
-            fh = logging.FileHandler("sublack.log")
-            fh.setFormatter(debug_formatter)
-            fh.setLevel(level=logging.DEBUG)
-            _LOG_.addHandler(fh)
+            try:
+                fh = logging.FileHandler("sublack.log")
+                fh.setFormatter(debug_formatter)
+                fh.setLevel(level=logging.DEBUG)
+                _LOG_.addHandler(fh)
+
+            except PermissionError as err:
+                _LOG_.debug("Unable to create sublack file log:\n - {}".format(err))
 
         if settings["black_log"] is None:
             settings["black_log"] = "info"
@@ -324,7 +328,9 @@ def get_env() -> dict:
 
 
 def popen(*args, **kwargs):
-    return subprocess.Popen(*args, startupinfo=startup_info(), env=get_env(), **kwargs)
+    _startup_info = startup_info()
+    _get_env = get_env()
+    return subprocess.Popen(*args, startupinfo=_startup_info, env=_get_env, **kwargs)
     # return subprocess.Popen(*args,shell=shell(), env=get_env(), **kwargs)
 
 
