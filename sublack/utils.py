@@ -41,9 +41,13 @@ def get_log(settings=None) -> logging.Logger:
         if _LOG_.handlers:
             return _LOG_
 
-        settings = get_settings(sublime.active_window().active_view()) if settings is None else settings
+        settings = (
+            get_settings(sublime.active_window().active_view()) if settings is None else settings
+        )
         debug_formatter = logging.Formatter(
-            "[{pn}:%(filename)s.%(funcName)s-%(lineno)d](%(levelname)s) %(message)s".format(pn=PACKAGE_NAME)
+            "[{pn}:%(filename)s.%(funcName)s-%(lineno)d](%(levelname)s) %(message)s".format(
+                pn=PACKAGE_NAME
+            )
         )
         sh = logging.StreamHandler()
         sh.setFormatter(debug_formatter)
@@ -153,7 +157,9 @@ def start_blackd_server(view):
     LOG.debug("port_free: {}".format(port_free))
     if port_free:
         LOG.info("Creating new BlackdServer")
-        blackd_server = server.BlackdServer(deamon=True, host="localhost", port=port, settings=settings)
+        blackd_server = server.BlackdServer(
+            deamon=True, host="localhost", port=port, settings=settings
+        )
         started = blackd_server.run()
 
     else:
@@ -166,7 +172,9 @@ def start_blackd_server(view):
             return
 
         LOG.info("Creating new BlackdServer")
-        blackd_server = server.BlackdServer(deamon=True, host="localhost", port=port, settings=settings)
+        blackd_server = server.BlackdServer(
+            deamon=True, host="localhost", port=port, settings=settings
+        )
         started = blackd_server.run()
 
     if started:
@@ -493,7 +501,9 @@ def is_python3_executable(python_executable: str, default_shell=None) -> bool:
         default_shell = os.environ.get("SHELL", "/bin/bash")
 
     try:
-        version_out = subprocess.check_output(find_version, shell=True, executable=default_shell).decode()
+        version_out = subprocess.check_output(
+            find_version, shell=True, executable=default_shell
+        ).decode()
 
     except FileNotFoundError as err:
         LOG.debug("is_python3_executable - FileNotFoundError:\n - {e}".format(e=err))
@@ -578,10 +588,7 @@ def get_python3_executable(config: dict = None) -> str:
             python_exec = str(Path(config["black_command"]).parent / "python")
             LOG.debug("guessing from black_command")
             if is_python3_executable(python_exec):
-                LOG.debug(
-                    "using %s as python3 interpreter guess from black_command",
-                    python_exec,
-                )
+                LOG.debug("using %s as python3 interpreter guess from black_command", python_exec)
 
                 return python_exec
 

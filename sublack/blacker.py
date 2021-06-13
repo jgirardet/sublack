@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Sublime Text 3 Plugin to invoke Black on a Python file.
+Sublime Text 4 Plugin to invoke Black on a Python file.
 """
 
 import os
@@ -110,8 +110,12 @@ class Blackd:
             self.log.debug("Black server has not finished initializing!")
             return None, None, None
 
-        self.headers.update({"Content-Type": "application/octet-stream; charset={}".format(self.encoding)})
-        url = "http://{h}:{p}/".format(h=self.config["black_blackd_host"], p=self.config["black_blackd_port"])
+        self.headers.update(
+            {"Content-Type": "application/octet-stream; charset={}".format(self.encoding)}
+        )
+        url = "http://{h}:{p}/".format(
+            h=self.config["black_blackd_host"], p=self.config["black_blackd_port"]
+        )
         try:
             self.log.info("Requesting url: {url}".format(url=url))
             response = requests.post(url, data=self.content, headers=self.headers)
@@ -246,12 +250,16 @@ class Black:
         except UnboundLocalError as err:  # unboud pour p si popen echoue
             msg = "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
             sublime.error_message("OSError: %s\n\n%s" % (err, msg))
-            raise OSError("You may need to install Black and/or configure 'black_command' in Sublack's Settings.")
+            raise OSError(
+                "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
+            )
 
         except OSError as err:  # unboud pour p si popen echoue
             msg = "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
             sublime.error_message("OSError: %s\n\n%s" % (err, msg))
-            raise OSError("You may need to install Black and/or configure 'black_command' in Sublack's Settings.")
+            raise OSError(
+                "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
+            )
 
         self.log.debug("run_black: returncode %s, err: %s", p.returncode, err)
         return p.returncode, out, err
@@ -369,7 +377,7 @@ class Black:
                 stderr=subprocess.STDOUT,
                 stdout=subprocess.PIPE,
             )
-            print(a.stdout.read())
+            print (a.stdout.read())
         except subprocess.CalledProcessError as err:
             self.log.error(err)
             return err

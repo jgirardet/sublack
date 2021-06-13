@@ -1,4 +1,3 @@
-
 from .utils import popen
 from .utils import get_log
 import json
@@ -13,10 +12,7 @@ class FoldingError(Exception):
 def get_folded_lines(view):
     """ return line number corresponding to each folded statement.
     Turned to 1-based to fit ast numbers."""
-    return [
-        view.rowcol(f.begin())[0] + 1
-        for f in view.unfold(sublime.Region(0, view.size()))
-    ]
+    return [view.rowcol(f.begin())[0] + 1 for f in view.unfold(sublime.Region(0, view.size()))]
 
 
 def get_region_to_refold(line, view):
@@ -62,9 +58,7 @@ def get_index_with_python33(body):
 
     try:
         return [
-            getattr(node, "lineno")
-            for node in ast.walk(ast.parse(body))
-            if hasattr(node, "lineno")
+            getattr(node, "lineno") for node in ast.walk(ast.parse(body)) if hasattr(node, "lineno")
         ]
     except SyntaxError as err:
         get_log().error(

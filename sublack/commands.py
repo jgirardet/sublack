@@ -103,7 +103,6 @@ class BlackdStartCommand(sublime_plugin.TextCommand):
     is_visible = is_enabled
 
     def run(self, edit):
-
         def _blackd_start():
             utils.start_blackd_server(self.view)
 
@@ -131,12 +130,13 @@ class BlackFormatAllCommand(sublime_plugin.WindowCommand):
     is_visible = is_enabled
 
     def run(self):
-        LOG =  utils.get_log()
+        LOG = utils.get_log()
         if utils.get_settings(self.window.active_view())["black_confirm_formatall"]:
             if not sublime.ok_cancel_dialog(
                 "Sublack: Format all?\nInfo: It runs black without sublack "
                 "(ignoring sublack Options and Configuration)."
-            ): return
+            ):
+                return
 
         folders = self.window.folders()
 
@@ -145,10 +145,7 @@ class BlackFormatAllCommand(sublime_plugin.WindowCommand):
         dispatcher = None
         for folder in folders:
             p = utils.popen(
-                ["black", "."],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                cwd=folder,
+                ["black", "."], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=folder
             )
             p.wait(timeout=10)
             dispatcher = success if p.returncode == 0 else errors
@@ -160,7 +157,11 @@ class BlackFormatAllCommand(sublime_plugin.WindowCommand):
             self.window.active_view().set_status(STATUS_KEY, REFORMAT_ERRORS)
 
         for out in success:
-            LOG.debug("black formatted folder %s with returncode %s and following en stderr :%s", *out)
+            LOG.debug(
+                "black formatted folder %s with returncode %s and following en stderr :%s", *out
+            )
 
         for out in errors:
-            LOG.error("black formatted folder %s with returncode %s and following en stderr :%s", *out)
+            LOG.error(
+                "black formatted folder %s with returncode %s and following en stderr :%s", *out
+            )

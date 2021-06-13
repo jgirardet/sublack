@@ -30,9 +30,7 @@ class BlackdServer:
         self.pid_path = cache_path() / "pid"
         self.timeout = kwargs.get("timeout", 5)
         self.sleep_time = kwargs.get("sleep_time", 0.1)
-        default_watched = (
-            "plugin_host-3.3.exe" if is_windows() else "plugin_host-3.3"
-        )
+        default_watched = "plugin_host-3.3.exe" if is_windows() else "plugin_host-3.3"
         self.log.debug("default_watched: {dw}".format(dw=default_watched))
         self.watched = kwargs.get("watched", default_watched)
         self.checker_interval = kwargs.get("checker_interval", None)
@@ -56,7 +54,9 @@ class BlackdServer:
 
         if self._blackd_cmd is None:
 
-            self._blackd_cmd = "{cmd}d".format(cmd=self.settings["black_command"]) if self.settings else "blackd"
+            self._blackd_cmd = (
+                "{cmd}d".format(cmd=self.settings["black_command"]) if self.settings else "blackd"
+            )
             self.log.debug("Setting {cmd} as blackd command".format(cmd=self._blackd_cmd))
 
         return self._blackd_cmd
@@ -75,18 +75,13 @@ class BlackdServer:
             else:
                 self.log.info(
                     "blackd running at {h} on port {p} with pid {pid}".format(
-                        h=self.host,
-                        p=self.port,
-                        pid=getattr(self.proc, "pid", None),
+                        h=self.host, p=self.port, pid=getattr(self.proc, "pid", None)
                     )
                 )
 
                 return True
         self.log.error(
-            "blackd not running at {h} on port {p} with pid {pid}".format(
-                h=self.host,
-                p=self.port,
-            )
+            "blackd not running at {h} on port {p} with pid {pid}".format(h=self.host, p=self.port)
         )
         return False
 
@@ -115,7 +110,9 @@ class BlackdServer:
             return True
 
         if is_blackd_running_on_port(self.port):
-            self.log.warning("{} - aborting!".format("Blackd already running on port {}".format(self.port)))
+            self.log.warning(
+                "{} - aborting!".format("Blackd already running on port {}".format(self.port))
+            )
 
         else:
             self.log.debug("Failed to start blackd - port: {} is busy".format(self.port))
@@ -137,7 +134,9 @@ class BlackdServer:
             self.proc = popen(cmd)
 
         except FileNotFoundError as err:
-            self.log.critical("The given blackd command or path could not run: {}".format(self.blackd_cmd))
+            self.log.critical(
+                "The given blackd command or path could not run: {}".format(self.blackd_cmd)
+            )
             return None, False
 
         if self.is_running(timeout=5):

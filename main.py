@@ -38,6 +38,7 @@ def plugin_loaded():
 
     # check blackd autostart
     if settings["black_blackd_autostart"]:
+
         def _blackd_start():
             sublack.start_blackd_server(current_view)
 
