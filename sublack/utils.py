@@ -180,6 +180,7 @@ def start_blackd_server(view):
     if started:
         LOG.info(BLACKD_STARTED.format(port))
         view.set_status(STATUS_KEY, BLACKD_STARTED.format(port))
+        sublime.set_timeout_async(lambda: view.set_status(STATUS_KEY, ""), 2000)
         set_has_blackd_started(True)
 
     else:
