@@ -5,10 +5,10 @@
     :target: https://ci.appveyor.com/project/jgirardet/sublack
 
 ===============================
-sublack
+sublack4
 ===============================
 
-`Black`_ integration for SublimeText
+`Black`_ integration for SublimeText4
 
 * License : GNU General Public License v3 or later (GPLv3+)
 * Source: https://github.com/jgirardet/sublack
