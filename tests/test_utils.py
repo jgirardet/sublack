@@ -114,6 +114,47 @@ class TestUtils(TestCase):
         settings = re.findall(r"black_[a-z_0-9]+", c)
         self.assertEqual(set(settings), set(sublack.consts.CONFIG_OPTIONS))
 
+    def test_get_on_save_fast(self):
+        default = {"black_on_save": 1}
+        flat = {"sublack.black_on_save": 2}
+        nested = {"sublack": {"black_on_save": 3}}
+
+        class Settings:
+            def __init__(self, data):
+                self.data = data
+
+            def get(self, name, default=None):
+                return self.data.get(name, default)
+
+            def has(self, name):
+                return name in self.data
+
+        def make_view(data):
+            class View(str):
+                def extract_variables():
+                    return {}
+
+                def folders():
+                    return []
+
+                def settings():
+                    return Settings(data)
+
+                def window():
+                    return View
+
+            return View
+
+        with patch.object(sublack.utils.sublime, "load_settings", return_value=default):
+            result_default = sublack.utils.get_on_save_fast(make_view(default))
+            self.assertEqual(result_default, default["black_on_save"])
+
+        result_flat = sublack.utils.get_on_save_fast(make_view(flat))
+        self.assertEqual(result_flat, flat["sublack.black_on_save"])
+
+        result_nested = sublack.utils.get_on_save_fast(make_view(nested))
+        self.assertEqual(result_nested, nested["sublack"]["black_on_save"])
+
     def test_get_encoding_from_region(self):
         v = MagicMock()
         v.substr.return_value = "mkplpùlùplùplù"
