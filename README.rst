@@ -5,10 +5,22 @@
     :target: https://ci.appveyor.com/project/jgirardet/sublack
 
 ===============================
-sublack4
+sublack
 ===============================
 
-`Black`_ integration for SublimeText4
+|==============================================================================
+-------------------------------------------------------------------------------
+
+This repository will not be updated. The repository will be kept available in read-only mode.
+-------------------------------------------------------------------------------------------------    
+
+A new nice maintainer is welcomed to fork it.
+-------------------------------------------------------------------------------------------------
+|================================================================================
+---------------------------------------------------------------------------------
+    
+
+`Black`_ integration for SublimeText
 
 * License : GNU General Public License v3 or later (GPLv3+)
 * Source: https://github.com/jgirardet/sublack
