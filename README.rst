@@ -5,25 +5,13 @@
     :target: https://ci.appveyor.com/project/jgirardet/sublack
 
 ===============================
-sublack
+sublack4
 ===============================
 
-|==============================================================================
--------------------------------------------------------------------------------
-
-This repository will not be updated. The repository will be kept available in read-only mode.
--------------------------------------------------------------------------------------------------    
-
-A new nice maintainer is welcomed to fork it.
--------------------------------------------------------------------------------------------------
-|================================================================================
----------------------------------------------------------------------------------
-    
-
-`Black`_ integration for SublimeText
+`Black`_ integration for SublimeText 4
 
 * License : GNU General Public License v3 or later (GPLv3+)
-* Source: https://github.com/jgirardet/sublack
+* Source: https://github.com/munkybutt/sublack
 
 
 Table Of content
@@ -46,7 +34,7 @@ or
 
 Without PackageControl  install manually by navigating to Sublime's `Packages` folder and cloning this repository::
 
-      git clone https://github.com/jgirardet/sublack.git
+      git clone https://github.com/munkybutt/sublack.git
 
 
 Usage
