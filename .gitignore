@@ -58,6 +58,8 @@ AUTHORS
 # pytest
 .pytest_cache/
 Pipfile.lock
+
+# sublime
 *.sublime-workspace
 *.sublime-project
-
+pyrightconfig.json
