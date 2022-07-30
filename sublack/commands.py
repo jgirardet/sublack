@@ -26,7 +26,7 @@ class BlackFileCommand(sublime_plugin.TextCommand):
     is_visible = is_enabled
 
     # @timed
-    def run(self, edit):
+    def run(self, edit: sublime.Edit):
         utils.get_log().debug("Formatting current file")
         # backup view position:
         old_view_port = self.view.viewport_position()
@@ -102,9 +102,9 @@ class BlackdStartCommand(sublime_plugin.TextCommand):
 
     is_visible = is_enabled
 
-    def run(self, edit):
+    def run(self, _):
         def _blackd_start():
-            utils.start_blackd_server(self.view)
+            BlackdServer.start_blackd_server(self.view)
 
         sublime.set_timeout_async(_blackd_start, 0)
 
@@ -117,7 +117,7 @@ class BlackdStopCommand(sublime_plugin.ApplicationCommand):
 
     def run(self):
         utils.get_log().debug("blackd_stop command running")
-        if BlackdServer().stop_deamon():
+        if BlackdServer.shutdown_blackd():
             sublime.active_window().active_view().set_status(STATUS_KEY, BLACKD_STOPPED)
         else:
             sublime.active_window().active_view().set_status(STATUS_KEY, BLACKD_STOP_FAILED)

@@ -1,0 +1,25 @@
+{
+  "include": [
+    ".",
+    "C:/Program Files/Sublime Text/Lib/python38"
+  ],
+
+  "stubPath": "./.stubs",
+
+  "reportMissingImports": true,
+  "reportMissingTypeStubs": false,
+
+  "pythonVersion": "3.8",
+  "executionEnvironments": [
+    {
+      "root": ".",
+      "pythonVersion": "3.8",
+      "pythonPlatform": "Windows",
+      "extraPaths": [
+        "C:/Program Files/Sublime Text/Lib/python38",
+        "./sublack/vendor/lib",
+        "D:/Code/Git/_venvs/debugpy/Lib/site-packages"
+      ]
+    }
+  ]
+}

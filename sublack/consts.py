@@ -1,6 +1,6 @@
 PACKAGE_NAME = "sublack"
-SETTINGS_FILE_NAME = "{}.sublime-settings".format(PACKAGE_NAME)
-SETTINGS_NS_PREFIX = "{}.".format(PACKAGE_NAME)
+SETTINGS_FILE_NAME = f"{PACKAGE_NAME}.sublime-settings"
+SETTINGS_NS_PREFIX = f"{PACKAGE_NAME}."
 KEY_ERROR_MARKER = "__KEY_NOT_PRESENT_MARKER__"
 
 # The status sections are ordered by key, so using 'sublk' will place it after

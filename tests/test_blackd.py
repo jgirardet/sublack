@@ -22,20 +22,19 @@ def tearDownModule():
 
 
 BASE_SETTINGS = {
-    "black_command": "black",
-    "black_on_save": True,
-    "black_line_length": None,
-    "black_fast": False,
-    "black_debug_on": True,
-    "black_default_encoding": "utf-8",
-    "black_skip_string_normalization": True,
-    "black_include": None,
-    "black_py36": None,
-    "black_exclude": None,
-    "black_use_blackd": True,
     "black_blackd_host": "localhost",
     "black_blackd_port": blackd_proc.port,
-    "black_use_precommit": False,
+    "black_command": "black",
+    "black_debug_on": True,
+    "black_confirm_formatall": False,
+    "black_default_encoding": "utf-8",
+    "black_fast": False,
+    "black_line_length": None,
+    "black_on_save": True,
+    "black_py36": None,
+    "black_skip_string_normalization": False,
+    "black_use_blackd": True,
+    "black_use_precommit": False
 }
 
 
@@ -54,10 +53,8 @@ class TestBlackdServer(TestCaseBlack):
         self.view.run_command("black_file")
         self.assertEqual(blacked, self.all())
 
-    def test_nothing_todo(self, s, c):
-        # clear cache
+    def test_nothing_todo(self, *_):
         sublack.utils.clear_cache()
-
         self.setText(blacked)
         self.view.run_command("black_file")
         self.assertEqual(blacked, self.all())
@@ -66,13 +63,10 @@ class TestBlackdServer(TestCaseBlack):
             sublack.consts.ALREADY_FORMATTED_MESSAGE,
         )
 
-    def test_black_file_nothing_todo_cached(self, s, c):
-        # clear cache
+    def test_black_file_nothing_todo_cached(self, *_):
         sublack.utils.clear_cache()
-
         self.setText(blacked)
         self.view.run_command("black_file")
-
         self.view.run_command("black_file")
         self.assertEqual(blacked, self.all())
         self.assertEqual(
@@ -80,7 +74,7 @@ class TestBlackdServer(TestCaseBlack):
             sublack.consts.ALREADY_FORMATTED_MESSAGE_CACHE,
         )
 
-    def test_do_diff(self, s, c):
+    def test_do_diff(self, *_):
         """"black should be called even blacked"""
 
         self.setText(unblacked)
@@ -108,7 +102,7 @@ class TestBlackdServerNotRunning(TestCaseBlack):
         self.BASE_SETTINGS = dict(BASE_SETTINGS)
         self.BASE_SETTINGS["black_blackd_port"] = "123465789"
 
-    def test_blackd_not_runnint(self, s):
+    def test_blackd_not_running(self, *_):
         with patch.object(
             sublack.blacker, "get_settings", return_value=self.BASE_SETTINGS
         ):

@@ -7,8 +7,9 @@ import re
 import tempfile
 import os
 import platform
+import pathlib
 
-Path = sublack.utils.Path
+Path = pathlib.Path
 
 
 class View(str):

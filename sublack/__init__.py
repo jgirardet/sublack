@@ -1,4 +1,17 @@
-from .consts import *  # noqa
+from __future__ import annotations
+
+import site
+
+site.addsitedir(r"D:\Code\Git\_venvs\debugpy\Lib\site-packages")
+
+import debugpy
+
+debugpy.configure(python="C:/Program Files/Python38/python.exe")
+debugpy.listen(("localhost", 5678))
+debugpy.wait_for_client()
+
+
+from .consts import *
 from .utils import (
     cache_path,
     clear_cache,
@@ -8,14 +21,12 @@ from .utils import (
     get_settings,
     is_python,
     kill_with_pid,
-    Path,
     popen,
-    shutdown_blackd,
-    start_blackd_server,
-    startup_info,
+    get_startup_info,
 )
 from .server import BlackdServer
-from .blacker import Blackd, Black
+from .blacker import Black
+from .blacker import Blackd
 from .commands import (
     BlackDiffCommand,
     BlackdStartCommand,
@@ -25,7 +36,7 @@ from .commands import (
     BlackToggleBlackOnSaveCommand,
 )
 
-__all__ = [
+__all__ = (
     "Black",
     "Blackd",
     "BlackDiffCommand",
@@ -44,9 +55,6 @@ __all__ = [
     "is_python",
     "kill_with_pid",
     "PACKAGE_NAME",
-    "Path",
     "popen",
-    "shutdown_blackd",
-    "start_blackd_server",
-    "startup_info",
-]
+    "get_startup_info",
+)

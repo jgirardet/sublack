@@ -1,22 +1,13 @@
 """
 Sublack
-
-Order of imports should not be changed
 """
 
-import logging
 import sublime
 import sublime_plugin
 
+import pathlib
+
 from . import sublack
-from .sublack import (
-    BlackDiffCommand,
-    BlackdStartCommand,
-    BlackdStopCommand,
-    BlackFileCommand,
-    BlackFormatAllCommand,
-    BlackToggleBlackOnSaveCommand,
-)
 
 
 def plugin_loaded():
@@ -27,7 +18,6 @@ def plugin_loaded():
     if not settings:
         raise IOError("Settings were not loaded!")
 
-    sublack.get_log(settings=settings)
     # check sublack.cache_path
     cp = sublack.cache_path()
     if not cp.exists():
@@ -40,19 +30,18 @@ def plugin_loaded():
     if settings["black_blackd_autostart"]:
 
         def _blackd_start():
-            sublack.start_blackd_server(current_view)
+            sublack.BlackdServer.start_blackd_server(current_view)
 
         sublime.set_timeout_async(_blackd_start, 0)
 
     # watch for loglevel change
     sublime.load_settings(sublack.SETTINGS_FILE_NAME).add_on_change(
-        "black_log", lambda: sublack.Path(__file__).touch()
+        "black_log", lambda: pathlib.Path(__file__).touch()
     )
 
 
 def plugin_unloaded():
-
-    return sublack.shutdown_blackd()
+    return sublack.BlackdServer.shutdown_blackd()
 
 
 class BlackEventListener(sublime_plugin.EventListener):
@@ -63,25 +52,15 @@ class BlackEventListener(sublime_plugin.EventListener):
         if sublack.get_on_save_fast(view):
             view.run_command("black_file")
 
-    def on_post_text_command(self, view, command_name, args):
+    def on_post_text_command(self, view: sublime.View, command_name: str, _):
         if command_name == "black_file":
             view.show(view.line(view.sel()[0]))
 
     def on_exit(self):
+        """
+        Shutdown blackd when sublime shuts down
+        """
 
         log = sublack.get_log()
         log.debug("on_exit")
-        sublack.shutdown_blackd()
-
-
-# class TestEventListener(sublime_plugin.EventListener):
-
-#     def on_exit(self):
-
-#         log = sublack.get_log()
-#         log.debug("on_exit")
-
-#     def on_pre_close_window(self, window):
-
-#         log = sublack.get_log()
-#         log.debug("on_pre_close_window")
+        plugin_unloaded()
