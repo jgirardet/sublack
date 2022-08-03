@@ -23,19 +23,20 @@ Table Of content
 Installation
 ------------
 
-#. Install `Black`_ min (19.3b0) (if you haven't already)::
-
-       pip install black # Requires python 3.6
-       or pip install black[d] # for blackd support
-
-#. In PackageControl just find ``sublack``, and that's it!
+Use Package Control to search for: ``sublack4`` and install.
 
 or
 
-Without PackageControl  install manually by navigating to Sublime's `Packages` folder and cloning this repository::
+Without PackageControl install manually by navigating to Sublime's `Packages` folder and cloning this repository:
 
-      git clone https://github.com/munkybutt/sublack.git
+``git clone https://github.com/munkybutt/sublack.git``
 
+
+(Optional) `sublack4` includes black and black[d] but if you wish to install your own version:
+
+- `Black`_ min (19.3b0)
+- pip install black # Requires python 3.6
+- or pip install black[d] # for blackd support
 
 Usage
 -----
