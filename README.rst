@@ -1,8 +1,4 @@
-.. image:: https://travis-ci.org/jgirardet/sublack.svg?branch=master
-    :target: https://travis-ci.org/jgirardet/sublack
 
-.. image:: https://ci.appveyor.com/api/projects/status/ffd44ndqx713yuhd/branch/master?svg=true
-    :target: https://ci.appveyor.com/project/jgirardet/sublack
 
 ===============================
 sublack4
@@ -192,16 +188,7 @@ See `black about pyproject.toml <https://github.com/ambv/black/#pyprojecttoml>`_
 Code folding
 ------------
 
-Sublack tries to keep code folding as before reformatting. SublimeText only supports python3.3 syntax. For newer syntax (ex await/async), you have to set
-the `python_interpreter` setting.
-
-.. code-block:: json
-
-    {
-        "settings": {
-            "python_interpreter": "/path/to/my/python/virtualenv/bin/python"
-        }
-    }
+Sublack tries to keep code folding as before reformatting.
 
 
 Sublime Linter integration
