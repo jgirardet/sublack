@@ -1,41 +1,68 @@
-.. image:: https://travis-ci.org/jgirardet/sublack.svg?branch=master
-    :target: https://travis-ci.org/jgirardet/sublack
+<h1 align="center">
+<!--   <br>
+  <a href="http://www.amitmerchant.com/electron-markdownify"><img src="https://raw.githubusercontent.com/amitmerchant1990/electron-markdownify/master/app/img/markdownify.png" alt="Sublack4" width="200"></a>
+  <br> -->
+  Sublack4
+  <br>
+</h1>
 
-.. image:: https://ci.appveyor.com/api/projects/status/ffd44ndqx713yuhd/branch/master?svg=true
-    :target: https://ci.appveyor.com/project/jgirardet/sublack
+<h2 align="center">Black integration for SublimeText4</a>.</h2>
 
-===============================
-sublack4
-===============================
+<p align="center">
+  <a href="https://github.com/munkybutt/sublack/blob/master/LICENSE.md">
+    <img src="https://img.shields.io/github/license/munkybutt/sublack?style=for-the-badge"
+  </a>
+  <a href="https://github.com/munkybutt/sublack/releases/tag/v0.3.0">
+    <!-- <img src="https://badge.fury.io/gh/munkybutt%2Fsublack.svg?style=for-the-badge"> -->
+    <img src="https://img.shields.io/github/release/munkybutt/sublack?style=for-the-badge&include_prereleases">
+  </a>
+  <a href="https://saythanks.io/to/munkybutt">
+      <img src="https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg?style=for-the-badge">
+  </a>
+  <a href="https://www.paypal.me/munkybuttballs">
+    <img src="https://img.shields.io/badge/$-donate-ff69b4.svg?maxAge=2592000&amp;style=for-the-badge">
+  </a>
+</p>
 
-`Black`_ integration for SublimeText 4
 
-* License : GNU General Public License v3 or later (GPLv3+)
 * Source: https://github.com/munkybutt/sublack
 
+---------
+<p align="center">
+  <a href="#installation">Installation</a> •
+  <a href="#usage">Usage</a> •
+  <a href="#blackd-mode">Blackd Mode</a> •
+  <a href="#pre-commit-integration">Pre-Commit Integration</a> •
+  <a href="#settings">Settings</a> •
+  <a href="#code-folding">Code Folding</a> •
+  <a href="#sublime-linter-integration">Sublime Linter Integration</a> •
+  <a href="#changelog">Changelog</a> •
+  <a href="#how-to-contribute">How to Contribute</a> •
+  <a href="#authors">Authors</a> •
+  <a href="#thanks">Thanks</a> •
+  <a href="#personal-info">Personal Info</a>
+</p>
 
-Table Of content
------------------
-
-`Installation`_ | `Usage`_ | `Blackd mode`_ | `Pre-commit integration`_ | `Settings`_ | `Code folding`_ | `Sublime Linter integration`_ | `Issues`_ | `Thanks`_ | `Changelog`_ | `Contributing`_ | `Authors`_
+---------
 
 
 Installation
 ------------
 
-#. Install `Black`_ min (19.3b0) (if you haven't already)::
-
-       pip install black # Requires python 3.6
-       or pip install black[d] # for blackd support
-
-#. In PackageControl just find ``sublack``, and that's it!
+Use Package Control to search for: ``sublack4`` and install.
 
 or
 
-Without PackageControl  install manually by navigating to Sublime's `Packages` folder and cloning this repository::
+Without PackageControl install manually by navigating to Sublime's `Packages` folder and cloning this repository:
 
-      git clone https://github.com/munkybutt/sublack.git
+``git clone https://github.com/munkybutt/sublack.git``
 
+
+(Optional) `sublack4` includes black and black[d] but if you wish to install your own version:
+
+- `Black`_ min (19.3b0)
+- pip install black # Requires python 3.6
+- or pip install black[d] # for blackd support
 
 Usage
 -----
@@ -80,7 +107,7 @@ Blackd is faster than Black.
 Diff is always run with black.
 
 
-Pre-commit integration
+Pre-commit Integration
 ----------------------
 
 You can choose to run Black via pre-commit by setting `black_use_precommit` to `true`. Sublack settings will be ignored.
@@ -191,16 +218,7 @@ See `black about pyproject.toml <https://github.com/ambv/black/#pyprojecttoml>`_
 Code folding
 ------------
 
-Sublack tries to keep code folding as before reformatting. SublimeText only supports python3.3 syntax. For newer syntax (ex await/async), you have to set
-the `python_interpreter` setting.
-
-.. code-block:: json
-
-    {
-        "settings": {
-            "python_interpreter": "/path/to/my/python/virtualenv/bin/python"
-        }
-    }
+Sublack attempt to keep code folding intact, but this functionality is unpredictable.
 
 
 Sublime Linter integration
@@ -209,25 +227,13 @@ Sublime Linter integration
 You can install `SublimeLinter-addon-black-for-flake <https://github.com/kaste/SublimeLinter-addon-black-for-flake>`_. The plugin will auto-configure flake8 and mute all warnings black can actually fix.
 
 
-Issues
-------
-
-If there is something wrong with this plugin, `add an issue <https://github.com/jgirardet/sublack/issues>`_ on GitHub and I'll try to address it.
-
-
-Thanks
-------
-
-This plugin is very inspired by the very good `PyYapf <https://github.com/jason-kane/PyYapf>`_ Plugin. Thanks to Jason Kane.
-
-
 Changelog
 ---------
 
 see `install.txt <messages/install.txt>`_
 
 
-Contributing
+How to Contribute
 ------------
 
 * Remove sublack via Package Control.
@@ -241,8 +247,9 @@ Contributing
 
 Authors
 -------
+Original Author: Jimmy Girardet
 
-Laboriously coded by Jimmy Girardet
+New Author: Shea Richardson
 
 Contributions by:
 
@@ -256,11 +263,13 @@ Contributions by:
 * `Cyrus Yip <https://github.com/realcyguy>`_
 * `Georgios Samaras <https://github.com/gsamaras>`_
 
+Thanks
+------
 
-Todo
-----
+This plugin is very inspired by the very good `PyYapf <https://github.com/jason-kane/PyYapf>`_ Plugin. Thanks to Jason Kane.
 
-- cors
-- refactor popen
 
-.. _Black : https://github.com/ambv/black
+## Personal Info
+> Webbie [techanimdad.com](https://techanimdad.com) &nbsp;&middot;&nbsp;
+> GitHub [@munkybutt](https://github.com/munkybutt)
+
