@@ -1,4 +1,8 @@
-*.py[cod]
+.stubs/*
+__pycache__/
+
+sublack/*/*.py[cod]
+!vendor/*/*.py[cod]
 
 # C extensions
 *.so
