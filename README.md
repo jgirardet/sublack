@@ -9,6 +9,9 @@
 <h2 align="center">Black integration for SublimeText4</a>.</h2>
 
 <p align="center">
+  <a href="https://www.sublimetext.com">
+    <img src="https://img.shields.io/badge/ST-v4.0.0-orange.svg?style=for-the-badge&logo=sublime-text"
+  </a>
   <a href="https://github.com/munkybutt/sublack/blob/master/LICENSE.md">
     <img src="https://img.shields.io/github/license/munkybutt/sublack?style=for-the-badge"
   </a>
