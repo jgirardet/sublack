@@ -1,5 +1,5 @@
-import sublime_plugin
 import sublime
+import sublime_plugin
 import subprocess
 
 from .consts import (
@@ -10,9 +10,9 @@ from .consts import (
     REFORMATTED_MESSAGE,
     REFORMAT_ERRORS,
 )
+from . import server
 from . import utils
 from .blacker import Black
-from .server import BlackdServer
 
 
 class BlackFileCommand(sublime_plugin.TextCommand):
@@ -73,10 +73,10 @@ class BlackToggleBlackOnSaveCommand(sublime_plugin.TextCommand):
             return "Sublack: Enable black on save"
 
     def run(self, edit):
-        view = self.view
+        view: sublime.View = self.view
 
         settings = utils.get_settings(view)
-        current_state = settings["black_on_save"]
+        current_state: bool = settings["black_on_save"]
         next_state = not current_state
 
         # A setting set on a particular view overules all other places where
@@ -104,7 +104,7 @@ class BlackdStartCommand(sublime_plugin.TextCommand):
 
     def run(self, _):
         def _blackd_start():
-            BlackdServer.start_blackd_server(self.view)
+            server.start_blackd_server(self.view)
 
         sublime.set_timeout_async(_blackd_start, 0)
 
@@ -117,7 +117,7 @@ class BlackdStopCommand(sublime_plugin.ApplicationCommand):
 
     def run(self):
         utils.get_log().debug("blackd_stop command running")
-        if BlackdServer.shutdown_blackd():
+        if server.stop_blackd_server():
             sublime.active_window().active_view().set_status(STATUS_KEY, BLACKD_STOPPED)
         else:
             sublime.active_window().active_view().set_status(STATUS_KEY, BLACKD_STOP_FAILED)

@@ -8,12 +8,16 @@ import sublime_plugin
 import pathlib
 
 from . import sublack
+from .sublack import utils
+from .sublack.commands import *
 
 
 def plugin_loaded():
-
-    # load config
     current_view = sublime.active_window().active_view()
+    if current_view is None:
+        utils.get_log().error("No active view found!")
+        return
+
     settings = sublack.get_settings(current_view)
     if not settings:
         raise IOError("Settings were not loaded!")
@@ -30,7 +34,7 @@ def plugin_loaded():
     if settings["black_blackd_autostart"]:
 
         def _blackd_start():
-            sublack.BlackdServer.start_blackd_server(current_view)
+            sublack.server.start_blackd_server(current_view)
 
         sublime.set_timeout_async(_blackd_start, 0)
 
@@ -41,7 +45,7 @@ def plugin_loaded():
 
 
 def plugin_unloaded():
-    return sublack.BlackdServer.shutdown_blackd()
+    return sublack.server.stop_blackd_server()
 
 
 class BlackEventListener(sublime_plugin.EventListener):

@@ -1,15 +1,17 @@
 from __future__ import annotations
 
-import site
 
-site.addsitedir(r"D:\Code\Git\_venvs\debugpy\Lib\site-packages")
+def _setup_vendor_packages():
+    import pathlib as pathlib
+    import site
 
-import debugpy
+    current_directory = pathlib.Path(__file__).parent
+    vendor_packages_path = current_directory / "vendor/packages"
+    site.addsitedir(str(vendor_packages_path))
+    print(f"Added packages site path: {vendor_packages_path}")
 
-debugpy.configure(python="C:/Program Files/Python38/python.exe")
-debugpy.listen(("localhost", 5678))
-debugpy.wait_for_client()
 
+_setup_vendor_packages()
 
 from .consts import *
 from .utils import (
@@ -24,7 +26,7 @@ from .utils import (
     popen,
     get_startup_info,
 )
-from .server import BlackdServer
+# from .server import BlackdServer
 from .blacker import Black
 from .blacker import Blackd
 from .commands import (
@@ -40,7 +42,7 @@ __all__ = (
     "Black",
     "Blackd",
     "BlackDiffCommand",
-    "BlackdServer",
+    # "BlackdServer",
     "BlackdStartCommand",
     "BlackdStopCommand",
     "BlackFileCommand",
@@ -58,3 +60,4 @@ __all__ = (
     "popen",
     "get_startup_info",
 )
+

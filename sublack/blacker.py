@@ -54,7 +54,6 @@ class Blackd:
     """
 
     def __init__(self, command: list[str], content: bytes, encoding: str, config: dict[str, Any]):
-
         self.headers = self.format_headers(command)
         self.content = content
         self.encoding = encoding
@@ -66,7 +65,6 @@ class Blackd:
         return get_log()
 
     def format_headers(self, command: list[str]):
-
         """Get command line args and turn it to properly formatted headers"""
         headers = {}
 
@@ -81,10 +79,12 @@ class Blackd:
         # target version
         targets = set()
         for index, item in enumerate(command):
-            if item == "--target-version":
-                version = command[index + 1]
-                variant = version[:-1] + "." + version[-1]
-                targets.add(variant)
+            if item != "--target-version":
+                continue
+
+            version = command[index + 1]
+            variant = version[:-1] + "." + version[-1]
+            targets.add(variant)
 
         if "--py36" in command:
             targets.add("py3.6")
@@ -198,7 +198,7 @@ class Black:
         # Line length option
         black_line_length = self.config.get("black_line_length")
         if self.config.get("black_line_length"):
-            command.extend(("-l", black_line_length))
+            command.extend(("-l", str(black_line_length)))
 
         # fast
         if self.config.get("black_fast", None):

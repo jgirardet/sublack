@@ -1,4 +1,5 @@
 from __future__ import annotations
+import multiprocessing
 
 import sublime
 
@@ -20,9 +21,6 @@ from .consts import KEY_ERROR_MARKER
 from .consts import PACKAGE_NAME
 from .consts import SETTINGS_FILE_NAME
 from .consts import SETTINGS_NS_PREFIX
-from .vendor.packages import requests
-from .vendor.packages import toml
-from .vendor.packages import yaml
 
 _typing = False
 if _typing:
@@ -54,10 +52,10 @@ def get_log(settings: dict[str, Any] | None = None) -> logging.Logger:
                 pn=PACKAGE_NAME
             )
         )
-        sh = logging.StreamHandler()
-        sh.setFormatter(debug_formatter)
-        sh.setLevel(logging.DEBUG)
-        _log.addHandler(sh)
+        stream_handler = logging.StreamHandler()
+        stream_handler.setFormatter(debug_formatter)
+        stream_handler.setLevel(logging.DEBUG)
+        _log.addHandler(stream_handler)
         if settings["black_log_to_file"]:
             try:
                 fh = logging.FileHandler("sublack.log")
@@ -83,16 +81,6 @@ def get_log(settings: dict[str, Any] | None = None) -> logging.Logger:
             _log.propagate = False
 
     return _log
-
-
-# class Path(type(pathlib.Path())):
-#     def write_text(self, content, mode="w", buffering=-1):
-#         with self.open(mode=mode, buffering=buffering) as file:
-#             return file.write(content)
-
-#     def read_text(self, mode="w", buffering=-1, encoding=None, errors=None, newline=None):
-#         with self.open(mode="r", buffering=-1, encoding=None, errors=None, newline=None) as file:
-#             return file.read()
 
 
 @functools.lru_cache()
@@ -238,6 +226,7 @@ def get_encoding_from_file(view: sublime.View) -> str:
 
 def get_encoding(settings=None) -> str:
     view = sublime.active_window().active_view()
+    assert view
     encoding = view.encoding()
     if encoding == "Undefined":
         encoding = get_encoding_from_file(view)
@@ -273,21 +262,25 @@ def get_black_executable_command(vendor: bool = False) -> str:
     log = get_log()
     view = sublime.active_window().active_view()
     settings = get_settings(view)
-    setting_black_command: str = settings["black_command"]
-    black_command = get_vendor_black_exe_path() if vendor else setting_black_command
+    # use_blackd: bool = settings["black_use_blackd"]
+    # if use_blackd:
+    #     blackd_path = get_vendor_blackd_path()
+    #     blackd_command = f"{blackd_path} --bind-host {} --bind-port {}"
+    #     multiprocessing
+    #     return
+    user_black_command: str = settings["black_command"]
+    black_command = get_vendor_black_exe_path() if vendor else user_black_command
     black_command = black_command or get_vendor_black_exe_path()
     # default_shell = os.environ.get("SHELL", "/bin/bash") if get_platform() != "windows" else None
+    # print(f"black_command: {black_command}")
     try:
-        process = subprocess.Popen(
-            [black_command, "-"],
-            env=None,
-            cwd=None,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+        subprocess.run(
+            black_command,
+            capture_output=True,
+            universal_newlines=True,
+            input="def test(): return",
             startupinfo=get_startup_info(),
         )
-        process.communicate(input=b"def test(): return")
         return black_command
 
     except FileNotFoundError:
@@ -314,7 +307,19 @@ def get_black_executable_command(vendor: bool = False) -> str:
 @functools.lru_cache()
 def get_vendor_black_exe_path() -> str:
     vendor_local_path = vendor.get_vendor_local_path()
-    return str(vendor_local_path / "Scripts/black")
+    return str(vendor_local_path / ".venv/Scripts/black")
+
+
+@functools.lru_cache()
+def get_vendor_blackd_path() -> str:
+    vendor_local_path = vendor.get_vendor_local_path()
+    return str(vendor_local_path / ".venv/Lib/site-packages/blackd")
+
+
+@functools.lru_cache()
+def get_vendor_python_exe_path() -> pathlib.Path:
+    vendor_local_path = vendor.get_vendor_local_path()
+    return vendor_local_path / "python/windows/python.exe"
 
 
 @functools.lru_cache()
@@ -330,11 +335,15 @@ def shell() -> bool:
 
 
 def kill_with_pid(pid: int) -> None:
+    get_log().debug("kill_with_pid")
+    # return os.kill(pid, signal.SIGTERM)
     if is_windows():
         # need to properly kill precess traa
-        subprocess.call(["taskkill", "/F", "/T", "/PID", str(pid)], startupinfo=get_startup_info())
-    else:
-        os.kill(pid, signal.SIGTERM)
+        subprocess.run(["taskkill", "/F", "/T", "/PID", str(pid)], startupinfo=get_startup_info())
+        get_log().debug(f"blackd server with pid: {pid} destroyed!")
+        return
+
+    os.kill(pid, signal.SIGTERM)
 
 
 def get_env() -> dict:
@@ -352,7 +361,7 @@ def popen(*args, **kwargs) -> subprocess.Popen[str]:
     return subprocess.Popen(*args, startupinfo=_startup_info, env=_env, **kwargs)
 
 
-@timed
+# @timed
 def is_port_free(port: str, host: str = "localhost") -> bool:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as _socket:
         response = _socket.connect_ex((host, int(port)))
@@ -360,17 +369,18 @@ def is_port_free(port: str, host: str = "localhost") -> bool:
         return response == 10061
 
 
-@timed
+# @timed
 def is_blackd_running_on_port(port: str, host: str = "localhost") -> bool:
     """
     Check if blackd is running and if tested port is free
 
     Returns: is_Running, is_Port_is_Free
     """
+    from .vendor.packages import requests
 
     log = get_log()
     try:
-        resp = requests.post("http://{h}:{p}/".format(h=host, p=port), data="a=1")
+        response = requests.post("http://{h}:{p}/".format(h=host, p=port), data="a=1")
 
     except requests.ConnectionError as err:
         log.error("Connection Error:\n - {}".format(err))
@@ -378,8 +388,8 @@ def is_blackd_running_on_port(port: str, host: str = "localhost") -> bool:
 
     else:
 
-        log.debug("resp.content: {}".format(resp.content))
-        if resp.content == b"a = 1\n":
+        log.debug("response.content: {}".format(response.content))
+        if response.content == b"a = 1\n":
             return True
 
         return False
@@ -449,6 +459,9 @@ def find_pyproject(view: sublime.View) -> pathlib.Path | None:
 
 def read_pyproject_toml(pyproject: pathlib.Path | None) -> dict:
     """Return config options foud in pyproject"""
+
+    from .vendor.packages import toml
+
     log = get_log()
     config = {}
     if pyproject is None:
@@ -467,6 +480,8 @@ def read_pyproject_toml(pyproject: pathlib.Path | None) -> dict:
 
 def use_pre_commit(precommit: pathlib.Path) -> bool:
     """Returns True if black in .pre-commit-config.yaml"""
+
+    from .vendor.packages import yaml
 
     log = get_log()
     if not precommit:
@@ -528,4 +543,3 @@ def format_log_data(data: dict[str, Any] | list[Any] | Any, key: str | None = No
             message = "{msg}{ds} {v}".format(msg=message, ds=dash_string, v=data)
 
     return message
-

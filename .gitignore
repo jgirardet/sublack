@@ -67,3 +67,7 @@ Pipfile.lock
 *.sublime-workspace
 *.sublime-project
 pyrightconfig.json
+
+# project
+*black.exe
+*blackd.exe
