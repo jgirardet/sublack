@@ -11,6 +11,12 @@ from . import utils
 # from .consts import BLACKD_STARTED
 # from .consts import STATUS_KEY
 
+_typing = False
+if _typing:
+    from typing import Any
+del _typing
+
+
 _blackd_process = None
 
 
@@ -47,10 +53,8 @@ def get_cached_pid():
         return
 
 
-def start_blackd_server(view: sublime.View):
+def _start_blackd_server(port: str):
     log = utils.get_log()
-    settings = utils.get_settings(view)
-    port = settings["black_blackd_port"]
     if not port:
         log.info("No valid port given, defaulting to 45484")
         port = "45484"
@@ -65,6 +69,12 @@ def start_blackd_server(view: sublime.View):
     if utils.is_blackd_running_on_port(port):
         utils.set_has_blackd_started(True)
         return process.pid
+
+
+def start_blackd_server(view: sublime.View):
+    settings = utils.get_settings(view)
+    port = settings["black_blackd_port"]
+    return _start_blackd_server(port)
 
 
 def stop_blackd_server():

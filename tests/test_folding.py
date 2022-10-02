@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from unittest import TestCase
 from unittest.mock import MagicMock
 
@@ -19,6 +21,8 @@ SAMPLE_INDEX = [1, 2, 3, 4]
 class View:
     def __init__(self, content):
         self._content = content
+        self._unfold: list | None = None
+        self._sel: Sel | None = None
 
     def unfold(self, region):
         return self._unfold
@@ -86,20 +90,20 @@ class TestFolding(TestCase):
         v = View(SAMPLE)
         v._sel = Sel()
 
-        def run_command(x, args):
+        def _run_command1(x, args):
             v._sel.clear()
             v._sel.add(sublime.Region(9, 56))
 
-        v.run_command = run_command
+        v.run_command = _run_command1
         self.assertEquals(
             sublime.Region(8, 55), sublack.folding.get_region_to_refold(0, v)
         )
 
-        def run_command(x, args):
+        def _run_command2(x, args):
             v._sel.clear()
             v._sel.add(sublime.Region(22, 56))
 
-        v.run_command = run_command
+        v.run_command = _run_command2
         self.assertEquals(
             sublime.Region(21, 55), sublack.folding.get_region_to_refold(1, v)
         )
@@ -130,7 +134,7 @@ class TestFolding(TestCase):
             SAMPLE_INDEX,
         )
         with self.assertRaises(sublack.folding.FoldingError):
-            sublack.folding.get_index_with_interpreter(v, b"a=", "utf-8"),
+            sublack.folding.get_index_with_interpreter(v, b"a=", "utf-8")
 
     def test_get_ast_index(self):
         v = View(SAMPLE)

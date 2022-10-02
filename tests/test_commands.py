@@ -1,6 +1,7 @@
 from unittest import TestCase
 from unittest.mock import patch
 
+import inspect
 import sublime
 from fixtures import (
     sublack,
@@ -11,7 +12,7 @@ from fixtures import (
     TestCaseBlackAsync,
 )
 
-import requests
+import requests  # type: ignore
 
 Path = sublack.utils.Path
 
@@ -81,64 +82,67 @@ class TestBlack(TestCaseBlack):
         backup = self.view
         self.view.run_command("black_diff")
 
-        w = sublime.active_window()
-        v = w.active_view()
-        res = sublime.Region(0, v.size())
-        res = sublime.Region(v.lines(res)[2].begin(), v.size())
-        res = v.substr(res).strip()
-        self.assertEqual(res, diff)
+        window = sublime.active_window()
+        view = window.active_view()
+        assert view, "No active view found!"
+        region = sublime.Region(0, view.size())
+        region = sublime.Region(view.lines(region)[2].begin(), view.size())
+        region = view.substr(region).strip()
+        self.assertEqual(region, diff)
         self.assertEqual(
-            v.settings().get("syntax"), "Packages/Diff/Diff.sublime-syntax"
+            view.settings().get("syntax"), "Packages/Diff/Diff.sublime-syntax"
         )
         self.view = backup
-        v.set_scratch(True)
-        v.close()
+        view.set_scratch(True)
+        view.close()
 
     def test_folding1(self, s, c):
-        self.setText(
-            """class A:
-    def a():
+        text = inspect.cleandoc(
+            """ class A:
+                    def a():
 
 
-        def b():
-            pass
-"""
+                        def b():
+                            pass
+            """
         )
+        self.setText(text)
         self.view.fold(sublime.Region(21, 65))
         self.view.run_command("black_file")
-        self.assertEqual(
-            """class A:
-    def a():
-        def b():
-            pass
-""",
-            self.all(),
+        correct_text = inspect.cleandoc(
+            """ class A:
+                    def a():
+                        def b():
+                            pass
+            """
         )
+        self.assertEqual(correct_text, self.all())
         self.assertEquals(
             self.view.unfold(sublime.Region(0, self.view.size())),
             [sublime.Region(21, 55)],
         )
 
     def test_folding2(self, s, c):
-        self.setText(
+        text = inspect.cleandoc(
             """
 
-class A:
-    def a():
-        def b():
-            pass
-"""
+            class A:
+                def a():
+                    def b():
+                        pass
+            """
         )
+        self.setText(text)
         self.view.fold(sublime.Region(10, 57))
         self.view.run_command("black_file")
-        self.assertEqual(
+        correct_text = inspect.cleandoc(
             """class A:
-    def a():
-        def b():
-            pass
-""",
-            self.all(),
+                def a():
+                    def b():
+                        pass
+            """
         )
+        self.assertEqual(correct_text, self.all())
         self.assertEquals(
             self.view.unfold(sublime.Region(0, self.view.size())),
             [sublime.Region(8, 55)],

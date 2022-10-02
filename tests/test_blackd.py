@@ -5,25 +5,33 @@ TODO : test headers
 from unittest.mock import patch
 
 import sublime
-from fixtures import sublack, blacked, unblacked, diff, TestCaseBlack
+from .fixtures import sublack, blacked, unblacked, diff, TestCaseBlack
 
-blackd_proc = sublack.server.BlackdServer()
+_typing = False
+if _typing:
+    import sublack.blacker
+    import sublack.commands
+    import sublack.consts
+    import sublack.server
+    import sublack.utils
+del _typing
+
+
+TESTPORT = "79297"
 
 
 def setUpModule():
-    global blackd_proc
-    if not blackd_proc.run():
+    if not sublack.server._start_blackd_server(TESTPORT):
         raise IOError("blackd server not running")
 
 
 def tearDownModule():
-    global blackd_proc
-    blackd_proc.stop()
+    sublack.server.stop_blackd_server()
 
 
 BASE_SETTINGS = {
     "black_blackd_host": "localhost",
-    "black_blackd_port": blackd_proc.port,
+    "black_blackd_port": TESTPORT,
     "black_command": "black",
     "black_debug_on": True,
     "black_confirm_formatall": False,
@@ -48,7 +56,7 @@ class TestBlackdServer(TestCaseBlack):
     def setText(self, string):
         self.view.run_command("append", {"characters": string})
 
-    def test_blacked(self, s, c):
+    def test_blacked(self, *_):
         self.setText(unblacked)
         self.view.run_command("black_file")
         self.assertEqual(blacked, self.all())
@@ -81,18 +89,19 @@ class TestBlackdServer(TestCaseBlack):
         self.view.set_name("base")
         backup = self.view
         self.view.run_command("black_diff")
-        w = sublime.active_window()
-        v = w.active_view()
-        res = sublime.Region(0, v.size())
-        res = sublime.Region(v.lines(res)[2].begin(), v.size())
-        res = v.substr(res).strip()
+        window = sublime.active_window()
+        view = window.active_view()
+        assert view, "No view found!"
+        res = sublime.Region(0, view.size())
+        res = sublime.Region(view.lines(res)[2].begin(), view.size())
+        res = view.substr(res).strip()
         self.assertEqual(res, diff)
         self.assertEqual(
-            v.settings().get("syntax"), "Packages/Diff/Diff.sublime-syntax"
+            view.settings().get("syntax"), "Packages/Diff/Diff.sublime-syntax"
         )
         self.view = backup
-        v.set_scratch(True)
-        v.close()
+        view.set_scratch(True)
+        view.close()
 
 
 @patch.object(sublack.commands, "is_python", return_value=True)

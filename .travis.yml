@@ -1,7 +1,7 @@
 env:
     global:
-        - PACKAGE="sublack" # Package name
-        - SUBLIME_TEXT_VERSION="3"
+        - PACKAGE="sublack4" # Package name
+        - SUBLIME_TEXT_VERSION="4"
         # use UNITTESTING_TAG to specific tag of UnitTesting
         # - UNITTESTING_TAG="master"
 
@@ -9,9 +9,17 @@ env:
 # https://docs.travis-ci.com/user/multi-os/#Python-example-(unsupported-languages)
 matrix:
     include:
+        - name: "Python Windows"
+          os: windows           # Windows 10.0.17134 N/A Build 17134
+          language: shell       # 'language: python' is an error on Travis CI Windows
+          before_install:
+            - choco install python --version 3.8.8
+            - python --version
+            - python -m pip install --upgrade pip
+          env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
         - os: linux
           language: python
-          python: 3.6
+          python: 3.8
         - os: osx
           language: generic
 
@@ -28,15 +36,12 @@ install:
     - sh travis.sh bootstrap
 
     # install specific packages
-    - pip3 install black[d]
-    - pip3 install requests
     - pip3 install pre-commit
 
     # install Package Control and package dependencies
     - sh travis.sh install_package_control
 
 script:
-    - which python
     - which python
     - bash -ilc env
     # run tests with test coverage report
