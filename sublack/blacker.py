@@ -11,7 +11,7 @@ import sublime
 import pathlib
 import subprocess
 
-from .vendor.packages import requests
+from .vendor.python.windows.Lib import requests
 from .consts import (
     HEADERS_TABLE,
     ALREADY_FORMATTED_MESSAGE,

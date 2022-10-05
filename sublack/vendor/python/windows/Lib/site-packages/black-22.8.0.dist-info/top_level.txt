@@ -1,0 +1,5 @@
+_black_version
+black
+blackd
+blib2to3
+c249b57082ff69932638__mypyc

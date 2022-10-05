@@ -19,7 +19,8 @@ var
 sdist
 develop-eggs
 .installed.cfg
-lib
+lib/*
+!windows/lib/site-packages
 lib64
 
 # Installer logs

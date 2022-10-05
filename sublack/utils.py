@@ -313,7 +313,7 @@ def get_vendor_black_exe_path() -> str:
 @functools.lru_cache()
 def get_vendor_blackd_path() -> str:
     vendor_local_path = vendor.get_vendor_local_path()
-    return str(vendor_local_path / "packages/blackd")
+    return str(vendor_local_path / "python/windows/Lib/blackd")
 
 
 @functools.lru_cache()
@@ -358,7 +358,14 @@ def get_env() -> dict:
 def popen(*args, **kwargs) -> subprocess.Popen[str]:
     _startup_info = get_startup_info()
     _env = get_env()
-    return subprocess.Popen(*args, startupinfo=_startup_info, env=_env, **kwargs)
+    return subprocess.Popen(
+        *args,
+        startupinfo=_startup_info,
+        env=_env,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+        **kwargs
+    )
 
 
 # @timed
