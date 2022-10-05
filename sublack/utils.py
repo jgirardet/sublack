@@ -387,7 +387,6 @@ def is_blackd_running_on_port(port: str, host: str = "localhost") -> bool:
         return False
 
     else:
-
         log.debug("response.content: {}".format(response.content))
         if response.content == b"a = 1\n":
             return True
