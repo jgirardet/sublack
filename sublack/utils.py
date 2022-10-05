@@ -313,7 +313,7 @@ def get_vendor_black_exe_path() -> str:
 @functools.lru_cache()
 def get_vendor_blackd_path() -> str:
     vendor_local_path = vendor.get_vendor_local_path()
-    return str(vendor_local_path / ".venv/Lib/site-packages/blackd")
+    return str(vendor_local_path / "packages/blackd")
 
 
 @functools.lru_cache()
