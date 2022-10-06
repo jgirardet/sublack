@@ -44,7 +44,6 @@ if _typing:
 del _typing
 
 
-
 # self.log = logging.getLogger(PACKAGE_NAME)
 
 

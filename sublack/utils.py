@@ -111,7 +111,7 @@ def has_blackd_started() -> bool:
     return _has_blackd_started
 
 
-def set_has_blackd_started(value : bool) -> None:
+def set_has_blackd_started(value: bool) -> None:
     global _has_blackd_started
     _has_blackd_started = value
 
@@ -358,12 +358,7 @@ def get_env() -> dict:
 def popen(*args, **kwargs) -> subprocess.Popen[str]:
     _startup_info = get_startup_info()
     _env = get_env()
-    return subprocess.Popen(
-        *args,
-        startupinfo=_startup_info,
-        env=_env,
-        **kwargs
-    )
+    return subprocess.Popen(*args, startupinfo=_startup_info, env=_env, **kwargs)
 
 
 # @timed
@@ -399,7 +394,7 @@ def is_blackd_running_on_port(port: str, host: str = "localhost") -> bool:
         return False
 
 
-def find_root_file(view: sublime.View, filename:str) -> pathlib.Path | None:
+def find_root_file(view: sublime.View, filename: str) -> pathlib.Path | None:
     """Only search in projects and folders since pyproject.toml/precommit, ... should be nowhere else"""
     log = get_log()
     window = view.window()

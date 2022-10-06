@@ -26,6 +26,7 @@ from .utils import (
     popen,
     get_startup_info,
 )
+
 # from .server import BlackdServer
 from .blacker import Black
 from .blacker import Blackd
@@ -60,4 +61,3 @@ __all__ = (
     "popen",
     "get_startup_info",
 )
-
