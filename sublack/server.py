@@ -1,21 +1,11 @@
 from __future__ import annotations
 
 import functools
-from sys import stdout
 import sublime
 import subprocess
-# import time
+import time
 
 from . import utils
-# from .consts import BLACKD_ALREADY_RUNNING
-# from .consts import BLACKD_START_FAILED
-# from .consts import BLACKD_STARTED
-# from .consts import STATUS_KEY
-
-_typing = False
-if _typing:
-    from typing import Any
-del _typing
 
 
 _blackd_process = None
@@ -65,21 +55,9 @@ def _start_blackd_server(port: str):
     blackd_command = [python_exe_path, blackd_path, "--bind-port", str(port)]
     log.debug(f"blackd_command: {blackd_command}")
     process = utils.popen(blackd_command)
-    import time
     time.sleep(1)
     if process.stderr:
         raise Exception(process.stderr.read())
-
-    # if process.stdout:
-    #     start = time.time()
-    #     while True:
-    #         for line in process.stdout:
-    #             log.debug(line.strip())
-    #             if time.time() - start > 5.0:
-    #                 break
-
-    #         if time.time() - start > 5.0:
-    #             break
 
     set_cache_pid(process)
     set_blackd_process(process)
