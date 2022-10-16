@@ -23,9 +23,9 @@ matrix:
         - os: osx
           language: generic
 
-services:
+# services:
     # Starts a graphical environment
-    - xvfb
+    # - xvfb
 
 
 # before_install:
