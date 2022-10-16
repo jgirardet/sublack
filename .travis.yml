@@ -28,8 +28,8 @@ services:
     - xvfb
 
 
-before_install:
-    - curl -OL https://raw.githubusercontent.com/SublimeText/UnitTesting/master/sbin/travis.sh
+# before_install:
+    # - curl -OL https://raw.githubusercontent.com/SublimeText/UnitTesting/master/sbin/travis.sh
 
 install:
     # bootstrap the testing environment
@@ -42,7 +42,7 @@ install:
     - sh travis.sh install_package_control
 
 script:
-    - which python
+    # - which python
     - bash -ilc env
     # run tests with test coverage report
     - sh travis.sh run_tests --coverage
