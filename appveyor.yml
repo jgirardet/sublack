@@ -5,13 +5,12 @@ image:
 environment:
     # The package name
     PACKAGE: "sublack"
-    SUBLIME_TEXT_VERSION : "3"
+    SUBLIME_TEXT_VERSION : "4"
 
 install:
-    - "SET PYTHON=C:\\Python36"
+    - "SET PYTHON=C:\\Python38"
     - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
     - python --version
-    - pip install black[d]
     - pip install pre-commit
     - ps: appveyor DownloadFile "https://raw.githubusercontent.com/SublimeText/UnitTesting/master/sbin/appveyor.ps1"
     - ps: .\appveyor.ps1 "bootstrap" -verbose
