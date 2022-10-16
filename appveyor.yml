@@ -4,7 +4,7 @@ image:
 
 environment:
     # The package name
-    PACKAGE: "sublack"
+    PACKAGE: "sublack4"
     SUBLIME_TEXT_VERSION : "4"
 
 install:
