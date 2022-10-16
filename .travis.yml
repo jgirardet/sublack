@@ -14,7 +14,6 @@ matrix:
           language: shell       # 'language: python' is an error on Travis CI Windows
           before_install:
             - choco install python --version 3.8.8
-            - python --version
             - python -m pip install --upgrade pip
           env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
         - os: linux
@@ -33,19 +32,19 @@ matrix:
 
 install:
     # bootstrap the testing environment
-    - sh travis.sh bootstrap
+    - bash travis.sh bootstrap
 
     # install specific packages
     - pip3 install pre-commit
 
     # install Package Control and package dependencies
-    - sh travis.sh install_package_control
+    - bash travis.sh install_package_control
 
 script:
     # - which python
     - bash -ilc env
     # run tests with test coverage report
-    - sh travis.sh run_tests --coverage
+    - bash travis.sh run_tests --coverage
     # testing syntax_test files
     # - sh travis.sh run_syntax_tests
 
