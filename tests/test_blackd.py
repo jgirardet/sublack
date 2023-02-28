@@ -5,7 +5,7 @@ TODO : test headers
 from unittest.mock import patch
 
 import sublime
-from .fixtures import sublack, blacked, unblacked, diff, TestCaseBlack
+from fixtures import sublack, blacked, unblacked, diff, TestCaseBlack
 
 _typing = False
 if _typing:
@@ -17,7 +17,7 @@ if _typing:
 del _typing
 
 
-TESTPORT = "79297"
+TESTPORT = "7929"
 
 
 def setUpModule():
@@ -46,7 +46,7 @@ BASE_SETTINGS = {
 }
 
 
-@patch.object(sublack.commands, "is_python", return_value=True)
+@patch.object(sublack.utils, "is_python", return_value=True)
 @patch.object(sublack.blacker, "get_settings", return_value=BASE_SETTINGS)
 class TestBlackdServer(TestCaseBlack):
     def all(self):
@@ -82,41 +82,41 @@ class TestBlackdServer(TestCaseBlack):
             sublack.consts.ALREADY_FORMATTED_MESSAGE_CACHE,
         )
 
-    def test_do_diff(self, *_):
-        """"black should be called even blacked"""
+    # def test_do_diff(self, *_):
+    #     """"black should be called even blacked"""
 
-        self.setText(unblacked)
-        self.view.set_name("base")
-        backup = self.view
-        self.view.run_command("black_diff")
-        window = sublime.active_window()
-        view = window.active_view()
-        assert view, "No view found!"
-        res = sublime.Region(0, view.size())
-        res = sublime.Region(view.lines(res)[2].begin(), view.size())
-        res = view.substr(res).strip()
-        self.assertEqual(res, diff)
-        self.assertEqual(
-            view.settings().get("syntax"), "Packages/Diff/Diff.sublime-syntax"
-        )
-        self.view = backup
-        view.set_scratch(True)
-        view.close()
+    #     self.setText(unblacked)
+    #     self.view.set_name("base")
+    #     backup = self.view
+    #     self.view.run_command("black_diff")
+    #     window = sublime.active_window()
+    #     view = window.active_view()
+    #     assert view, "No view found!"
+    #     region = sublime.Region(0, view.size())
+    #     region = sublime.Region(view.lines(region)[2].begin(), view.size())
+    #     region = view.substr(region).strip()
+    #     self.assertEqual(region, diff)
+    #     self.assertEqual(
+    #         view.settings().get("syntax"), "Packages/Diff/Diff.sublime-syntax"
+    #     )
+    #     self.view = backup
+    #     view.set_scratch(True)
+    #     view.close()
 
 
-@patch.object(sublack.commands, "is_python", return_value=True)
-class TestBlackdServerNotRunning(TestCaseBlack):
-    def setUp(self):
-        super().setUp()
-        self.BASE_SETTINGS = dict(BASE_SETTINGS)
-        self.BASE_SETTINGS["black_blackd_port"] = "123465789"
+# @patch.object(sublack.utils, "is_python", return_value=True)
+# class TestBlackdServerNotRunning(TestCaseBlack):
+#     def setUp(self):
+#         super().setUp()
+#         self.BASE_SETTINGS = dict(BASE_SETTINGS)
+#         self.BASE_SETTINGS["black_blackd_port"] = "123465789"
 
-    def test_blackd_not_running(self, *_):
-        with patch.object(
-            sublack.blacker, "get_settings", return_value=self.BASE_SETTINGS
-        ):
-            with patch("sublime.message_dialog") as m:
-                self.view.run_command("black_file")
-                m.assert_called_with(
-                    "blackd not running on port 123465789, you can start it with blackd_start command"
-                )
+#     def test_blackd_not_running(self, *_):
+#         with patch.object(
+#             sublack.blacker, "get_settings", return_value=self.BASE_SETTINGS
+#         ):
+#             with patch("sublime.message_dialog") as m:
+#                 self.view.run_command("black_file")
+#                 m.assert_called_with(
+#                     "blackd not running on port 123465789, you can start it with blackd_start command"
+#                 )

@@ -1,123 +1,108 @@
 import os
-from unittest import TestCase, skip  # noqa
-from unittest.mock import MagicMock, patch
+from unittest import TestCase
+from unittest.mock import MagicMock
 
-from fixtures import sublack, view
+from fixtures import sublack
+from fixtures import sublack_utils
+from fixtures import view
+from fixtures import TestCaseBlack
+
+import sublime
 import pathlib
 import tempfile
 
 
-class TestBlackMethod(TestCase):
+class TestBlackMethod(TestCaseBlack):
+    def _get_view(self):
+        window = sublime.active_window()
+        view = window.active_view()
+        assert view, "view is not defined"
+        return view
+
     def test_get_command_line(self):
-        gcl = sublack.blacker.Black.get_command_line
-        v = MagicMock()
-        s = MagicMock()
-        s.config = {
-            "black_command": "black",
+        view = self._get_view()
+        black = sublack.blacker.Black(view)
+        black.config = {
+            "black_command": None,
             "black_line_length": None,
             "black_fast": False,
         }
-        s.view.file_name.return_value = "blabla.py"
-        a = gcl(s, v)
-        self.assertEqual(a, ["black", "-"])
+        command = black.get_black_command()
+        black_path = sublack_utils.get_vendor_black_path()
+        self.assertEqual(command, [black_path, "-"])
 
-        s.config = {
+        black.config = {
             "black_command": "black",
             "black_line_length": 90,
             "black_fast": True,
         }
-        a = gcl(s, v)
-        self.assertEqual(a, ["black", "-", "-l", "90", "--fast"])
+        command = black.get_black_command()
+        expected_command = [black_path, "-", "-l", "90", "--fast"]
+        self.assertEqual(command, expected_command)
 
         # test diff
-        a = gcl(s, v, extra=["--diff"])
-        self.assertEqual(a, ["black", "-", "--diff", "-l", "90", "--fast"])
+        command = black.get_black_command(extra=["--diff"])
+        expected_command = [black_path, "-", "--diff", "-l", "90", "--fast"]
+        self.assertEqual(command, expected_command)
 
         # test skipstring
-        s.config = {"black_command": "black", "black_skip_string_normalization": True}
-        a = gcl(s, v)
-        self.assertEqual(a, ["black", "-", "--skip-string-normalization"])
+        black.config = {"black_command": "black", "black_skip_string_normalization": True}
+        command = black.get_black_command()
+        expected_command = [black_path, "-", "--skip-string-normalization"]
+        self.assertEqual(command, expected_command)
 
         # test py36
-        s.config = {"black_command": "black", "black_py36": True}
-        a = gcl(s, v)
-        self.assertEqual(a, ["black", "-", "--py36"])
+        black.config = {"black_command": "black", "black_py36": True}
+        command = black.get_black_command()
+        expected_command = [black_path, "-", "--py36"]
+        self.assertEqual(command, expected_command)
 
         # test tearget target-version
-        s.config = {"black_command": "black", "black_target_version": ["py36"]}
-        a = gcl(s, v)
-        self.assertEqual(a, ["black", "-", "--target-version", "py36"])
+        black.config = {"black_command": "black", "black_target_version": ["py36"]}
+        command = black.get_black_command()
+        expected_command = [black_path, "-", "--target-version", "py36"]
+        self.assertEqual(command, expected_command)
 
         # test tearget target-version
-        s.config = {"black_command": "black", "black_target_version": ["py36", "py37"]}
-        a = gcl(s, v)
-        self.assertEqual(
-            a, ["black", "-", "--target-version", "py36", "--target-version", "py37"]
-        )
+        black.config = {"black_command": "black", "black_target_version": ["py36", "py37"]}
+        command = black.get_black_command()
+        expected_command = [black_path, "-", "--target-version", "py36", "--target-version", "py37"]
+        self.assertEqual(command, expected_command)
 
         # test pyi
-        s.config = {"black_command": "black"}
-        s.view.file_name.return_value = "blabla.pyi"
-        a = gcl(s, v)
-        self.assertEqual(a, ["black", "-", "--pyi"])
-
-    def test_windows_prepare(self):
-        with patch.object(sublack.blacker, "sublime") as m:
-            m.platform.return_value = "linux"
-            wop = sublack.blacker.Black.windows_popen_prepare
-            self.assertFalse(wop("r"))
-        with patch.object(sublack.blacker, "sublime") as m:
-            with patch.object(sublack.blacker, "subprocess"):
-                m.platform.return_value = "windows"
-                wop = sublack.blacker.Black.windows_popen_prepare
-                self.assertTrue(wop("r"))
+        view = MagicMock()
+        black.config = {"black_command": "black"}
+        black.view = view
+        view.file_name.return_value = "blabla.pyi"
+        command = black.get_black_command()
+        expected_command = [black_path, "-", "--pyi"]
+        self.assertEqual(command, expected_command)
 
     def test_get_content_encoding(self):
-        gc = sublack.blacker.Black.get_content
-        s = MagicMock()
-        s.view.encoding.return_value = "utf-32"
-        c, e = gc(s)
-        self.assertEqual(e, "utf-32")
+        self.view.set_encoding("utf-8")
+        black = sublack.blacker.Black(self.view)
+        _, encoding = black.get_content()
+        self.assertEqual(encoding, self.view.encoding())
 
-        s.view.encoding.return_value = "Undefined"
-        with patch.object(
-            sublack.blacker, "get_encoding_from_file", return_value="utf-16"
-        ):
-            c, e = gc(s)
-            self.assertEqual(e, "utf-16")
+    def test_get_content(self):
+        self.view.set_encoding("utf-8")
+        self.setText("hÃ©llo")
+        black = sublack.blacker.Black(self.view)
+        content, _ = black.get_content()
+        self.assertEqual(content.decode("utf-8"), "hÃ©llo")
 
-        s.config = {"black_default_encoding": "latin-1"}
-        s.view.encoding.return_value = None
-        c, e = gc(s)
-        self.assertEqual(e, "latin-1")
-
-    def test_get_content_content(self):
-        gc = sublack.blacker.Black.get_content
-        s = MagicMock()
-        s.view.encoding.return_value = "utf-8"
-        s.view.substr.return_value = "héllo"
-        c, e = gc(s)
-        self.assertEqual(c.decode("utf-8"), "héllo")
+    def _get_black_instance(self):
+        return sublack.blacker.Black()
 
     def test_run_black(self):
-        rb = sublack.blacker.Black.run_black
-        s = MagicMock()
-        s.get_cwd.return_value = None
-        s.windows_popen_prepare.return_value = None
-        a = rb(s, ["black", "-"], os.environ.copy(), None, "hello".encode())
-        self.assertEqual(a[0], 0)
-        self.assertEqual(a[1], b"hello\n")
-        self.assertIn(b"reformatted", a[2])
-
-        with patch.object(sublack.blacker, "sublime"):
-            s.windows_popen_prepare.side_effect = OSError
-            try:
-                a = rb(s, ["black", "-"], os.environ.copy(), None, "hello".encode())
-            except OSError as e:
-                self.assertEqual(
-                    str(e),
-                    "You may need to install Black and/or configure 'black_command' in Sublack's Settings.",
-                )
+        black = self._get_black_instance()
+        blackd_command = sublack_utils.get_vendor_black_path()
+        return_code, out, error = black.run_black(
+            [blackd_command, "-"], os.environ.copy(), None, "hello".encode()
+        )
+        self.assertEqual(return_code, 0)
+        self.assertEqual(out, b"hello\n")
+        self.assertIn(b"reformatted", error)
 
     def test_good_working_dir(self):
         gg = sublack.blacker.Black.get_good_working_dir
@@ -151,9 +136,7 @@ class TestCache(TestCase):
         self.ah = str(hash("a"))
         self.bh = str(hash("b"))
         self.cmd1 = ["cmd1"]
-        self.cache = (
-            self.ah + "|||" + str(self.cmd1) + "\n" + self.bh + "|||" + str(self.cmd1)
-        )
+        self.cache = self.ah + "|||" + str(self.cmd1) + "\n" + self.bh + "|||" + str(self.cmd1)
         # view
         self.black = sublack.blacker.Black(self.view)
 
@@ -192,9 +175,7 @@ class TestCache(TestCase):
         self.assertTrue(self.black.add_to_cache("c", self.cmd1))
         self.assertEqual(
             self.black.formatted_cache.open().read(),
-            "{}|||['cmd1']\n{}|||['cmd1']\n{}|||['cmd1']".format(
-                str(hash("c")), self.ah, self.bh
-            ),
+            "{}|||['cmd1']\n{}|||['cmd1']\n{}|||['cmd1']".format(str(hash("c")), self.ah, self.bh),
         )
 
     def test_limite_cache_size(self):
@@ -215,8 +196,10 @@ class TestBlackdClass(TestCase):
         self.maxDiff = None
 
         # dep
-        cmd = "black - -l 25 --fast --skip-string-normalization --py36 --target-version py37".split()
-        h = sublack.blacker.Blackd.format_headers("self", cmd)
+        cmd = (
+            "black - -l 25 --fast --skip-string-normalization --py36 --target-version py37".split()
+        )
+        h = sublack.blacker.Blackd.format_headers(cmd)
         h["X-Python-Variant"] = set(h["X-Python-Variant"].split(","))
         self.assertEqual(
             h,
@@ -230,7 +213,7 @@ class TestBlackdClass(TestCase):
 
         # standard
         cmd = "black - -l 25 --fast --skip-string-normalization --py36".split()
-        h = sublack.blacker.Blackd.format_headers("self", cmd)
+        h = sublack.blacker.Blackd.format_headers(cmd)
         self.assertEqual(
             h,
             {
@@ -243,7 +226,7 @@ class TestBlackdClass(TestCase):
 
         # target-version
         cmd = "black - -l 25 --fast --skip-string-normalization --target-version py36 --target-version py37".split()
-        h = sublack.blacker.Blackd.format_headers("self", cmd)
+        h = sublack.blacker.Blackd.format_headers(cmd)
         h["X-Python-Variant"] = set(h["X-Python-Variant"].split(","))
         self.assertEqual(
             h,

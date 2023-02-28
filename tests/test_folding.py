@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 from fixtures import sublack
 import sublime
 
-Path = sublack.utils.Path
+from pathlib import Path
 
 SAMPLE = """class A:
     def a():
@@ -108,51 +108,27 @@ class TestFolding(TestCase):
             sublime.Region(21, 55), sublack.folding.get_region_to_refold(1, v)
         )
 
-    def test_get_index_with_python33(self):
+    def test_get_index_with_ast(self):
         body = b"a=1"
-        self.assertEquals(sublack.folding.get_index_with_python33(body), A_EQUAL_INDEX)
         self.assertEquals(
-            sublack.folding.get_index_with_python33(SAMPLE.encode()), SAMPLE_INDEX
-        )
-
-        with self.assertRaises(sublack.folding.FoldingError):
-            sublack.folding.get_index_with_python33(b"a=")
-
-    def test_get_index_with_interpreter(self):
-        body = b"a=1"
-        v = View(SAMPLE)
-        # inter = os.environ.get("PYTHON")+"\\Scripts\\python.exe" if os.environ.get("APPVEYOR", None) else "python"
-        inter = "python"
-
-        v.settings = lambda: {"python_interpreter": inter}
-
-        self.assertEquals(
-            sublack.folding.get_index_with_interpreter(v, body, "utf-8"), A_EQUAL_INDEX
+            sublack.folding.get_index_with_ast(body), A_EQUAL_INDEX
         )
         self.assertEquals(
-            sublack.folding.get_index_with_interpreter(v, SAMPLE.encode(), "utf-8"),
+            sublack.folding.get_index_with_ast(SAMPLE.encode()),
             SAMPLE_INDEX,
         )
         with self.assertRaises(sublack.folding.FoldingError):
-            sublack.folding.get_index_with_interpreter(v, b"a=", "utf-8")
+            sublack.folding.get_index_with_ast(b"a=")
 
     def test_get_ast_index(self):
-        v = View(SAMPLE)
-        m = MagicMock()
-        m.has.return_value = True
-        m.get.return_value = "python"
-        v.settings = lambda: m
         body = b"a=1"
         self.assertEquals(
-            sublack.folding.get_ast_index(v, body, "utf-8"), A_EQUAL_INDEX
+            sublack.folding.get_ast_index(body), A_EQUAL_INDEX
         )
-
-        m.has.return_value = False
         self.assertEquals(
-            sublack.folding.get_ast_index(v, body, "utf-8"), A_EQUAL_INDEX
+            sublack.folding.get_ast_index(body), A_EQUAL_INDEX
         )
-
-        self.assertEquals(sublack.folding.get_ast_index(v, b"a=", "utf-8"), False)
+        self.assertEquals(sublack.folding.get_ast_index(b"a="), False)
 
     def test_get_new_lines(self):
         old = [1, 5, 9, 10, 12, 99, 1, 10, 99]
