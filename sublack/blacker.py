@@ -6,7 +6,7 @@ Sublime Text 4 Plugin to invoke Black on a Python file.
 from __future__ import annotations
 
 import os
-import sublime
+import sublime  # type: ignore
 
 import pathlib
 import subprocess
@@ -98,7 +98,6 @@ class Blackd:
 
         if use_dif:
             headers["X-Diff"] = "true"
-
 
         get_log().debug("headers : %s", headers)
         return headers
