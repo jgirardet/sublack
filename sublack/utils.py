@@ -295,13 +295,12 @@ def get_black_executable_command(vendor: bool = False) -> str:
 @functools.lru_cache()
 def get_vendor_black_path() -> str:
     vendor_local_path = vendor.get_vendor_local_path()
-    return str(vendor_local_path / ".venv/Scripts/black")
+    return str(vendor_local_path / "python/windows/Lib/site-packages/black")
 
 
 @functools.lru_cache()
 def get_vendor_blackd_path() -> str:
-    vendor_local_path = vendor.get_vendor_local_path()
-    return str(vendor_local_path / "python/windows/Lib/site-packages/blackd")
+    return f"{get_vendor_black_path()}d"
 
 
 @functools.lru_cache()
