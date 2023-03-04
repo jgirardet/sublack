@@ -3,16 +3,19 @@ from __future__ import annotations
 import contextlib
 import functools
 import sublime
-import subprocess
-import threading
 import time
 
 from . import utils
 
+_typing = False
+if _typing:
+    import pathlib
+    import subprocess
+del _typing
 
-_lock = threading.Lock()
 
 _blackd_process = None
+_blackd_starting = False
 
 
 def set_blackd_process(process: subprocess.Popen[str]):
@@ -26,7 +29,7 @@ def get_blackd_process() -> subprocess.Popen[str] | None:
 
 
 @functools.lru_cache()
-def get_pid_cache_path():
+def get_pid_cache_path() -> pathlib.Path:
     return utils.cache_path() / "pid"
 
 
@@ -48,8 +51,6 @@ def get_cached_pid():
         return
 
 
-_blackd_starting = False
-
 def is_blackd_starting() -> bool:
     global _blackd_starting
     return _blackd_starting
@@ -57,7 +58,6 @@ def is_blackd_starting() -> bool:
 
 @contextlib.contextmanager
 def blackd_starting_true():
-    # _lock.acquire()
     global _blackd_starting
     _blackd_starting = True
     print(f"pre _blackd_starting: {_blackd_starting}")
@@ -66,7 +66,6 @@ def blackd_starting_true():
     finally:
         _blackd_starting = False
         print(f"post _blackd_starting: {_blackd_starting}")
-        # _lock.release()
 
 
 def _start_blackd_server(port: str):

@@ -4,23 +4,15 @@ import sublime
 import sublime_plugin
 import subprocess
 
-from .consts import (
-    BLACK_ON_SAVE_VIEW_SETTING,
-    STATUS_KEY,
-    BLACKD_STOPPED,
-    BLACKD_STOP_FAILED,
-    REFORMATTED_MESSAGE,
-    REFORMAT_ERRORS,
-)
+from . import blacker
+from . import consts
 from . import server
 from . import utils
-from .blacker import Black
 
 _typing = False
 if _typing:
     from typing import Any
 del _typing
-
 
 
 class BlackFileCommand(sublime_plugin.TextCommand):
@@ -39,7 +31,7 @@ class BlackFileCommand(sublime_plugin.TextCommand):
         # backup view position:
         old_view_port = self.view.viewport_position()
 
-        Black(self.view)(edit)
+        blacker.Black(self.view)(edit)
 
         # re apply view position
         # fix : https://github.com/jgirardet/sublack/issues/52
@@ -59,7 +51,7 @@ class BlackDiffCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
         utils.get_log().debug("running black_file")
-        Black(self.view)(edit, extra=["--diff"])
+        blacker.Black(self.view)(edit, extra=["--diff"])
 
 
 class BlackToggleBlackOnSaveCommand(sublime_plugin.TextCommand):
@@ -93,15 +85,15 @@ class BlackToggleBlackOnSaveCommand(sublime_plugin.TextCommand):
         # operation that never throws, and immediately check again if the
         # wanted next state is fulfilled by that side effect.
         # If yes, we're almost done and just clean up the status area.
-        view.settings().erase(BLACK_ON_SAVE_VIEW_SETTING)
+        view.settings().erase(consts.BLACK_ON_SAVE_VIEW_SETTING)
         if utils.get_settings(view)["black_on_save"] == next_state:
-            view.erase_status(STATUS_KEY)
+            view.erase_status(consts.STATUS_KEY)
             return
 
         # Otherwise, we set the next state, and indicate in the status bar
         # that this view now deviates from the other views.
-        view.settings().set(BLACK_ON_SAVE_VIEW_SETTING, next_state)
-        view.set_status(STATUS_KEY, "black: {}".format("ON" if next_state else "OFF"))
+        view.settings().set(consts.BLACK_ON_SAVE_VIEW_SETTING, next_state)
+        view.set_status(consts.STATUS_KEY, "black: {}".format("ON" if next_state else "OFF"))
 
 
 class BlackdStartCommand(sublime_plugin.TextCommand):
@@ -127,9 +119,9 @@ class BlackdStopCommand(sublime_plugin.ApplicationCommand):
     def run(self):
         utils.get_log().debug("blackd_stop command running")
         if server.stop_blackd_server():
-            sublime.active_window().active_view().set_status(STATUS_KEY, BLACKD_STOPPED)
+            sublime.active_window().active_view().set_status(consts.STATUS_KEY, consts.BLACKD_STOPPED)
         else:
-            sublime.active_window().active_view().set_status(STATUS_KEY, BLACKD_STOP_FAILED)
+            sublime.active_window().active_view().set_status(consts.STATUS_KEY, consts.BLACKD_STOP_FAILED)
 
 
 class BlackFormatAllCommand(sublime_plugin.WindowCommand):
@@ -163,9 +155,9 @@ class BlackFormatAllCommand(sublime_plugin.WindowCommand):
             dispatcher.append((folder, p.returncode, p.stderr.read()))
 
         if not errors:  # all 0 return_code
-            self.window.active_view().set_status(STATUS_KEY, REFORMATTED_MESSAGE)
+            self.window.active_view().set_status(consts.STATUS_KEY, consts.REFORMATTED_MESSAGE)
         else:
-            self.window.active_view().set_status(STATUS_KEY, REFORMAT_ERRORS)
+            self.window.active_view().set_status(consts.STATUS_KEY, consts.REFORMAT_ERRORS)
 
         for out in success:
             LOG.debug(

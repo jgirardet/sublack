@@ -6,36 +6,14 @@ Sublime Text 4 Plugin to invoke Black on a Python file.
 from __future__ import annotations
 
 import os
-import sublime  # type: ignore
-
 import pathlib
+import sublime
 import subprocess
 
 from .vendor.packages import requests
-from .consts import (
-    HEADERS_TABLE,
-    ALREADY_FORMATTED_MESSAGE,
-    ALREADY_FORMATTED_MESSAGE_CACHE,
-    STATUS_KEY,
-    REFORMATTED_MESSAGE,
-)
-from .utils import (
-    cache_path,
-    find_root_file,
-    format_log_data,
-    get_black_executable_command,
-    get_encoding,
-    get_env,
-    get_log,
-    get_settings,
-    get_startup_info,
-    has_blackd_started,
-    use_pre_commit,
-)
-
-from .folding import get_ast_index
-from .folding import get_folded_lines
-from .folding import refold_all
+from . import consts
+from . import folding
+from . import utils
 
 
 _typing = False
@@ -61,7 +39,7 @@ class Blackd:
 
     @property
     def log(self):
-        return get_log()
+        return utils.get_log()
 
     @staticmethod
     def format_headers(command: list[str]):
@@ -70,8 +48,8 @@ class Blackd:
 
         # all but line length an dtarget version
         for item in command:
-            if item in HEADERS_TABLE:
-                headers.update(HEADERS_TABLE[item])
+            if item in consts.HEADERS_TABLE:
+                headers.update(consts.HEADERS_TABLE[item])
         # line length
         if "-l" in command:
             headers["X-Line-Length"] = command[command.index("-l") + 1]
@@ -99,7 +77,7 @@ class Blackd:
         if use_dif:
             headers["X-Diff"] = "true"
 
-        get_log().debug("headers : %s", headers)
+        utils.get_log().debug("headers : %s", headers)
         return headers
 
     def process_response(self, response):
@@ -127,7 +105,7 @@ class Blackd:
         return response
 
     def __call__(self):
-        if not has_blackd_started():
+        if not utils.has_blackd_started():
             self.log.debug("Black server has not finished initializing!")
             return None, None, None
 
@@ -168,29 +146,29 @@ class Black:
         window = view.window() or active_window
 
         self.view = view
-        self.config = get_settings(view)
+        self.config = utils.get_settings(view)
         self.all = sublime.Region(0, self.view.size())
         self.variables = window.extract_variables()
-        self.formatted_cache = cache_path() / "formatted"
+        self.formatted_cache = utils.cache_path() / "formatted"
         self.pre_commit_config = False
 
-        self.log.debug("Config:\n{}".format(format_log_data(self.config)))
+        self.log.debug("Config:\n{}".format(utils.format_log_data(self.config)))
         if not self.config["black_use_precommit"]:
             return
 
-        root_file = find_root_file(self.view, ".pre-commit-config.yaml")
+        root_file = utils.find_root_file(self.view, ".pre-commit-config.yaml")
         if root_file is None:
             return
 
-        self.pre_commit_config = use_pre_commit(root_file)
+        self.pre_commit_config = utils.use_pre_commit(root_file)
 
     @property
     def log(self):
-        return get_log()
+        return utils.get_log()
 
     def get_black_command(self, extra: list[str] = []) -> list[str]:
         # prepare popen arguments
-        black_command = get_black_executable_command()
+        black_command = utils.get_black_executable_command()
         if not black_command:
             # always show error in popup
             msg = "Black command not configured. Check your settings!"
@@ -240,7 +218,7 @@ class Black:
         return command
 
     def get_content(self):
-        encoding = get_encoding(settings=self.config)
+        encoding = utils.get_encoding(settings=self.config)
 
         # select the whole file en encode it
         # encoding in popen starts with python 3.6
@@ -259,7 +237,7 @@ class Black:
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                startupinfo=get_startup_info(),
+                startupinfo=utils.get_startup_info(),
             )
             out, err = process.communicate(input=content)
 
@@ -335,12 +313,12 @@ class Black:
         self.log.debug("Black returned: {}".format(error_message))
         # failure
         if returncode != 0:
-            self.view.set_status(STATUS_KEY, error_message)
+            self.view.set_status(consts.STATUS_KEY, error_message)
             return returncode
 
         # already formated, nothing changes
         elif "unchanged" in error_message:
-            self.view.set_status(STATUS_KEY, ALREADY_FORMATTED_MESSAGE)
+            self.view.set_status(consts.STATUS_KEY, consts.ALREADY_FORMATTED_MESSAGE)
             self.add_to_cache(content, command)
 
         # diff mode
@@ -351,22 +329,22 @@ class Black:
         else:
             # setup folding
             old_sel = self.view.sel()[0]
-            folded_lines = get_folded_lines(self.view)
+            folded_lines = folding.get_folded_lines(self.view)
 
             # result of formatting
             new_content = out.decode(encoding)
             self.view.replace(edit, self.all, new_content)
 
             # reapply folding
-            old = get_ast_index(content)
-            new = get_ast_index(out)
+            old = folding.get_ast_index(content)
+            new = folding.get_ast_index(out)
             if old and new:
-                refold_all(old, new, self.view, folded_lines)
+                folding.refold_all(old, new, self.view, folded_lines)
             self.view.sel().clear()
             self.view.sel().add(old_sel)
 
             # status and caching
-            self.view.set_status(STATUS_KEY, REFORMATTED_MESSAGE)
+            self.view.set_status(consts.STATUS_KEY, consts.REFORMATTED_MESSAGE)
             sublime.set_timeout_async(lambda: self.add_to_cache(new_content, command))
 
     def format_via_precommit(self, edit: sublime.Edit, content, cwd, env):
@@ -389,7 +367,7 @@ class Black:
                 command,
                 cwd=cwd,
                 env=env,
-                startupinfo=get_startup_info(),
+                startupinfo=utils.get_startup_info(),
                 stderr=subprocess.STDOUT,
                 stdout=subprocess.PIPE,
             )
@@ -411,7 +389,7 @@ class Black:
         content, encoding = self.get_content()
         cwd = self.get_good_working_dir()
         self.log.debug("Working dir: {}".format(cwd))
-        env = get_env()
+        env = utils.get_env()
         # self.log.debug("env: {}".format(env))
 
         if self.pre_commit_config:
@@ -426,12 +404,12 @@ class Black:
         # check the cache
         # cache may not be used with pre-commit
         if self.is_cached(content, command):
-            self.view.set_status(STATUS_KEY, ALREADY_FORMATTED_MESSAGE_CACHE)
+            self.view.set_status(consts.STATUS_KEY, consts.ALREADY_FORMATTED_MESSAGE_CACHE)
             return
 
         # call black or balckd:
         if self.config["black_use_blackd"]:  # no diff with server
-            if not has_blackd_started():
+            if not utils.has_blackd_started():
                 self.log.debug("Black server has not finished initializing!")
                 return
 

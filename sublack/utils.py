@@ -12,18 +12,14 @@ import socket
 import subprocess
 import time
 
+from . import consts
 from . import vendor
-from .consts import CONFIG_OPTIONS
-from .consts import ENCODING_PATTERN
-from .consts import KEY_ERROR_MARKER
-from .consts import PACKAGE_NAME
-from .consts import SETTINGS_FILE_NAME
-from .consts import SETTINGS_NS_PREFIX
 
 _typing = False
 if _typing:
     from typing import Any
 del _typing
+
 
 _has_blackd_started = False
 _depth_count = 0
@@ -37,17 +33,19 @@ def get_log(settings: dict[str, Any] | None = None) -> logging.Logger:
 
     global _log
     if _log is None:
-        _log = logging.getLogger(PACKAGE_NAME)
+        _log = logging.getLogger(consts.PACKAGE_NAME)
         # Prevent duplicate log items from being created if the module is reloaded:
         if _log.handlers:
             return _log
 
+        view = sublime.active_window().active_view()
+        assert view
         settings = (
-            get_settings(sublime.active_window().active_view()) if settings is None else settings
+            get_settings(view) if settings is None else settings
         )
         debug_formatter = logging.Formatter(
             "[{pn}:%(filename)s.%(funcName)s-%(lineno)d](%(levelname)s) %(message)s".format(
-                pn=PACKAGE_NAME
+                pn=consts.PACKAGE_NAME
             )
         )
         stream_handler = logging.StreamHandler()
@@ -154,20 +152,20 @@ def get_on_save_fast(view: sublime.View):
     if flat_settings.has("sublack.black_on_save"):
         return flat_settings.get("sublack.black_on_save")
 
-    if "black_on_save" in flat_settings.get(PACKAGE_NAME, {}):
+    if "black_on_save" in flat_settings.get(consts.PACKAGE_NAME, {}):
         return flat_settings.has("sublack.black_on_save")
 
-    return sublime.load_settings(SETTINGS_FILE_NAME).get("black_on_save")
+    return sublime.load_settings(consts.SETTINGS_FILE_NAME).get("black_on_save")
 
 
 def get_settings(view: sublime.View) -> dict[str, Any]:
     flat_settings = view.settings()
-    nested_settings = flat_settings.get(PACKAGE_NAME, {})
-    global_settings = sublime.load_settings(SETTINGS_FILE_NAME)
+    nested_settings = flat_settings.get(consts.PACKAGE_NAME, {})
+    global_settings = sublime.load_settings(consts.SETTINGS_FILE_NAME)
     pyproject_settings = read_pyproject_toml(find_pyproject(view))
     settings = {}
 
-    for k in CONFIG_OPTIONS:
+    for k in consts.CONFIG_OPTIONS:
         # 1. pyproject
         value = pyproject_settings.get(k[6:].replace("_", "-"), None)
         if value:
@@ -175,14 +173,14 @@ def get_settings(view: sublime.View) -> dict[str, Any]:
             continue
 
         # 2. check sublime "flat settings"
-        value = flat_settings.get(SETTINGS_NS_PREFIX + k, KEY_ERROR_MARKER)
-        if value != KEY_ERROR_MARKER:
+        value = flat_settings.get(consts.SETTINGS_NS_PREFIX + k, consts.KEY_ERROR_MARKER)
+        if value != consts.KEY_ERROR_MARKER:
             settings[k] = value
             continue
 
         # 3. check sublieme "nested settings" for compatibility reason
-        value = nested_settings.get(k, KEY_ERROR_MARKER)
-        if value != KEY_ERROR_MARKER:
+        value = nested_settings.get(k, consts.KEY_ERROR_MARKER)
+        if value != consts.KEY_ERROR_MARKER:
             settings[k] = value
             continue
 
@@ -199,11 +197,11 @@ def is_python(view: sublime.View) -> bool:
 
 def get_encoding_from_region(region: sublime.Region, view: sublime.View) -> str:
     """
-    ENCODING_PATTERN is given by PEP 263
+    consts.ENCODING_PATTERN is given by PEP 263
     """
 
     ligne = view.substr(region)
-    encoding = re.findall(ENCODING_PATTERN, ligne)
+    encoding = re.findall(consts.ENCODING_PATTERN, ligne)
 
     return encoding[0] if encoding else ""
 
@@ -314,7 +312,7 @@ def get_vendor_python_exe_path() -> pathlib.Path:
 
 @functools.lru_cache()
 def cache_path() -> pathlib.Path:
-    return pathlib.Path(sublime.cache_path(), PACKAGE_NAME)
+    return pathlib.Path(sublime.cache_path(), consts.PACKAGE_NAME)
 
 
 def shell() -> bool:
