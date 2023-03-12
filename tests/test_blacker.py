@@ -1,144 +1,175 @@
+from __future__ import annotations
+
+import copy
+import fixtures
 import os
-from unittest import TestCase
-from unittest.mock import MagicMock
-
-from fixtures import sublack
-from fixtures import sublack_utils
-from fixtures import view
-from fixtures import TestCaseBlack
-
-import sublime
 import pathlib
+import sublime
 import tempfile
 
+from unittest import TestCase
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
-class TestBlackMethod(TestCaseBlack):
+
+class TestBlackMethod(fixtures.TestCaseBlack):
     def _get_view(self):
         window = sublime.active_window()
         view = window.active_view()
         assert view, "view is not defined"
         return view
 
-    def test_get_command_line(self):
-        view = self._get_view()
-        black = sublack.blacker.Black(view)
-        black.config = {
-            "black_command": None,
-            "black_line_length": None,
-            "black_fast": False,
-        }
-        command = black.get_black_command()
-        black_path = sublack_utils.get_vendor_black_path()
-        self.assertEqual(command, [black_path, "-"])
+    def _get_base_black_command(self, black_command: str | None = None):
+        return copy.copy(
+            fixtures.sublack_utils_module.get_base_black_command(
+                self._get_view(), black_command=black_command
+            )
+        )
 
-        black.config = {
+    def _get_black_instance(self):
+        return fixtures.sublack_module.blacker.Black(view=self._get_view())
+
+    @patch.object(
+        fixtures.sublack_utils_module,
+        "get_settings",
+        return_value={
             "black_command": "black",
             "black_line_length": 90,
             "black_fast": True,
-        }
-        command = black.get_black_command()
-        expected_command = [black_path, "-", "-l", "90", "--fast"]
+        },
+    )
+    def test_get_command_custom_90_fast(self, _):
+        view = self._get_view()
+        command = fixtures.sublack_utils_module.get_full_black_command(view)
+        expected_command = self._get_base_black_command(black_command="black")
+        expected_command.extend(("-l", "90", "--fast"))
         self.assertEqual(command, expected_command)
 
-        # test diff
-        command = black.get_black_command(extra=["--diff"])
-        expected_command = [black_path, "-", "--diff", "-l", "90", "--fast"]
+    @patch.object(
+        fixtures.sublack_utils_module,
+        "get_settings",
+        return_value={
+            "black_command": None,
+            "black_line_length": 90,
+            "black_fast": False,
+        },
+    )
+    def test_get_command_vendor_diff(self, _):
+        view = self._get_view()
+        command = fixtures.sublack_utils_module.get_full_black_command(view, extra=["--diff"])
+        expected_command = self._get_base_black_command()
+        expected_command.extend(("--diff", "-l", "90"))
         self.assertEqual(command, expected_command)
 
-        # test skipstring
-        black.config = {"black_command": "black", "black_skip_string_normalization": True}
-        command = black.get_black_command()
-        expected_command = [black_path, "-", "--skip-string-normalization"]
+    @patch.object(
+        fixtures.sublack_utils_module,
+        "get_settings",
+        return_value={"black_command": "black", "black_target_version": ["py36", "py37"]},
+    )
+    def test_get_command_custom_target_versions(self, *_):
+        view = self._get_view()
+        command = fixtures.sublack_utils_module.get_full_black_command(view)
+        expected_command = self._get_base_black_command(black_command="black")
+        expected_command.extend(("--target-version", "py36", "--target-version", "py37"))
         self.assertEqual(command, expected_command)
 
-        # test py36
-        black.config = {"black_command": "black", "black_py36": True}
-        command = black.get_black_command()
-        expected_command = [black_path, "-", "--py36"]
-        self.assertEqual(command, expected_command)
-
-        # test tearget target-version
-        black.config = {"black_command": "black", "black_target_version": ["py36"]}
-        command = black.get_black_command()
-        expected_command = [black_path, "-", "--target-version", "py36"]
-        self.assertEqual(command, expected_command)
-
-        # test tearget target-version
-        black.config = {"black_command": "black", "black_target_version": ["py36", "py37"]}
-        command = black.get_black_command()
-        expected_command = [black_path, "-", "--target-version", "py36", "--target-version", "py37"]
-        self.assertEqual(command, expected_command)
-
-        # test pyi
+    @patch.object(
+        fixtures.sublack_utils_module,
+        "get_settings",
+        return_value={"black_command": None},
+    )
+    def test_get_command_vendor_pyi(self, *_):
         view = MagicMock()
-        black.config = {"black_command": "black"}
-        black.view = view
         view.file_name.return_value = "blabla.pyi"
-        command = black.get_black_command()
-        expected_command = [black_path, "-", "--pyi"]
+        command = fixtures.sublack_utils_module.get_full_black_command(view)
+        expected_command = self._get_base_black_command()
+        expected_command.append("--pyi")
+        self.assertEqual(command, expected_command)
+
+    @patch.object(
+        fixtures.sublack_utils_module,
+        "get_settings",
+        return_value={
+            "black_command": None,
+            "black_line_length": None,
+            "black_fast": False,
+        },
+    )
+    def test_get_command_vendor(self, _):
+        view = self._get_view()
+        command = fixtures.sublack_utils_module.get_full_black_command(view)
+        expected_command = self._get_base_black_command()
         self.assertEqual(command, expected_command)
 
     def test_get_content_encoding(self):
         self.view.set_encoding("utf-8")
-        black = sublack.blacker.Black(self.view)
+        black = fixtures.sublack_module.blacker.Black(self.view)
         _, encoding = black.get_content()
         self.assertEqual(encoding, self.view.encoding())
 
     def test_get_content(self):
         self.view.set_encoding("utf-8")
         self.setText("hÃ©llo")
-        black = sublack.blacker.Black(self.view)
+        black = fixtures.sublack_module.blacker.Black(self.view)
         content, _ = black.get_content()
         self.assertEqual(content.decode("utf-8"), "hÃ©llo")
 
-    def _get_black_instance(self):
-        return sublack.blacker.Black()
-
-    def test_run_black(self):
+    @patch.object(
+        fixtures.sublack_utils_module,
+        "get_settings",
+        return_value={
+            "black_command": None,
+            "black_line_length": None,
+            "black_fast": False,
+            "black_use_blackd": False,
+        },
+    )
+    def test_run_black(self, _):
         black = self._get_black_instance()
-        blackd_command = sublack_utils.get_vendor_black_path()
+        view = self._get_view()
+        command = fixtures.sublack_utils_module.get_full_black_command(view)
         return_code, out, error = black.run_black(
-            [blackd_command, "-"], os.environ.copy(), None, "hello".encode()
+            command, os.environ.copy(), None, "hello".encode()
         )
         self.assertEqual(return_code, 0)
         self.assertEqual(out, b"hello\n")
         self.assertIn(b"reformatted", error)
 
     def test_good_working_dir(self):
-        gg = sublack.blacker.Black.get_good_working_dir
+        get_working_directory = fixtures.sublack_module.blacker.Black.get_working_directory
 
         # filename ok
         s = MagicMock()
         s.view.file_name.return_value = "/bla/bla.py"
-        self.assertEqual("/bla", gg(s))
+        self.assertEqual("/bla", get_working_directory(s))
 
         # no filenmae, no window
         s.view.file_name.return_value = None
         s.variables.get.return_value = ""
         s.view.window.return_value = None
-        self.assertEqual(None, gg(s))
+        self.assertEqual(None, get_working_directory(s))
 
         # not folders
         e = MagicMock()
         s.view.window.return_value = e
         e.folders.return_value = []
-        self.assertEqual(None, gg(s))
+        self.assertEqual(None, get_working_directory(s))
 
         # folder dir
         e.folders.return_value = ["/bla", "ble"]
-        self.assertEqual("/bla", gg(s))
+        self.assertEqual("/bla", get_working_directory(s))
 
 
 class TestCache(TestCase):
     def setUp(self):
         # data
-        self.view = view()
+        self.view = fixtures.view()
         self.ah = str(hash("a"))
         self.bh = str(hash("b"))
         self.cmd1 = ["cmd1"]
         self.cache = self.ah + "|||" + str(self.cmd1) + "\n" + self.bh + "|||" + str(self.cmd1)
         # view
-        self.black = sublack.blacker.Black(self.view)
+        self.black = fixtures.sublack_module.blacker.Black(self.view)
 
         # temp file
         temp = tempfile.NamedTemporaryFile(delete=True)
@@ -150,7 +181,9 @@ class TestCache(TestCase):
     def tearDown(self):
         self.black.formatted_cache.unlink()
         self.view.set_scratch(True)
-        self.view.window().run_command("close_file")
+        window = self.view.window()
+        assert window, "No window found!"
+        window.run_command("close_file")
 
     def test_is_cached(self):
 
@@ -178,7 +211,7 @@ class TestCache(TestCase):
             "{}|||['cmd1']\n{}|||['cmd1']\n{}|||['cmd1']".format(str(hash("c")), self.ah, self.bh),
         )
 
-    def test_limite_cache_size(self):
+    def test_limit_cache_size(self):
         ligne = self.ah + "|||" + str(self.cmd1) + "\n"
         with self.black.formatted_cache.open("wt") as f:
             f.write(251 * ligne)
@@ -197,43 +230,46 @@ class TestBlackdClass(TestCase):
 
         # dep
         cmd = (
-            "black - -l 25 --fast --skip-string-normalization --py36 --target-version py37".split()
+            "black - -l 25 --fast --skip-string-normalization --target-version py37".split()
         )
-        h = sublack.blacker.Blackd.format_headers(cmd)
-        h["X-Python-Variant"] = set(h["X-Python-Variant"].split(","))
+        blackd = fixtures.sublack_module.blacker.Blackd(cmd, b"", "utf-8", {})
+        header = blackd.format_headers(cmd)
+        header["X-Python-Variant"] = set(header["X-Python-Variant"].split(","))
         self.assertEqual(
-            h,
+            header,
             {
                 "X-Line-Length": "25",
                 "X-Skip-String-Normalization": "1",
-                "X-Python-Variant": set(["py3.6", "py3.7"]),
+                "X-Python-Variant": {"py3.7"},
                 "X-Fast-Or-Safe": "fast",
             },
         )
 
         # standard
-        cmd = "black - -l 25 --fast --skip-string-normalization --py36".split()
-        h = sublack.blacker.Blackd.format_headers(cmd)
+        cmd = "black - -l 25 --fast --skip-string-normalization".split()
+        header = blackd.format_headers(cmd)
         self.assertEqual(
-            h,
+            header,
             {
                 "X-Line-Length": "25",
                 "X-Skip-String-Normalization": "1",
-                "X-Python-Variant": "py3.6",
+                # "X-Python-Variant": "py3.6",
                 "X-Fast-Or-Safe": "fast",
             },
         )
 
         # target-version
-        cmd = "black - -l 25 --fast --skip-string-normalization --target-version py36 --target-version py37".split()
-        h = sublack.blacker.Blackd.format_headers(cmd)
-        h["X-Python-Variant"] = set(h["X-Python-Variant"].split(","))
+        cmd = (
+            "black - -l 25 --fast --skip-string-normalization --target-version py36 --target-version py37"
+        ).split()
+        header = blackd.format_headers(cmd)
+        header["X-Python-Variant"] = set(header["X-Python-Variant"].split(","))
         self.assertEqual(
-            h,
+            header,
             {
                 "X-Line-Length": "25",
                 "X-Skip-String-Normalization": "1",
-                "X-Python-Variant": set(["py3.6", "py3.7"]),
+                "X-Python-Variant": {"py3.6", "py3.7"},
                 "X-Fast-Or-Safe": "fast",
             },
         )

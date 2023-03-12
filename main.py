@@ -2,12 +2,12 @@
 Sublack
 """
 
+import pathlib
 import sublime
 import sublime_plugin
 
-import pathlib
-
 from . import sublack
+from .sublack import server
 from .sublack import utils
 from .sublack.commands import *
 
@@ -34,7 +34,7 @@ def plugin_loaded():
     if settings["black_blackd_autostart"]:
 
         def _blackd_start():
-            sublack.server.start_blackd_server(current_view)
+            server.start_blackd_server(current_view)
 
         sublime.set_timeout_async(_blackd_start, 0)
 
@@ -45,7 +45,7 @@ def plugin_loaded():
 
 
 def plugin_unloaded():
-    return sublack.server.stop_blackd_server()
+    return server.stop_blackd_server()
 
 
 class BlackEventListener(sublime_plugin.EventListener):

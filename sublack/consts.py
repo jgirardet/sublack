@@ -14,6 +14,8 @@ ALREADY_FORMATTED_MESSAGE = "sublack: already well formatted"
 ALREADY_FORMATTED_MESSAGE_CACHE = "sublack (cache): already well formatted"
 
 REFORMATTED_MESSAGE = "sublack: reformatted"
+REFORMATTED_ALL_PARTIAL_MESSAGE = "sublack: partially reformatted all"
+REFORMATTED_ALL_MESSAGE = "sublack: reformatted all"
 REFORMAT_ERRORS = "sublack: reformatting error, check console for logs"
 
 CONFIG_OPTIONS = [

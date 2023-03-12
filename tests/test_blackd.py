@@ -5,28 +5,25 @@ TODO : test headers
 from unittest.mock import patch
 
 import sublime
-from fixtures import sublack, blacked, unblacked, diff, TestCaseBlack
 
-_typing = False
-if _typing:
-    import sublack.blacker
-    import sublack.commands
-    import sublack.consts
-    import sublack.server
-    import sublack.utils
-del _typing
+from fixtures import sublack_module as sublack
+from fixtures import sublack_server_module
+from fixtures import blacked
+from fixtures import unblacked
+# from .fixtures import diff
+from fixtures import TestCaseBlack
 
 
 TESTPORT = "7929"
 
 
 def setUpModule():
-    if not sublack.server._start_blackd_server(TESTPORT):
+    if not sublack_server_module._start_blackd_server(TESTPORT):
         raise IOError("blackd server not running")
 
 
 def tearDownModule():
-    sublack.server.stop_blackd_server()
+    sublack_server_module.stop_blackd_server()
 
 
 BASE_SETTINGS = {
@@ -47,7 +44,7 @@ BASE_SETTINGS = {
 
 
 @patch.object(sublack.utils, "is_python", return_value=True)
-@patch.object(sublack.blacker, "get_settings", return_value=BASE_SETTINGS)
+@patch.object(sublack.utils, "get_settings", return_value=BASE_SETTINGS)
 class TestBlackdServer(TestCaseBlack):
     def all(self):
         all_file = sublime.Region(0, self.view.size())
@@ -113,7 +110,7 @@ class TestBlackdServer(TestCaseBlack):
 
 #     def test_blackd_not_running(self, *_):
 #         with patch.object(
-#             sublack.blacker, "get_settings", return_value=self.BASE_SETTINGS
+#             sublack.utils, "get_settings", return_value=self.BASE_SETTINGS
 #         ):
 #             with patch("sublime.message_dialog") as m:
 #                 self.view.run_command("black_file")
