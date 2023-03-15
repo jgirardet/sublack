@@ -37,6 +37,9 @@
       // choices : debug > info > error
       "black_log": "info",
 
+      // whether or not to log to file
+      "black_log_to_file": false,
+
       // default encoding for never saved file, if not specified un  first 2 lines (pep 263):
       // default is "utf-8". Change this only if you want override default behaviour.
       "black_default_encoding": "utf-8",

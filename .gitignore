@@ -1,4 +1,8 @@
-*.py[cod]
+.stubs/*
+__pycache__/
+
+sublack/*/*.py[cod]
+!vendor/*/*.py[cod]
 
 # C extensions
 *.so
@@ -15,7 +19,8 @@ var
 sdist
 develop-eggs
 .installed.cfg
-lib
+lib/*
+!windows/lib/site-packages
 lib64
 
 # Installer logs
@@ -58,6 +63,15 @@ AUTHORS
 # pytest
 .pytest_cache/
 Pipfile.lock
+
+# sublime
 *.sublime-workspace
 *.sublime-project
 
+# vscode
+*.vscode
+pyrightconfig.json
+
+# project
+*black.exe
+*blackd.exe

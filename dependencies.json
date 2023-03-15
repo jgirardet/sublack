@@ -1,10 +1,2 @@
 {
-   "*": {
-      "*": [
-         "requests",
-         "pathlib",
-         "pyyaml",
-         "python-toml"
-      ]
-   }
 }

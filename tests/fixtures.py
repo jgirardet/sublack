@@ -1,9 +1,19 @@
 import sys
 import sublime
+import pathlib
+
 from unittest import TestCase
 from unittesting import DeferrableTestCase
 
-sublack = sys.modules["sublack.sublack"]
+
+sublack_module = sys.modules["sublack.sublack"]
+sublack_consts_module = sys.modules["sublack.sublack.consts"]
+sublack_server_module = sys.modules["sublack.sublack.server"]
+sublack_utils_module = sys.modules["sublack.sublack.utils"]
+
+
+# def get_sublack():
+#     return sys.modules["sublack.sublack"]
 
 
 blacked = """def get_encoding_from_file(view):
@@ -19,7 +29,7 @@ blacked = """def get_encoding_from_file(view):
     return None
 """
 
-unblacked = """
+unblacked = r"""
 def get_encoding_from_file( view):
 
     region = view.line( sublime.Region(0))
@@ -32,12 +42,12 @@ def get_encoding_from_file( view):
         return encoding
     return None"""
 
-diff = """@@ -1,12 +1,12 @@
+diff = r"""@@ -1,12 +1,11 @@
 +def get_encoding_from_file(view):
- 
+ # type: ignore - these lines must include a single space
 -def get_encoding_from_file( view):
 +    region = view.line(sublime.Region(0))
- 
+ # type: ignore - these lines must include a single space
 -    region = view.line( sublime.Region(0))
 -
 -    encoding = get_encoding_from_region( region, view)
@@ -47,11 +57,41 @@ diff = """@@ -1,12 +1,12 @@
      else:
          encoding = get_encoding_from_region(view.line(region.end() + 1), view)
          return encoding
-     return None
-+"""
+-    return None
+\ No newline at end of file
++    return None"""
+
+folding1 = """class A:
+    def a(self):
 
 
-view = lambda: sublime.active_window().new_file()
+        def b():
+            pass
+"""
+
+folding1_expected = """class A:
+    def a(self):
+        def b():
+            pass
+"""
+
+folding2 = """
+
+class A:
+    def a():
+        def b():
+            pass
+"""
+
+folding2_expected = """class A:
+    def a():
+        def b():
+            pass
+"""
+
+
+def view():
+    return sublime.active_window().new_file()
 
 
 # precommit
@@ -91,19 +131,19 @@ class TestCaseBlack(TestCase):
     def setUp(self):
         self.window = sublime.active_window()
         self.view = self.window.new_file()
+        self.window.focus_view(self.view)
         # make sure we have a window to work with
-        s = sublime.load_settings("Preferences.sublime-settings")
-        s.set("close_windows_when_empty", False)
+        settings = sublime.load_settings("Preferences.sublime-settings")
+        settings.set("close_windows_when_empty", False)
         self.maxDiff = None
 
-        self.folder = sublack.utils.Path(__file__).parents[1]
+        self.folder = pathlib.Path(__file__).parents[1]
         self.old_data = self.window.project_data()
 
     def tearDown(self):
         if self.view:
             self.view.set_scratch(True)
-            self.view.window().focus_view(self.view)
-            self.view.window().run_command("close_file")
+            self.view.close()
 
         self.window.set_project_data(self.old_data)
 
@@ -111,7 +151,7 @@ class TestCaseBlack(TestCase):
         all_file = sublime.Region(0, self.view.size())
         return self.view.substr(all_file)
 
-    def setText(self, string):
+    def setText(self, string: str):
         self.view.run_command("append", {"characters": string})
 
 
@@ -124,14 +164,16 @@ class TestCaseBlackAsync(DeferrableTestCase):
         s.set("close_windows_when_empty", False)
         self.maxDiff = None
 
-        self.folder = sublack.utils.Path(__file__).parents[1]
+        self.folder = pathlib.Path(__file__).parents[1]
         self.old_data = self.window.project_data()
 
     def tearDown(self):
         if self.view:
             self.view.set_scratch(True)
-            self.view.window().focus_view(self.view)
-            self.view.window().run_command("close_file")
+            window = self.view.window()
+            assert window, "No window found!"
+            window.focus_view(self.view)
+            window.run_command("close_file")
 
         self.window.set_project_data(self.old_data)
 

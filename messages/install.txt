@@ -1,34 +1,34 @@
-  _____ __ __  ____   _       ____    __  __  _ 
- / ___/|  T  T|    \ | T     /    T  /  ]|  l/ ]
-(   \_ |  |  ||  o  )| |    Y  o  | /  / |  ' / 
- \__  T|  |  ||     T| l___ |     |/  /  |    \ 
- /  \ ||  :  ||  O  ||     T|  _  /   \_ |     Y
- \    |l     ||     ||     ||  |  \     ||  .  |
-  \___j \__,_jl_____jl_____jl__j__j\____jl__j\_j
-                                                
+  ____  _   _ ____  _        _    ____ _  __     _  _
+ / ___|| | | | __ )| |      / \  / ___| |/ /    | || |
+ \___ \| | | |  _ \| |     / _ \| |   | ' /_____| || |_
+  ___) | |_| | |_) | |___ / ___ \ |___| . \_____|__   _|
+ |____/ \___/|____/|_____/_/   \_\____|_|\_\       |_|
+
                                                                         
 
 
 Installation
 -------------
 
-Install Black. Minimal version : 19.3b
-   
-	  pip install black # Requires python 3.6
-	  and
-	  pip install black[d] # for blackd support
-
-
-
-##  NEW 2.3.0 needs black 19.3b ######
+No need to install black separately!
 
 
 Changelog
 -----------
+4.1.0:
+	- Updated unit tests and resolved outstanding issues.
+	- black is now bundled with sublack, so no need to install separately.
+	-- Can still point to an external black process if required.
+	- black all now runs using sublack settings.
 
-comming:
-	fix scroll #52
-	fix getting good pyproject #57
+4.0.0:
+	- Project now has a new maintainer and is renamed to sublack 4.
+	- No backwards compatiblity with ST3/ST2.
+	- Now uses python38.
+	- blackd server will startup withot locking the main thread.
+	- Now makes use of on close callback to shutdown blackd server.
+
+
 2.4.0:
 	Confirmation dialog  to `format all` is now by default.
 	Add folding support

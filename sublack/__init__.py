@@ -1,51 +1,63 @@
-from .consts import *  # noqa
+from __future__ import annotations
+
+
+def _setup_vendor_packages():
+    import pathlib as pathlib
+    import site
+
+    current_directory = pathlib.Path(__file__).parent
+    vendor_packages_path = current_directory / "vendor/packages"
+    site.addsitedir(str(vendor_packages_path))
+    print(f"Added packages site path: {vendor_packages_path}")
+
+
+_setup_vendor_packages()
+
+from .consts import *
 from .utils import (
-    get_settings,
-    get_open_port,
     cache_path,
     clear_cache,
-    startup_info,
-    popen,
-    check_blackd_on_http,
-    kill_with_pid,
-    Path,
-)
-from .server import BlackdServer
-from .blacker import Blackd, Black
-from .commands import (
+    get_log,
+    get_on_save_fast,
+    get_open_port,
+    get_settings,
     is_python,
-    BlackFileCommand,
+    kill_with_pid,
+    popen,
+    get_startup_info,
+)
+
+# from .server import BlackdServer
+from .blacker import Black
+from .blacker import Blackd
+from .commands import (
     BlackDiffCommand,
-    BlackToggleBlackOnSaveCommand,
-    BlackEventListener,
     BlackdStartCommand,
     BlackdStopCommand,
+    BlackFileCommand,
     BlackFormatAllCommand,
+    BlackToggleBlackOnSaveCommand,
 )
-from .checker import Checker
 
-
-__all__ = [
-    "PACKAGE_NAME",
-    "get_settings",
-    "get_open_port",
-    "cache_path",
-    "clear_cache",
-    "startup_info",
-    "popen",
-    "Path",
-    "kill_with_pid",
-    "check_blackd_on_http",
-    "BlackdServer",
+__all__ = (
     "Black",
     "Blackd",
-    "is_python",
-    "BlackFileCommand",
     "BlackDiffCommand",
-    "BlackToggleBlackOnSaveCommand",
-    "BlackEventListener",
+    # "BlackdServer",
     "BlackdStartCommand",
     "BlackdStopCommand",
+    "BlackFileCommand",
     "BlackFormatAllCommand",
-    "Checker",
-]
+    "BlackToggleBlackOnSaveCommand",
+    "cache_path",
+    "clear_cache",
+    "get_log",
+    "get_on_save_fast",
+    "get_open_port",
+    "get_settings",
+    "is_python",
+    "kill_with_pid",
+    "PACKAGE_NAME",
+    "popen",
+    "get_startup_info",
+)

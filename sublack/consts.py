@@ -1,6 +1,6 @@
 PACKAGE_NAME = "sublack"
-SETTINGS_FILE_NAME = "{}.sublime-settings".format(PACKAGE_NAME)
-SETTINGS_NS_PREFIX = "{}.".format(PACKAGE_NAME)
+SETTINGS_FILE_NAME = f"{PACKAGE_NAME}.sublime-settings"
+SETTINGS_NS_PREFIX = f"{PACKAGE_NAME}."
 KEY_ERROR_MARKER = "__KEY_NOT_PRESENT_MARKER__"
 
 # The status sections are ordered by key, so using 'sublk' will place it after
@@ -14,6 +14,8 @@ ALREADY_FORMATTED_MESSAGE = "sublack: already well formatted"
 ALREADY_FORMATTED_MESSAGE_CACHE = "sublack (cache): already well formatted"
 
 REFORMATTED_MESSAGE = "sublack: reformatted"
+REFORMATTED_ALL_PARTIAL_MESSAGE = "sublack: partially reformatted all"
+REFORMATTED_ALL_MESSAGE = "sublack: reformatted all"
 REFORMAT_ERRORS = "sublack: reformatting error, check console for logs"
 
 CONFIG_OPTIONS = [
@@ -23,6 +25,7 @@ CONFIG_OPTIONS = [
     "black_command",
     "black_on_save",
     "black_log",
+    "black_log_to_file",
     "black_default_encoding",
     "black_py36",
     "black_target_version",

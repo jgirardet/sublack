@@ -1,28 +1,17 @@
-import sublime_plugin
+from __future__ import annotations
+
 import sublime
-from .consts import (
-    BLACK_ON_SAVE_VIEW_SETTING,
-    STATUS_KEY,
-    BLACKD_STARTED,
-    BLACKD_STOPPED,
-    BLACKD_START_FAILED,
-    BLACKD_STOP_FAILED,
-    PACKAGE_NAME,
-    BLACKD_ALREADY_RUNNING,
-    REFORMATTED_MESSAGE,
-    REFORMAT_ERRORS,
-)
-from .utils import get_settings, check_blackd_on_http, get_on_save_fast, timed, popen
-from .blacker import Black
-import logging
-from .server import BlackdServer
-import subprocess
+import sublime_plugin
 
-LOG = logging.getLogger(PACKAGE_NAME)
+from . import blacker
+from . import consts
+from . import server
+from . import utils
 
-
-def is_python(view):
-    return view.match_selector(0, "source.python")
+_typing = False
+if _typing:
+    from typing import Any
+del _typing
 
 
 class BlackFileCommand(sublime_plugin.TextCommand):
@@ -31,24 +20,22 @@ class BlackFileCommand(sublime_plugin.TextCommand):
     """
 
     def is_enabled(self):
-        return is_python(self.view)
+        return utils.is_python(self.view)
 
     is_visible = is_enabled
 
     # @timed
     def run(self, edit):
-        LOG.debug("running black_file")
+        utils.get_log().debug("Formatting current file")
         # backup view position:
         old_view_port = self.view.viewport_position()
 
-        Black(self.view)(edit)
+        blacker.Black(self.view)(edit)
 
         # re apply view position
         # fix : https://github.com/jgirardet/sublack/issues/52
         # not tested : view.run_command doesn't reproduce bug in tests...
-        sublime.set_timeout_async(
-            lambda: self.view.set_viewport_position(old_view_port)
-        )
+        sublime.set_timeout_async(lambda: self.view.set_viewport_position(old_view_port), delay=25)
 
 
 class BlackDiffCommand(sublime_plugin.TextCommand):
@@ -57,13 +44,13 @@ class BlackDiffCommand(sublime_plugin.TextCommand):
     """
 
     def is_enabled(self):
-        return is_python(self.view)
+        return utils.is_python(self.view)
 
     is_visible = is_enabled
 
     def run(self, edit):
-        LOG.debug("running black_file")
-        Black(self.view)(edit, extra=["--diff"])
+        utils.get_log().debug("running black_file")
+        blacker.Black(self.view)(edit, extra=["--diff"])
 
 
 class BlackToggleBlackOnSaveCommand(sublime_plugin.TextCommand):
@@ -73,22 +60,22 @@ class BlackToggleBlackOnSaveCommand(sublime_plugin.TextCommand):
     """
 
     def is_enabled(self):
-        return is_python(self.view)
+        return utils.is_python(self.view)
 
     is_visible = is_enabled
 
     def description(self):
-        settings = get_settings(self.view)
+        settings = utils.get_settings(self.view)
         if settings["black_on_save"]:
             return "Sublack: Disable black on save"
         else:
             return "Sublack: Enable black on save"
 
-    def run(self, edit):
-        view = self.view
+    def run(self, _):
+        view: sublime.View = self.view
 
-        settings = get_settings(view)
-        current_state = settings["black_on_save"]
+        settings = utils.get_settings(view)
+        current_state: bool = settings["black_on_save"]
         next_state = not current_state
 
         # A setting set on a particular view overules all other places where
@@ -97,15 +84,15 @@ class BlackToggleBlackOnSaveCommand(sublime_plugin.TextCommand):
         # operation that never throws, and immediately check again if the
         # wanted next state is fulfilled by that side effect.
         # If yes, we're almost done and just clean up the status area.
-        view.settings().erase(BLACK_ON_SAVE_VIEW_SETTING)
-        if get_settings(view)["black_on_save"] == next_state:
-            view.erase_status(STATUS_KEY)
+        view.settings().erase(consts.BLACK_ON_SAVE_VIEW_SETTING)
+        if utils.get_settings(view)["black_on_save"] == next_state:
+            view.erase_status(consts.STATUS_KEY)
             return
 
         # Otherwise, we set the next state, and indicate in the status bar
         # that this view now deviates from the other views.
-        view.settings().set(BLACK_ON_SAVE_VIEW_SETTING, next_state)
-        view.set_status(STATUS_KEY, "black: {}".format("ON" if next_state else "OFF"))
+        view.settings().set(consts.BLACK_ON_SAVE_VIEW_SETTING, next_state)
+        view.set_status(consts.STATUS_KEY, "black: {}".format("ON" if next_state else "OFF"))
 
 
 class BlackdStartCommand(sublime_plugin.TextCommand):
@@ -114,26 +101,13 @@ class BlackdStartCommand(sublime_plugin.TextCommand):
 
     is_visible = is_enabled
 
-    def run(self, edit):
-        started = None
-        LOG.debug("blackd_start command running")
-        settings = get_settings(self.view)
-        port = settings["black_blackd_port"]
-        running, port_free = check_blackd_on_http(port)
-        if running:
-            LOG.info(BLACKD_ALREADY_RUNNING.format(port))
-            self.view.set_status(STATUS_KEY, BLACKD_ALREADY_RUNNING.format(port))
-            return
-        elif port_free:
-            sv = BlackdServer(
-                deamon=True, host="localhost", port=port, settings=settings
-            )
-            started = sv.run()
+    def run(self, _, **kwargs: Any):
+        port = kwargs["port"] if kwargs and "port" in kwargs else None
 
-        if started:
-            self.view.set_status(STATUS_KEY, BLACKD_STARTED.format(port))
-        else:
-            self.view.set_status(STATUS_KEY, BLACKD_START_FAILED.format(port))
+        def _blackd_start():
+            server.start_blackd_server(self.view, port=port)
+
+        sublime.set_timeout_async(_blackd_start, 0)
 
 
 class BlackdStopCommand(sublime_plugin.ApplicationCommand):
@@ -143,26 +117,13 @@ class BlackdStopCommand(sublime_plugin.ApplicationCommand):
     is_visible = is_enabled
 
     def run(self):
-        LOG.debug("blackd_stop command running")
-        if BlackdServer().stop_deamon():
-            sublime.active_window().active_view().set_status(STATUS_KEY, BLACKD_STOPPED)
+        utils.get_log().debug("blackd_stop command running")
+        view = sublime.active_window().active_view()
+        assert view, "No view found!"
+        if server.stop_blackd_server():
+            view.set_status(consts.STATUS_KEY, consts.BLACKD_STOPPED)
         else:
-            sublime.active_window().active_view().set_status(
-                STATUS_KEY, BLACKD_STOP_FAILED
-            )
-
-
-class BlackEventListener(sublime_plugin.EventListener):
-    def on_pre_save(self, view):
-        """use blackd at saving time
-
-        Cannot be async since black should be run before save"""
-        if get_on_save_fast(view):
-            view.run_command("black_file")
-
-    def on_post_text_command(self, view, command_name, args):
-        if command_name == "black_file":
-            view.show(view.line(view.sel()[0]))
+            view.set_status(consts.STATUS_KEY, consts.BLACKD_STOP_FAILED)
 
 
 class BlackFormatAllCommand(sublime_plugin.WindowCommand):
@@ -172,42 +133,5 @@ class BlackFormatAllCommand(sublime_plugin.WindowCommand):
     is_visible = is_enabled
 
     def run(self):
-        if get_settings(self.window.active_view())["black_confirm_formatall"]:
-            if not sublime.ok_cancel_dialog(
-                "Sublack: Format all?\nInfo: It runs black without sublack "
-                "(ignoring sublack Options and Configuration)."
-            ):
-                return
-
-        folders = self.window.folders()
-
-        success = []
-        errors = []
-        dispatcher = None
-        for folder in folders:
-            p = popen(
-                ["black", "."],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                cwd=folder,
-            )
-            p.wait(timeout=10)
-            dispatcher = success if p.returncode == 0 else errors
-            dispatcher.append((folder, p.returncode, p.stderr.read()))
-
-        if not errors:  # all 0 return_code
-            self.window.active_view().set_status(STATUS_KEY, REFORMATTED_MESSAGE)
-        else:
-            self.window.active_view().set_status(STATUS_KEY, REFORMAT_ERRORS)
-
-        for out in success:
-            LOG.debug(
-                "black formatted folder %s with returncode %s and following en stderr :%s",
-                *out
-            )
-
-        for out in errors:
-            LOG.error(
-                "black formatted folder %s with returncode %s and following en stderr :%s",
-                *out
-            )
+        black_all = blacker.BlackAll(self.window)
+        black_all.run()
