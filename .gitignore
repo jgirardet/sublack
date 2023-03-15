@@ -67,6 +67,9 @@ Pipfile.lock
 # sublime
 *.sublime-workspace
 *.sublime-project
+
+# vscode
+*.vscode
 pyrightconfig.json
 
 # project

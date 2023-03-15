@@ -1,0 +1,9 @@
+# used to remove files from deployment using `git archive`
+# git files
+.gitattributes export-ignore
+.gitignore export-ignore
+
+*appveyor.yml export-ignore
+
+# folders:
+tests export-ignore
