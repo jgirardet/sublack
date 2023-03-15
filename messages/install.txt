@@ -15,12 +15,15 @@ No need to install black separately!
 
 Changelog
 -----------
+4.1.0:
+	- Updated unit tests and resolved outstanding issues.
+	- black is now bundled with sublack, so no need to install separately.
+	-- Can still point to an external black process if required.
+	- black all now runs using sublack settings.
 
 4.0.0:
 	- Project now has a new maintainer and is renamed to sublack 4.
 	- No backwards compatiblity with ST3/ST2.
-	- black is now bundled with sublack, so no need to install separately.
-	-- Can still point to an external black process if required.
 	- Now uses python38.
 	- blackd server will startup withot locking the main thread.
 	- Now makes use of on close callback to shutdown blackd server.
